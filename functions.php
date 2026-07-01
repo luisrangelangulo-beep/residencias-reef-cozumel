@@ -52,6 +52,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( file_exists( LVC_DIR . '/assets/editorial.css' ) ) {
 		wp_enqueue_style( 'lvc-editorial', LVC_URI . '/assets/editorial.css', array( 'lvc-brand' ), (string) filemtime( LVC_DIR . '/assets/editorial.css' ) );
 	}
+
+	if ( file_exists( LVC_DIR . '/assets/hero-overrides.css' ) ) {
+		wp_enqueue_style( 'lvc-hero-overrides', LVC_URI . '/assets/hero-overrides.css', array( 'lvc-brand' ), (string) filemtime( LVC_DIR . '/assets/hero-overrides.css' ) );
+	}
 }, 20 );
 
 // Theme supports + primary nav menu (set the menu in Appearance → Menus).
