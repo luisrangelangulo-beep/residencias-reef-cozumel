@@ -1,0 +1,66 @@
+/* =====================================================================
+   Residencias Reef Cozumel — hero alignment overrides
+   Keeps all major template heroes visually consistent with the homepage:
+   left-aligned content, wide wrap, dark left-to-right overlay, CTA row left.
+   ===================================================================== */
+
+.lvc-tax-hero,
+.lvc-area-hero,
+.lvc-rm-hero,
+.lvc-ed-hero {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+
+.lvc-tax-hero > .lvc-tax-wrap.lvc-tax-hero__inner,
+.lvc-area-hero > .lvc-area-wrap.lvc-area-hero__inner,
+.lvc-rm-hero > .lvc-rm-wrap,
+.lvc-ed-hero > .lvc-ed-wrap {
+  width: min(1480px, calc(100% - clamp(2rem, 6vw, 6rem))) !important;
+  max-width: 1480px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.lvc-tax-hero .lvc-tax-title,
+.lvc-area-hero .lvc-area-title,
+.lvc-rm-hero h1,
+.lvc-ed-hero .lvc-ed-title {
+  max-width: 930px !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.lvc-tax-hero .lvc-tax-copy,
+.lvc-area-hero .lvc-area-copy,
+.lvc-rm-hero .lvc-rm-hero__sub,
+.lvc-ed-hero .lvc-ed-sub {
+  max-width: 760px !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.lvc-tax-hero .lvc-tax-btns,
+.lvc-area-hero .lvc-area-btns,
+.lvc-rm-hero .lvc-rm-btns,
+.lvc-ed-hero .lvc-ed-btns,
+.lvc-tax-hero .lvc-tax-chips,
+.lvc-area-hero .lvc-area-quick {
+  justify-content: flex-start !important;
+}
+
+.lvc-tax-hero:before,
+.lvc-area-hero:before {
+  background:
+    linear-gradient(90deg, rgba(10,12,15,.95), rgba(10,12,15,.72) 48%, rgba(10,12,15,.48)),
+    linear-gradient(0deg, rgba(10,12,15,.9), rgba(10,12,15,.25) 52%, rgba(10,12,15,.64)) !important;
+}
+
+@media (max-width: 720px) {
+  .lvc-tax-hero > .lvc-tax-wrap.lvc-tax-hero__inner,
+  .lvc-area-hero > .lvc-area-wrap.lvc-area-hero__inner,
+  .lvc-rm-hero > .lvc-rm-wrap,
+  .lvc-ed-hero > .lvc-ed-wrap {
+    width: calc(100% - 2rem) !important;
+  }
+}
