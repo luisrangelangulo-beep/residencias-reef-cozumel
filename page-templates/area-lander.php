@@ -77,6 +77,23 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	lvc_schema_collection();
 	$wp_query = $original_query;
 }
+
+$lvc_area_label = $lvc_term ? $lvc_term->name : 'this area';
+$lvc_faqs = array(
+	array( 'q' => 'How do I book a villa in ' . $lvc_area_label . '?', 'a' => 'Send your dates, group size, and priorities. A specialist shortlists ' . $lvc_area_label . ' villas that fit and confirms availability, rates, and inclusions before you commit — booked direct with the villa team.' ),
+	array( 'q' => 'Do you charge platform or booking fees?', 'a' => 'No. You book direct — there are no marketplace markups or platform fees.' ),
+	array( 'q' => 'How far is ' . $lvc_area_label . ' from the airport?', 'a' => 'Most guests fly into Cancún International Airport. Transfer times vary by area and traffic; we confirm the realistic drive time for the specific villa you are considering.' ),
+	array( 'q' => 'What is included — staff, chef, housekeeping?', 'a' => 'It varies by villa. Many include housekeeping and staff; chef service may be included or arranged on request. We confirm inclusions before booking.' ),
+	array( 'q' => 'How quickly will you respond?', 'a' => 'We typically respond ' . lvc_config( 'response_time', 'within 24 hours' ) . '.' ),
+);
+
+if ( function_exists( 'lvc_jsonld' ) ) {
+	$lvc_faq_qas = array();
+	foreach ( $lvc_faqs as $lvc_faq_item ) {
+		$lvc_faq_qas[] = array( '@type' => 'Question', 'name' => $lvc_faq_item['q'], 'acceptedAnswer' => array( '@type' => 'Answer', 'text' => $lvc_faq_item['a'] ) );
+	}
+	lvc_jsonld( array( '@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => $lvc_faq_qas ) );
+}
 ?>
 
 <style>
@@ -170,6 +187,17 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	<?php endif; ?>
 
 	<section class="lvc-area-section lvc-area-section--alt">
+		<div class="lvc-area-narrow">
+			<header class="lvc-area-head"><span class="lvc-area-kicker">FAQ</span><h2 class="lvc-area-title">Questions about staying in <em><?php echo esc_html( $lvc_area_label ); ?></em></h2></header>
+			<div class="lvc-faq">
+				<?php foreach ( $lvc_faqs as $lvc_faq_item ) : ?>
+					<details class="lvc-faq__item"><summary class="lvc-faq__q"><?php echo esc_html( $lvc_faq_item['q'] ); ?></summary><p class="lvc-faq__a"><?php echo esc_html( $lvc_faq_item['a'] ); ?></p></details>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</section>
+
+	<section class="lvc-area-section">
 		<div class="lvc-area-wrap">
 			<header class="lvc-area-head"><span class="lvc-area-kicker">Explore More</span><h2 class="lvc-area-title">Other Riviera Maya <em>areas</em></h2></header>
 			<ul class="lvc-area-siblings">
