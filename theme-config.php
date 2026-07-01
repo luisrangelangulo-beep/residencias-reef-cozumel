@@ -50,14 +50,18 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				'register_cpt'     => false,            // CPT UI owns `villas` on the live site — do not re-register.
 
 				/* ── Taxonomies: slug => [ plural label, singular label ] ─
-				 * Live site only has `area` (hierarchical: Riviera Maya > Cozumel/
-				 * Tulum/Playa Del Carmen/etc. > sub-areas) and `bedrooms`. No
-				 * destination/collection/beach_access/amenity taxonomies exist here —
-				 * `area`'s own hierarchy plays the destination+area role Los Cabos
-				 * split across two flat taxonomies. */
+				 * Live site has `area` (hierarchical: Riviera Maya > Cozumel/
+				 * Tulum/Playa Del Carmen/etc. > sub-areas), `bedrooms`, and
+				 * `collection` (flat, e.g. Beachfront/Family Villas/Large Groups/
+				 * Private Chef — added 2026-07-01, CPT UI owned, rewrite slug
+				 * `collections`; no villas tagged yet). No destination/
+				 * beach_access/amenity taxonomies exist here — `area`'s own
+				 * hierarchy plays the destination+area role Los Cabos split
+				 * across two flat taxonomies. */
 				'taxonomies' => array(
-					'area'     => array( 'Areas', 'Area' ),
-					'bedrooms' => array( 'Bedrooms', 'Bedrooms' ),
+					'area'       => array( 'Areas', 'Area' ),
+					'bedrooms'   => array( 'Bedrooms', 'Bedrooms' ),
+					'collection' => array( 'Collections', 'Collection' ),
 				),
 				'register_taxonomies' => false, // CPT UI owns these on the live site — do not re-register.
 
