@@ -1,0 +1,361 @@
+/* =====================================================================
+   Residencias Reef Cozumel — subtle motion effects
+   Adds restrained luxury movement across home, area, property, and magazine
+   templates without heavy JavaScript or Elementor dependencies.
+   ===================================================================== */
+
+:root {
+  --lvc-motion-ease: cubic-bezier(.2,.8,.2,1);
+  --lvc-motion-slow: 820ms;
+  --lvc-motion-med: 420ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes lvcFadeLift {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes lvcSoftScale {
+    from { opacity: .86; transform: scale(1.035); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .lcv-home-hero > *,
+  .lvc-rm-hero > *,
+  .lvc-tax-hero > *,
+  .lvc-area-hero > *,
+  .lvc-single-hero > *,
+  .lvc-maghub-hero > *,
+  .lvc-art-hero > * {
+    animation: lvcFadeLift var(--lvc-motion-slow) var(--lvc-motion-ease) both;
+  }
+
+  .lcv-home-section > .lcv-home-wrap,
+  .lvc-rm-section > .lvc-rm-wrap,
+  .lvc-tax-section > .lvc-tax-wrap,
+  .lvc-area-section > .lvc-area-wrap,
+  .lvc-single-section > .lvc-single-wrap,
+  .lvc-maghub-section > .lvc-maghub-wrap,
+  .lvc-art-section > .lvc-art-wrap {
+    animation: lvcFadeLift var(--lvc-motion-slow) var(--lvc-motion-ease) both;
+  }
+}
+
+/* Hero background polish — subtle depth instead of flat static images. */
+.lcv-home-hero,
+.lvc-rm-hero,
+.lvc-tax-hero,
+.lvc-area-hero,
+.lvc-single-hero,
+.lvc-maghub-hero,
+.lvc-art-hero {
+  overflow: hidden;
+  background-attachment: fixed;
+}
+
+.lcv-home-hero:after,
+.lvc-rm-hero:after,
+.lvc-tax-hero:after,
+.lvc-area-hero:after,
+.lvc-single-hero:after,
+.lvc-maghub-hero:after,
+.lvc-art-hero:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(76,127,184,.16), transparent 28%),
+    radial-gradient(circle at 84% 16%, rgba(255,255,255,.06), transparent 22%);
+  mix-blend-mode: screen;
+  opacity: .72;
+}
+
+.lvc-single-hero:after {
+  z-index: 1;
+}
+
+.lvc-single-hero__inner {
+  position: relative;
+  z-index: 3;
+}
+
+.lvc-single-hero__img {
+  transition: transform 8s var(--lvc-motion-ease), filter 800ms ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lvc-single-hero:hover .lvc-single-hero__img {
+    transform: scale(1.045);
+    filter: saturate(1.04) contrast(1.02);
+  }
+}
+
+/* Cards: elegant lift, border glow, image zoom. */
+.lvc-card,
+.lcv-area-tile,
+.lvc-tax-area-card,
+.lvc-rm-area,
+.lvc-maghub-card,
+.lvc-mag-card,
+.lvc-magcard,
+.lvc-maghub-feature,
+.lvc-mag-feature,
+.lvc-single-fit-card,
+.lvc-single-service-card,
+.lvc-tax-upgrade-card,
+.lcv-upgrade-card,
+.lcv-path-card,
+.lvc-rm-path,
+.lvc-rm-compare-card,
+.lvc-tax-compare-card,
+.lvc-single-inquiry,
+.lvc-side-card,
+.lvc-art-side-card {
+  transition:
+    transform var(--lvc-motion-med) var(--lvc-motion-ease),
+    border-color var(--lvc-motion-med) ease,
+    box-shadow var(--lvc-motion-med) ease,
+    background-color var(--lvc-motion-med) ease;
+}
+
+.lvc-card:hover,
+.lcv-area-tile:hover,
+.lvc-tax-area-card:hover,
+.lvc-rm-area:hover,
+.lvc-maghub-card:hover,
+.lvc-mag-card:hover,
+.lvc-magcard:hover,
+.lvc-maghub-feature:hover,
+.lvc-mag-feature:hover,
+.lvc-single-fit-card:hover,
+.lvc-single-service-card:hover,
+.lvc-tax-upgrade-card:hover,
+.lcv-upgrade-card:hover,
+.lcv-path-card:hover,
+.lvc-rm-path:hover,
+.lvc-rm-compare-card:hover,
+.lvc-tax-compare-card:hover,
+.lvc-single-inquiry:hover,
+.lvc-side-card:hover,
+.lvc-art-side-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(76,127,184,.62) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,.28), 0 0 0 1px rgba(76,127,184,.08);
+}
+
+.lvc-card__img img,
+.lvc-maghub-card__img img,
+.lvc-mag-card__img img,
+.lvc-magcard__img img,
+.lvc-single-gallery img {
+  transition: transform 650ms var(--lvc-motion-ease), filter 650ms ease;
+}
+
+.lvc-card:hover .lvc-card__img img,
+.lvc-maghub-card:hover .lvc-maghub-card__img img,
+.lvc-mag-card:hover .lvc-mag-card__img img,
+.lvc-magcard:hover .lvc-magcard__img img,
+.lvc-single-gallery figure:hover img {
+  transform: scale(1.065);
+  filter: saturate(1.05) contrast(1.03);
+}
+
+/* Background-image tiles cannot zoom their image directly, so create a sheen. */
+.lcv-area-tile:after,
+.lvc-tax-area-card:after,
+.lvc-rm-area:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,.08) 42%, transparent 68%);
+  opacity: 0;
+  transform: translateX(-40%);
+  transition: opacity 500ms ease, transform 720ms var(--lvc-motion-ease);
+}
+
+.lcv-area-tile:hover:after,
+.lvc-tax-area-card:hover:after,
+.lvc-rm-area:hover:after {
+  opacity: 1;
+  transform: translateX(38%);
+}
+
+.lcv-area-tile__body,
+.lvc-tax-area-card__body,
+.lvc-rm-area__body {
+  transition: transform var(--lvc-motion-med) var(--lvc-motion-ease);
+}
+
+.lcv-area-tile:hover .lcv-area-tile__body,
+.lvc-tax-area-card:hover .lvc-tax-area-card__body,
+.lvc-rm-area:hover .lvc-rm-area__body {
+  transform: translateY(-4px);
+}
+
+/* Buttons: more tactile, less flat. */
+.lcv-home-btn,
+.lvc-rm-btn,
+.lvc-tax-btn,
+.lvc-area-btn,
+.lvc-single-btn,
+.lvc-maghub-btn,
+.lvc-mag-btn,
+.lvc-art-btn,
+.lvc-btn,
+.lvc-side-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 260ms var(--lvc-motion-ease), border-color 260ms ease, background-color 260ms ease, color 260ms ease, box-shadow 260ms ease;
+}
+
+.lcv-home-btn:hover,
+.lvc-rm-btn:hover,
+.lvc-tax-btn:hover,
+.lvc-area-btn:hover,
+.lvc-single-btn:hover,
+.lvc-maghub-btn:hover,
+.lvc-mag-btn:hover,
+.lvc-art-btn:hover,
+.lvc-btn:hover,
+.lvc-side-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(76,127,184,.22);
+}
+
+.lcv-home-btn:before,
+.lvc-rm-btn:before,
+.lvc-tax-btn:before,
+.lvc-area-btn:before,
+.lvc-single-btn:before,
+.lvc-maghub-btn:before,
+.lvc-mag-btn:before,
+.lvc-art-btn:before,
+.lvc-btn:before,
+.lvc-side-btn:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,.22), transparent);
+  transform: translateX(-120%);
+  transition: transform 620ms var(--lvc-motion-ease);
+}
+
+.lcv-home-btn:hover:before,
+.lvc-rm-btn:hover:before,
+.lvc-tax-btn:hover:before,
+.lvc-area-btn:hover:before,
+.lvc-single-btn:hover:before,
+.lvc-maghub-btn:hover:before,
+.lvc-mag-btn:hover:before,
+.lvc-art-btn:hover:before,
+.lvc-btn:hover:before,
+.lvc-side-btn:hover:before {
+  transform: translateX(120%);
+}
+
+/* Small link pills and filters. */
+.lcv-filter-pill,
+.lvc-rm-filter,
+.lvc-maghub-area-links a,
+.lvc-mag-area-links a,
+.lvc-tax-siblings a,
+.lvc-area-siblings a,
+.lvc-single-chip-list a,
+.lvc-single-chip-list span {
+  transition: transform 260ms var(--lvc-motion-ease), border-color 260ms ease, background-color 260ms ease, color 260ms ease;
+}
+
+.lcv-filter-pill:hover,
+.lvc-rm-filter:hover,
+.lvc-maghub-area-links a:hover,
+.lvc-mag-area-links a:hover,
+.lvc-tax-siblings a:hover,
+.lvc-area-siblings a:hover,
+.lvc-single-chip-list a:hover {
+  transform: translateY(-2px);
+  background: rgba(76,127,184,.12) !important;
+}
+
+/* Gallery polish. */
+.lvc-single-gallery figure {
+  position: relative;
+}
+
+.lvc-single-gallery figure:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 40%, rgba(10,12,15,.22));
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+.lvc-single-gallery figure:hover:after {
+  opacity: 1;
+}
+
+/* Section depth: subtle image-like background atmosphere on alternate bands. */
+.lcv-home-section--alt,
+.lvc-tax-section--alt,
+.lvc-area-section--alt,
+.lvc-rm-section--alt,
+.lvc-single-section--alt,
+.lvc-maghub-section--alt,
+.lvc-art-section--alt {
+  position: relative;
+  overflow: hidden;
+}
+
+.lcv-home-section--alt:before,
+.lvc-tax-section--alt:before,
+.lvc-area-section--alt:before,
+.lvc-rm-section--alt:before,
+.lvc-single-section--alt:before,
+.lvc-maghub-section--alt:before,
+.lvc-art-section--alt:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(76,127,184,.08), transparent 32%),
+    radial-gradient(circle at 100% 70%, rgba(255,255,255,.035), transparent 30%);
+  opacity: .85;
+}
+
+.lcv-home-section--alt > *,
+.lvc-tax-section--alt > *,
+.lvc-area-section--alt > *,
+.lvc-rm-section--alt > *,
+.lvc-single-section--alt > *,
+.lvc-maghub-section--alt > *,
+.lvc-art-section--alt > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .lcv-home-hero,
+  .lvc-rm-hero,
+  .lvc-tax-hero,
+  .lvc-area-hero,
+  .lvc-single-hero,
+  .lvc-maghub-hero,
+  .lvc-art-hero {
+    background-attachment: scroll;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
