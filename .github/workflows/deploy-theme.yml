@@ -1,0 +1,141 @@
+name: Deploy Theme
+
+on:
+  # Manual-only: production is live, so deploys are triggered deliberately
+  # via "Run workflow" (workflow_dispatch), never automatically on push.
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-theme-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      CPANEL_USER: residenciasreefc
+      THEME_TARGET: /home/residenciasreefc/public_html/wp-content/themes/hello-elementor-child
+      DEPLOY_TMP_BASE: /home/residenciasreefc/deploy_tmp/hello-elementor-child
+      DEPLOY_TMP: /home/residenciasreefc/deploy_tmp/hello-elementor-child-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure tag is on main
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          git fetch origin main --no-tags --prune --depth=200
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Build clean theme package
+        run: |
+          mkdir -p build
+          printf "%s\n" "sha=${GITHUB_SHA}" "ref=${GITHUB_REF_NAME}" "run=${GITHUB_RUN_NUMBER}" "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > build-id.txt
+          zip -r build/theme.zip . \
+            -x '*.git*' \
+            -x '.github/*' \
+            -x 'docs/*' \
+            -x 'live-content-archive/*' \
+            -x 'vendor/*' \
+            -x 'node_modules/*' \
+            -x 'composer.json' \
+            -x 'composer.lock' \
+            -x 'phpcs.xml' \
+            -x 'package.json' \
+            -x 'package-lock.json' \
+            -x '.editorconfig' \
+            -x '.eslintrc*' \
+            -x 'build/*'
+          echo "📦 Theme package size:"
+          du -h build/theme.zip
+
+      - name: Upload theme.zip to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          port: ${{ secrets.SFTP_PORT }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SFTP_PASSPHRASE }}
+          source: "build/theme.zip"
+          target: "${{ env.DEPLOY_TMP }}/"
+          strip_components: 1
+          overwrite: true
+
+      - name: Deploy theme via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          port: ${{ secrets.SFTP_PORT }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SFTP_PASSPHRASE }}
+          envs: CPANEL_USER,THEME_TARGET,DEPLOY_TMP
+          script: |
+            set -euo pipefail
+            ZIP_PATH="$DEPLOY_TMP/theme.zip"
+            RELEASE_PATH="$DEPLOY_TMP/release-$(date +%Y%m%d-%H%M%S)"
+
+            echo "🔒 Validating deploy target..."
+            EXPECTED_PREFIX="/home/$CPANEL_USER/public_html/wp-content/themes/"
+            EXPECTED_THEME="hello-elementor-child"
+
+            case "$THEME_TARGET" in
+              "$EXPECTED_PREFIX$EXPECTED_THEME")
+                echo "Target OK: $THEME_TARGET"
+                ;;
+              *)
+                echo "ERROR: refusing to deploy to THEME_TARGET=$THEME_TARGET"
+                echo "Expected exactly: ${EXPECTED_PREFIX}${EXPECTED_THEME}"
+                exit 1
+                ;;
+            esac
+
+            echo "📂 Backing up current theme..."
+            BACKUP_NAME="hello-elementor-child-backup-$(date +%Y%m%d-%H%M%S).zip"
+            cd "$(dirname "$THEME_TARGET")"
+            if [ -d "$(basename "$THEME_TARGET")" ]; then
+              zip -qr "$BACKUP_NAME" "$(basename "$THEME_TARGET")"
+              echo "Backup created: $BACKUP_NAME"
+            fi
+
+            echo "📦 Extracting release to temp folder..."
+            mkdir -p "$RELEASE_PATH"
+            unzip -o "$ZIP_PATH" -d "$RELEASE_PATH"
+
+            echo "🔍 Sanity-check release contents..."
+            test -f "$RELEASE_PATH/style.css"    || { echo "Missing style.css in release";    exit 1; }
+            test -f "$RELEASE_PATH/functions.php" || { echo "Missing functions.php in release"; exit 1; }
+
+            # Fail if forbidden directories exist in the release
+            for forbidden in .github docs live-content-archive node_modules vendor build; do
+              if [ -e "$RELEASE_PATH/$forbidden" ]; then
+                echo "Forbidden path in release: $forbidden"
+                exit 1
+              fi
+            done
+
+            echo "🚀 Atomic sync to active child theme..."
+            mkdir -p "$THEME_TARGET"
+            rsync -a --delete "$RELEASE_PATH/" "$THEME_TARGET/"
+
+            echo "🧹 Cleaning up temp artifacts..."
+            rm -rf "$RELEASE_PATH" "$ZIP_PATH" "$DEPLOY_TMP"
+
+            echo "🧹 Optional cache clear (safe no-op if path missing)..."
+            rm -rf "/home/$CPANEL_USER/public_html/wp-content/cache/"* || true
+
+            echo "🔄 Flushing WordPress rewrite rules via WP-CLI..."
+            WP_CLI="/home/$CPANEL_USER/bin/wp"
+            WP_PATH="/home/$CPANEL_USER/public_html"
+            if command -v wp &>/dev/null; then
+              wp --path="$WP_PATH" rewrite flush --hard || true
+            elif [ -f "$WP_CLI" ]; then
+              "$WP_CLI" --path="$WP_PATH" rewrite flush --hard || true
+            else
+              echo "WP-CLI not found — skipping rewrite flush (visit /?lvc_flush=1 manually)"
+            fi
+
+            echo "✅ Deploy complete."
