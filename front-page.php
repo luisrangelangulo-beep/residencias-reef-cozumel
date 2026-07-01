@@ -41,7 +41,7 @@ $lvc_home_hero_img = lvc_area_image( 'riviera-maya' );
 
 $lvc_area_cards = array(
 	array( 'Cozumel', 'cozumel', '/cozumel/', 'Island beachfront villas and Residencias Reef condos, close to world-class diving, ferry access, and a quieter island pace.' ),
-	array( 'Tulum', 'tulum', '/tulum/', 'Bohemian-luxury villas and jungle-beach estates across Tulum, Sian Ka\'an, and the Tulum Beach Zone.' ),
+	array( 'Tulum', 'tulum', '/tulum-villa-rentals/', 'Bohemian-luxury villas and jungle-beach estates across Tulum, Sian Ka\'an, and the Tulum Beach Zone.' ),
 	array( 'Playa Del Carmen', 'playa-del-carmen', '/playa-del-carmen/', 'Beachfront and Playacar villas minutes from 5th Avenue, dining, and nightlife.' ),
 	array( 'Akumal', 'akumal', '/akumal/', 'Laid-back bayfront villas near sea-turtle snorkeling and quieter Caribbean beaches.' ),
 );
@@ -50,7 +50,7 @@ $lvc_collection_filters = array_merge(
 	array( array( 'All Villas', $lvc_arch ) ),
 	array(
 		array( 'Cozumel', home_url( '/cozumel/' ) ),
-		array( 'Tulum', home_url( '/tulum/' ) ),
+		array( 'Tulum', home_url( '/tulum-villa-rentals/' ) ),
 		array( 'Playa Del Carmen', home_url( '/playa-del-carmen/' ) ),
 		array( 'Akumal', home_url( '/akumal/' ) ),
 		array( 'Puerto Aventuras', home_url( '/puerto-aventuras/' ) ),
