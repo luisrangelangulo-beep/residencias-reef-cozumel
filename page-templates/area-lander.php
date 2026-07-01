@@ -16,11 +16,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$lvc_slug = get_post_field( 'post_name', get_the_ID() );
+if ( 'riviera-maya-villa-rentals' === $lvc_slug ) {
+	$lvc_riviera_template = locate_template( 'page-templates/riviera-maya-villa-rentals.php' );
+	if ( $lvc_riviera_template ) {
+		include $lvc_riviera_template;
+		return;
+	}
+}
+
 get_header();
 
 $lvc_area_map = lvc_area_lander_map();
 
-$lvc_slug  = get_post_field( 'post_name', get_the_ID() );
 $lvc_aslug = isset( $lvc_area_map[ $lvc_slug ] ) ? $lvc_area_map[ $lvc_slug ] : sanitize_title( str_replace( '-luxury-villas', '', $lvc_slug ) );
 $lvc_term  = get_term_by( 'slug', $lvc_aslug, 'area' );
 $lvc_cpt   = lvc_config( 'cpt', 'villas' );
