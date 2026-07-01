@@ -58,6 +58,47 @@ add_action( 'wp_enqueue_scripts', function () {
 	}
 }, 20 );
 
+/**
+ * Force important SEO/CRO pages to theme-owned templates.
+ *
+ * Some live pages were originally built with Elementor or assigned custom page
+ * templates, so page.php routing can be bypassed. template_include runs after
+ * WordPress has resolved that choice, letting us protect revenue pages from
+ * falling back to old thin layouts.
+ */
+add_filter( 'template_include', function ( $template ) {
+	if ( ! is_page() ) {
+		return $template;
+	}
+
+	$page_id = get_queried_object_id();
+	$slug    = $page_id ? get_post_field( 'post_name', $page_id ) : '';
+
+	$forced = array(
+		'magazine'                    => 'page-templates/magazine.php',
+		'riviera-maya-villa-rentals'  => 'page-templates/riviera-maya-villa-rentals.php',
+	);
+
+	if ( isset( $forced[ $slug ] ) ) {
+		$forced_template = locate_template( $forced[ $slug ] );
+		if ( $forced_template ) {
+			return $forced_template;
+		}
+	}
+
+	if ( function_exists( 'lvc_area_lander_map' ) && $slug ) {
+		$map = lvc_area_lander_map();
+		if ( isset( $map[ $slug ] ) ) {
+			$area_template = locate_template( 'page-templates/area-lander.php' );
+			if ( $area_template ) {
+				return $area_template;
+			}
+		}
+	}
+
+	return $template;
+}, 99 );
+
 // Theme supports + primary nav menu (set the menu in Appearance → Menus).
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'post-thumbnails' );
