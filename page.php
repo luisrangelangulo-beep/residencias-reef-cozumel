@@ -6,11 +6,29 @@
  * readable content layout, and a conversion/sidebar path back to villas.
  * Ported from Los Cabos's page.php (same lvc-ed-* classes / editorial.css).
  *
+ * Area lander URLs such as /riviera-maya-villa-rentals/ are mapped by slug and
+ * automatically routed to page-templates/area-lander.php, even if the WP admin
+ * page template assignment is missing. This protects SEO pages from silently
+ * falling back to a thin default content/grid page.
+ *
  * @package ResidenciasReefCozumel
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+$lvc_current_page_id   = get_queried_object_id();
+$lvc_current_page_slug = $lvc_current_page_id ? get_post_field( 'post_name', $lvc_current_page_id ) : '';
+if ( function_exists( 'lvc_area_lander_map' ) && $lvc_current_page_slug ) {
+	$lvc_area_lander_map = lvc_area_lander_map();
+	if ( isset( $lvc_area_lander_map[ $lvc_current_page_slug ] ) ) {
+		$lvc_area_template = locate_template( 'page-templates/area-lander.php' );
+		if ( $lvc_area_template ) {
+			include $lvc_area_template;
+			return;
+		}
+	}
 }
 
 get_header();
