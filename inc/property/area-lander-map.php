@@ -40,3 +40,22 @@ if ( ! function_exists( 'lvc_area_lander_map' ) ) {
 		);
 	}
 }
+
+/**
+ * Front-end URL for an `area` term slug, via the lander map above (falls back
+ * to the term's own archive URL if it somehow isn't in the map).
+ */
+if ( ! function_exists( 'lvc_area_lander_url' ) ) {
+	function lvc_area_lander_url( $area_slug ) {
+		static $flipped = null;
+		if ( null === $flipped ) {
+			$flipped = array_flip( lvc_area_lander_map() );
+		}
+		if ( isset( $flipped[ $area_slug ] ) ) {
+			return home_url( '/' . $flipped[ $area_slug ] . '/' );
+		}
+		$term = get_term_by( 'slug', $area_slug, 'area' );
+		$link = $term ? get_term_link( $term ) : false;
+		return ( $link && ! is_wp_error( $link ) ) ? $link : home_url( '/' );
+	}
+}

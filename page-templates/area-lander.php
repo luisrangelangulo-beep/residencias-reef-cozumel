@@ -94,6 +94,63 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 	}
 	lvc_jsonld( array( '@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => $lvc_faq_qas ) );
 }
+
+/* ── Hierarchy: breadcrumb + parent-aware "Explore More" grouping ──────────
+ * `area` is hierarchical (Riviera Maya root > Cozumel/Tulum/etc. > sub-areas
+ * like Soliman Bay). Root is treated as implicit (same as Los Cabos not
+ * naming itself in its own breadcrumbs) — it never appears as a breadcrumb
+ * crumb or an "ancestor", only as the site-wide "Villas" archive context. */
+$lvc_root_term   = get_term_by( 'slug', 'riviera-maya', 'area' );
+$lvc_root_id     = $lvc_root_term ? $lvc_root_term->term_id : 0;
+$lvc_is_root     = $lvc_term && $lvc_root_id && $lvc_term->term_id === $lvc_root_id;
+
+$lvc_ancestors   = array(); // root-to-immediate order, root itself excluded
+$lvc_parent_term = null;    // immediate parent (excluding root), if any
+if ( $lvc_term && $lvc_term->parent ) {
+	foreach ( array_reverse( get_ancestors( $lvc_term->term_id, 'area' ) ) as $lvc_aid ) {
+		if ( $lvc_aid === $lvc_root_id ) {
+			continue;
+		}
+		$lvc_anc = get_term( $lvc_aid, 'area' );
+		if ( $lvc_anc && ! is_wp_error( $lvc_anc ) ) {
+			$lvc_ancestors[] = $lvc_anc;
+		}
+	}
+	if ( $lvc_ancestors ) {
+		$lvc_parent_term = end( $lvc_ancestors );
+	}
+}
+
+// Direct children that have their own lander page (skips excluded/empty sub-areas).
+$lvc_children = array();
+if ( $lvc_term ) {
+	$lvc_child_terms = get_terms( array( 'taxonomy' => 'area', 'parent' => $lvc_term->term_id, 'hide_empty' => false ) );
+	if ( ! is_wp_error( $lvc_child_terms ) ) {
+		foreach ( $lvc_child_terms as $lvc_ct ) {
+			if ( in_array( $lvc_ct->slug, $lvc_area_map, true ) ) {
+				$lvc_children[] = $lvc_ct;
+			}
+		}
+	}
+}
+
+// Other top-level Riviera Maya destinations (skipped entirely on the root page — its
+// own "Neighborhoods" list above already covers the same 6 destinations).
+$lvc_top_level_areas = array();
+if ( $lvc_root_id && ! $lvc_is_root ) {
+	$lvc_top_terms = get_terms( array( 'taxonomy' => 'area', 'parent' => $lvc_root_id, 'hide_empty' => false ) );
+	if ( ! is_wp_error( $lvc_top_terms ) ) {
+		foreach ( $lvc_top_terms as $lvc_tt ) {
+			if ( ! in_array( $lvc_tt->slug, $lvc_area_map, true ) ) {
+				continue;
+			}
+			if ( $lvc_term && $lvc_tt->term_id === $lvc_term->term_id ) {
+				continue; // exclude self
+			}
+			$lvc_top_level_areas[] = $lvc_tt;
+		}
+	}
+}
 ?>
 
 <style>
@@ -102,10 +159,20 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 	.lvc-area-hero{position:relative;min-height:min(720px,82vh);display:flex;align-items:center;isolation:isolate;padding:clamp(7rem,10vw,10rem) 0;background:var(--lvc-bg-deep) var(--area-hero-img,none) center/cover no-repeat}.lvc-area-hero:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,12,15,.95),rgba(10,12,15,.72) 52%,rgba(10,12,15,.5)),linear-gradient(0deg,rgba(10,12,15,.9),rgba(10,12,15,.2) 52%,rgba(10,12,15,.6))}.lvc-area-hero__inner{max-width:880px}.lvc-area-hero .lvc-area-copy{max-width:720px;margin-top:1.2rem;color:rgba(243,243,241,.84)}.lvc-area-quick{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.5rem}.lvc-area-chip{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.035);padding:.55rem .75rem;color:var(--lvc-soft);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
 	.lvc-area-intro{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(2rem,5vw,5rem);align-items:center}.lvc-area-panel{border-left:1px solid var(--lvc-border);padding-left:clamp(1.5rem,3vw,3rem)}.lvc-area-filter-form{display:flex;justify-content:center;align-items:end;gap:1rem;flex-wrap:wrap;margin:0 auto 2rem}.lvc-area-filter-form label{display:flex;flex-direction:column;gap:.35rem}.lvc-area-filter-form span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lvc-muted)}.lvc-area-filter-form select{min-width:190px;background:var(--lvc-bg);border:1px solid var(--lvc-border);color:var(--lvc-text);padding:.72rem .85rem;font-size:1rem}.lvc-area-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.35rem}.lvc-area-count{text-align:center;color:var(--lvc-muted);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 1.5rem}.lvc-area-pagination{display:flex;justify-content:center;align-items:center;gap:.45rem;margin-top:2.5rem;flex-wrap:wrap}.lvc-area-pagination .page-numbers{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:42px;padding:.55rem .8rem;border:1px solid var(--lvc-border);color:var(--lvc-soft);background:rgba(255,255,255,.02)}.lvc-area-pagination .page-numbers.current{background:var(--lvc-accent);border-color:var(--lvc-accent);color:#fff}.lvc-area-pagination .page-numbers:hover{border-color:var(--lvc-accent);color:var(--lvc-accent)}
 	.lvc-area-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(2rem,5vw,5rem);align-items:start}.lvc-area-cardish{background:var(--lvc-card);border:1px solid var(--lvc-border);padding:clamp(1.5rem,3vw,2.2rem)}.lvc-area-siblings{list-style:none;padding:0;margin:0;display:flex;justify-content:center;gap:.65rem;flex-wrap:wrap}.lvc-area-siblings a{display:inline-flex;border:1px solid var(--lvc-border);padding:.62rem .95rem;color:var(--lvc-soft)!important}.lvc-area-siblings a:hover{border-color:var(--lvc-accent);color:var(--lvc-accent)!important}.lvc-area-cta{background:var(--lvc-bg-deep);text-align:center;border-top:1px solid rgba(255,255,255,.12)}.lvc-area-cta .lvc-area-copy{max-width:680px;margin:1rem auto 0}
+	.lvc-area-breadcrumb{border-bottom:1px solid var(--lvc-border);padding:.85rem 0}.lvc-area-breadcrumb ol{display:flex;gap:.5rem;flex-wrap:wrap;list-style:none;margin:0;padding:0}.lvc-area-breadcrumb li{color:var(--lvc-muted);font-size:.72rem}.lvc-area-breadcrumb li a{color:var(--lvc-muted)!important}.lvc-area-breadcrumb li a:hover{color:var(--lvc-accent)!important}.lvc-area-breadcrumb li:not(:last-child):after{content:'\203A';margin-left:.5rem;color:rgba(255,255,255,.25)}
 	@media(max-width:1100px){.lvc-area-intro,.lvc-area-two{grid-template-columns:1fr}.lvc-area-panel{border-left:0;padding-left:0}.lvc-area-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.lvc-area-wrap,.lvc-area-narrow{width:calc(100% - 2rem)}.lvc-area-hero{min-height:auto;padding:6rem 0 4rem}.lvc-area-title{font-size:clamp(2.25rem,11vw,3.35rem)}.lvc-area-grid{grid-template-columns:1fr}.lvc-area-filter-form{align-items:stretch}.lvc-area-filter-form label,.lvc-area-filter-form select,.lvc-area-filter-form button{width:100%}.lvc-area-btns{display:grid;grid-template-columns:1fr}}
 </style>
 
 <main class="lvc-area-page">
+
+	<nav class="lvc-area-breadcrumb" aria-label="Breadcrumb"><div class="lvc-area-wrap"><ol>
+		<li><a href="<?php echo esc_url( home_url() ); ?>">Home</a></li>
+		<li><a href="<?php echo esc_url( lvc_archive_url() ); ?>">Villas</a></li>
+		<?php foreach ( $lvc_ancestors as $lvc_anc ) : ?>
+			<li><a href="<?php echo esc_url( lvc_area_lander_url( $lvc_anc->slug ) ); ?>"><?php echo esc_html( $lvc_anc->name ); ?></a></li>
+		<?php endforeach; ?>
+		<li aria-current="page"><?php echo esc_html( $lvc_term ? $lvc_term->name : $lvc_h1 ); ?></li>
+	</ol></div></nav>
 
 	<section class="lvc-area-hero" <?php echo $lvc_hero ? 'style="--area-hero-img:url(\'' . esc_url( $lvc_hero ) . '\')"' : ''; ?>>
 		<div class="lvc-area-wrap lvc-area-hero__inner">
@@ -197,16 +264,31 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 		</div>
 	</section>
 
-	<section class="lvc-area-section">
+	<?php if ( $lvc_children ) : ?>
+	<section class="lvc-area-section lvc-area-section--alt">
 		<div class="lvc-area-wrap">
-			<header class="lvc-area-head"><span class="lvc-area-kicker">Explore More</span><h2 class="lvc-area-title">Other Riviera Maya <em>areas</em></h2></header>
+			<header class="lvc-area-head"><span class="lvc-area-kicker"><?php echo $lvc_is_root ? 'Destinations' : 'Neighborhoods'; ?></span><h2 class="lvc-area-title"><?php echo $lvc_is_root ? 'Explore areas across the' : 'Explore ' . esc_html( $lvc_area_label ) . '&rsquo;s'; ?> <em><?php echo $lvc_is_root ? 'Riviera Maya' : 'neighborhoods'; ?></em></h2></header>
 			<ul class="lvc-area-siblings">
-				<?php foreach ( $lvc_area_map as $page_slug => $area_slug ) : if ( $area_slug === $lvc_aslug ) { continue; } $sibling_term = get_term_by( 'slug', $area_slug, 'area' ); if ( ! $sibling_term ) { continue; } ?>
-					<li><a href="<?php echo esc_url( home_url( '/' . $page_slug . '/' ) ); ?>"><?php echo esc_html( $sibling_term->name ); ?></a></li>
+				<?php foreach ( $lvc_children as $lvc_child ) : ?>
+					<li><a href="<?php echo esc_url( lvc_area_lander_url( $lvc_child->slug ) ); ?>"><?php echo esc_html( $lvc_child->name ); ?></a></li>
 				<?php endforeach; ?>
 			</ul>
 		</div>
 	</section>
+	<?php endif; ?>
+
+	<?php if ( $lvc_top_level_areas ) : ?>
+	<section class="lvc-area-section<?php echo $lvc_children ? '' : ' lvc-area-section--alt'; ?>">
+		<div class="lvc-area-wrap">
+			<header class="lvc-area-head"><span class="lvc-area-kicker">Explore More</span><h2 class="lvc-area-title">Other Riviera Maya <em>destinations</em></h2></header>
+			<ul class="lvc-area-siblings">
+				<?php foreach ( $lvc_top_level_areas as $lvc_tt ) : ?>
+					<li><a href="<?php echo esc_url( lvc_area_lander_url( $lvc_tt->slug ) ); ?>"><?php echo esc_html( $lvc_tt->name ); ?></a></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	</section>
+	<?php endif; ?>
 
 	<section class="lvc-area-section lvc-area-cta">
 		<div class="lvc-area-narrow">
