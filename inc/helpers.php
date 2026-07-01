@@ -77,3 +77,33 @@ if ( ! function_exists( 'lvc_brand' ) ) {
 		return (string) lvc_config( 'brand_name', get_bloginfo( 'name' ) );
 	}
 }
+
+/**
+ * The most specific `area` term assigned to a property.
+ *
+ * Villas here are tagged at every level at once (e.g. a Soliman Bay villa
+ * carries Riviera Maya + Tulum + Soliman Bay simultaneously, so its microarea
+ * shows up on its own area-lander page). `get_the_terms()` does not guarantee
+ * root-first-or-leaf-first order, so picking `[0]` can silently surface the
+ * broadest term ("Riviera Maya") instead of the actual neighborhood — this
+ * picks the term with the most ancestors instead, breaking ties by term_id
+ * for a stable result.
+ */
+if ( ! function_exists( 'lvc_property_area_term' ) ) {
+	function lvc_property_area_term( $post_id ) {
+		$terms = get_the_terms( $post_id, 'area' );
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return null;
+		}
+		$deepest       = null;
+		$deepest_depth = -1;
+		foreach ( $terms as $term ) {
+			$depth = count( get_ancestors( $term->term_id, 'area' ) );
+			if ( $depth > $deepest_depth || ( $depth === $deepest_depth && $deepest && $term->term_id < $deepest->term_id ) ) {
+				$deepest       = $term;
+				$deepest_depth = $depth;
+			}
+		}
+		return $deepest;
+	}
+}

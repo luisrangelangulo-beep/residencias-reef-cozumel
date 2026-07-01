@@ -44,9 +44,9 @@ if ( ! function_exists( 'lvc_schema_property' ) ) {
 		$tier    = lvc_field( 'from_rate_tier', $post_id );
 		$descr   = lvc_field( 'property_descr', $post_id );
 		$aliases = lvc_field( 'villa_aliases', $post_id );
-		$area    = get_the_terms( $post_id, 'area' );
+		$area    = function_exists( 'lvc_property_area_term' ) ? lvc_property_area_term( $post_id ) : null;
 		$dest    = get_the_terms( $post_id, 'destination' );
-		$area_n  = ( $area && ! is_wp_error( $area ) ) ? $area[0]->name : '';
+		$area_n  = $area ? $area->name : '';
 		$dest_n  = ( $dest && ! is_wp_error( $dest ) ) ? $dest[0]->name : '';
 
 		$schema = array(

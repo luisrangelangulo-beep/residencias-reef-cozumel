@@ -12,9 +12,9 @@ $lvc_img  = lvc_property_image( $lvc_id );
 $lvc_name = lvc_field( 'card_title', $lvc_id, get_the_title( $lvc_id ) );
 $lvc_url  = get_permalink( $lvc_id );
 
-// Primary area term (first assigned), for the location line.
-$lvc_area_terms = get_the_terms( $lvc_id, 'area' );
-$lvc_area       = ( $lvc_area_terms && ! is_wp_error( $lvc_area_terms ) ) ? $lvc_area_terms[0]->name : '';
+// Most specific area term (e.g. "Soliman Bay", not "Riviera Maya"), for the location line.
+$lvc_area_obj = lvc_property_area_term( $lvc_id );
+$lvc_area     = $lvc_area_obj ? $lvc_area_obj->name : '';
 
 // Key facts (ACF first, taxonomy fallback for bedrooms).
 $lvc_beds   = lvc_field( 'bed_count', $lvc_id );

@@ -26,8 +26,8 @@ while ( have_posts() ) :
 	$lvc_outdoor = lvc_field( 'outdoor_living', $lvc_id );
 	$lvc_bedrm   = lvc_field( 'bedroom_desc', $lvc_id );
 	$lvc_cater   = lvc_field( 'catering_detail', $lvc_id );
-	$lvc_area    = get_the_terms( $lvc_id, 'area' );
-	$lvc_area_n  = ( $lvc_area && ! is_wp_error( $lvc_area ) ) ? $lvc_area[0]->name : '';
+	$lvc_area_obj = lvc_property_area_term( $lvc_id );
+	$lvc_area_n   = $lvc_area_obj ? $lvc_area_obj->name : '';
 
 	if ( function_exists( 'lvc_schema_property' ) ) {
 		lvc_schema_property( $lvc_id );
