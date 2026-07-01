@@ -224,7 +224,7 @@ h1, h2, h3, h4, h5 {
 .lvc-filter { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; max-width: var(--lvc-maxw); margin: 0 auto; padding: 0 var(--lvc-px) 1.5rem; }
 .lvc-filter__group { display: flex; flex-direction: column; gap: .35rem; }
 .lvc-filter__group span { font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; color: var(--lvc-muted); }
-.lvc-filter__select { background: var(--lvc-card); border: 1px solid var(--lvc-border); color: var(--lvc-text); padding: .6rem .8rem; border-radius: var(--lvc-radius); min-width: 170px; }
+.lvc-filter__select { background: var(--lvc-card); border: 1px solid var(--lvc-border); color: var(--lvc-text); padding: .6rem .8rem; border-radius: var(--lvc-radius); min-width: 170px; font-size: 1rem; }
 .lvc-filter__submit { align-self: end; }
 
 /* ── Archives / terms ──────────────────────────────────────────────── */
@@ -296,7 +296,7 @@ h1, h2, h3, h4, h5 {
 .lvc-form label { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--lvc-muted); }
 .lvc-form input, .lvc-form textarea {
   background: var(--lvc-bg); border: 1px solid var(--lvc-border); color: var(--lvc-text);
-  padding: .75rem .85rem; border-radius: var(--lvc-radius); font-family: var(--lvc-font-body); font-size: .95rem;
+  padding: .75rem .85rem; border-radius: var(--lvc-radius); font-family: var(--lvc-font-body); font-size: 1rem;
 }
 .lvc-form input:focus, .lvc-form textarea:focus { outline: none; border-color: var(--lvc-accent); }
 .lvc-form textarea { min-height: 120px; resize: vertical; }
