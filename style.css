@@ -1,0 +1,14 @@
+/*
+Theme Name: Residencias Reef Cozumel
+Theme URI: https://github.com/luisrangelangulo-beep/residencias-reef-cozumel
+Description: Residencias Reef Cozumel — built on the Luxury Villa Theme Core (brand-agnostic structural theme). Brand values in theme-config.php; styling in assets/brand.css (see docs/TOKEN_CONTRACT.md). Hello Elementor child.
+Template: hello-elementor
+Author: Novamira
+Version: 1.0.0
+Requires PHP: 8.0
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   No styles here. Per-brand styling lives in assets/brand.css.
+   Templates emit semantic lvc- classes + CSS-variable hooks (TOKEN_CONTRACT.md).
+   ────────────────────────────────────────────────────────────────────────── */
