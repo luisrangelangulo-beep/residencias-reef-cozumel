@@ -17,6 +17,20 @@ get_header();
 
 while ( have_posts() ) :
 	the_post();
+
+	// Pages designed entirely in Elementor already have their own hero/CTA —
+	// wrapping them in the generic editorial hero would double it up.
+	$lvc_elementor_built = (bool) get_post_meta( get_the_ID(), '_elementor_data', true );
+
+	if ( $lvc_elementor_built ) {
+		?>
+		<main class="lvc-page-elementor">
+			<?php the_content(); ?>
+		</main>
+		<?php
+		continue;
+	}
+
 	$lvc_page_image = get_the_post_thumbnail_url( get_the_ID(), 'full' );
 	$lvc_excerpt    = has_excerpt() ? get_the_excerpt() : wp_trim_words( wp_strip_all_tags( get_the_content() ), 34 );
 	?>
