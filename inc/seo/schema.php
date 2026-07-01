@@ -160,13 +160,23 @@ if ( ! function_exists( 'lvc_schema_article' ) ) {
 	}
 }
 
-/* ── Rank Math de-duplication: let the theme own schema. ─────────────────── */
+/* ── SEO-plugin de-duplication (AIOSEO): let the theme own schema. ─────────────────── */
 if ( lvc_config( 'theme_owns_schema', true ) ) {
-	add_filter( 'rank_math/json_ld', function ( $data ) {
-		if ( is_singular( lvc_config( 'cpt', 'villa' ) ) || is_tax( array_keys( (array) lvc_config( 'taxonomies', array() ) ) ) || is_post_type_archive( lvc_config( 'cpt', 'villa' ) ) ) {
-			return array();
-		}
-		return $data;
+	// True on the pages where the theme emits its own rich JSON-LD.
+	$lvc_theme_owns = function () {
+		return is_singular( lvc_config( 'cpt', 'villas' ) )
+			|| is_tax( array_keys( (array) lvc_config( 'taxonomies', array() ) ) )
+			|| is_post_type_archive( lvc_config( 'cpt', 'villas' ) );
+	};
+	// THIS SITE RUNS AIOSEO — suppress its schema on theme-owned pages so the
+	// two don't both emit (duplicate JSON-LD). Homepage Organization/WebSite,
+	// pages and magazine articles are left to AIOSEO.
+	add_filter( 'aioseo_schema_output', function ( $output ) use ( $lvc_theme_owns ) {
+		return $lvc_theme_owns() ? array() : $output;
+	}, 99 );
+	// No-op safety net if the SEO plugin is ever swapped back to Rank Math.
+	add_filter( 'rank_math/json_ld', function ( $data ) use ( $lvc_theme_owns ) {
+		return $lvc_theme_owns() ? array() : $data;
 	}, 99 );
 }
 

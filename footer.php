@@ -38,8 +38,6 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 				<li><a href="<?php echo esc_url( lvc_archive_url() ); ?>">All <?php echo esc_html( lvc_config( 'cpt_plural', 'Villas' ) ); ?></a></li>
 				<li><a href="<?php echo esc_url( lvc_page_url( 'magazine' ) ); ?>">Magazine</a></li>
 				<li><a href="<?php echo esc_url( lvc_page_url( 'about' ) ); ?>">About</a></li>
-				<li><a href="<?php echo esc_url( lvc_page_url( 'how' ) ); ?>">How It Works</a></li>
-				<li><a href="<?php echo esc_url( lvc_page_url( 'owners' ) ); ?>">For Owners</a></li>
 			</ul>
 		</nav>
 

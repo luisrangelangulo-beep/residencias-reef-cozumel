@@ -81,7 +81,7 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				/* ── SEO posture ──────────────────────────────────────── */
 				'theme_owns_schema'  => true, // Suppress Rank Math schema; theme emits JSON-LD.
 				'noindex_thin_terms' => true, // noindex taxonomy terms under min_index_count.
-				'min_index_count'    => 1,
+				'min_index_count'    => 2, // noindex terms with <2 villas (1-villa archives get 0 GSC traffic; 2-bed earns clicks)
 				'geo'                => array( 'lat' => '', 'lng' => '' ), // Destination geo for schema.
 			) );
 		}

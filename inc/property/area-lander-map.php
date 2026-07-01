@@ -31,7 +31,7 @@ if ( ! function_exists( 'lvc_area_lander_map' ) ) {
 			'playacar'                        => 'playacar',
 			'puerto-aventuras'                => 'puerto-aventuras',
 			'akumal'                          => 'akumal',
-			'tulum'                           => 'tulum',
+			'tulum-villa-rentals'             => 'tulum', // GSC keeper (1422 impr vs 0 for /tulum/; 301 /tulum/ here)
 			'sian-kaan'                       => 'sian-kaan',
 			'soliman-bay'                     => 'soliman-bay',
 			'tulum-town-jungle-villas'        => 'town-jungle',
