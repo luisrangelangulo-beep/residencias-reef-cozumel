@@ -34,10 +34,10 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				'brand_logo_svg' => '', // Inline SVG markup; empty = render brand_name as text.
 
 				/* ── Contact / inquiry routing ────────────────────────── */
-				'support_email'  => '', // TODO: confirm real guest-inquiry inbox before launch.
+				'support_email'  => 'support@residencias-reef-cozumel.com',
 				'owner_email'    => '', // Owner leads; empty = falls back to support_email.
-				'phone'          => '', // e.g. '+1 (000) 000-0000'; empty = hide. TODO: confirm real number.
-				'whatsapp_url'   => '', // e.g. 'https://wa.link/xxxx'; empty = hide. TODO: confirm real link.
+				'phone'          => '+52 987 113 0546',
+				'whatsapp_url'   => 'https://wa.me/529871130546', // TODO: confirm this number is WhatsApp-enabled
 				'response_time'  => 'within 24 hours',
 				'region'         => 'Riviera Maya, Mexico', // Used in page schema (areaServed).
 
@@ -68,8 +68,8 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				/* ── Page slugs (nav + internal links) ────────────────── */
 				'pages' => array(
 					'contact'  => 'contact',
-					'request'  => 'villa-request',
-					'about'    => 'about',
+					'request'  => 'property-request',
+					'about'    => 'about-us',
 					'how'      => 'how-it-works',
 					'owners'   => 'list-your-villa',
 					'magazine' => 'magazine',
