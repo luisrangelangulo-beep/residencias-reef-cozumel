@@ -25,7 +25,7 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 		<nav class="lvc-footer__col" aria-label="Areas">
 			<h3 class="lvc-footer__heading">Areas</h3>
 			<ul>
-				<?php foreach ( $lvc_area as $t ) : $u = get_term_link( $t ); if ( is_wp_error( $u ) ) { continue; } ?>
+				<?php foreach ( $lvc_area as $t ) : $u = function_exists( 'lvc_area_lander_url_by_term' ) ? lvc_area_lander_url_by_term( $t ) : get_term_link( $t ); if ( is_wp_error( $u ) ) { continue; } ?>
 					<li><a href="<?php echo esc_url( $u ); ?>"><?php echo esc_html( $t->name ); ?></a></li>
 				<?php endforeach; ?>
 			</ul>
