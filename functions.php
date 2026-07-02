@@ -39,6 +39,33 @@ foreach ( array(
 }
 
 /**
+ * Resolve an area term to its flat commercial area lander when one exists.
+ * Falls back to the native term archive only when the term has no mapped lander.
+ */
+if ( ! function_exists( 'lvc_area_lander_url_by_term' ) ) {
+	function lvc_area_lander_url_by_term( $term ) {
+		if ( ! $term instanceof WP_Term ) {
+			return home_url( '/' );
+		}
+
+		if ( function_exists( 'lvc_area_lander_map' ) ) {
+			$map       = lvc_area_lander_map();
+			$page_slug = array_search( $term->slug, $map, true );
+			if ( $page_slug ) {
+				$page = get_page_by_path( $page_slug );
+				if ( $page ) {
+					return get_permalink( $page );
+				}
+				return home_url( '/' . trim( $page_slug, '/' ) . '/' );
+			}
+		}
+
+		$link = get_term_link( $term );
+		return is_wp_error( $link ) ? home_url( '/' ) : $link;
+	}
+}
+
+/**
  * Styles: parent (Hello Elementor) + optional per-brand stylesheet.
  * The core ships NO CSS; create assets/brand.css per site (see docs/TOKEN_CONTRACT.md).
  */
