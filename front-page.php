@@ -34,7 +34,11 @@ if ( ! function_exists( 'lvc_area_image' ) ) {
 	}
 }
 
-$lvc_home_hero_img = lvc_area_image( 'riviera-maya' );
+$lvc_home_hero_term = get_term_by( 'slug', 'riviera-maya', 'area' );
+$lvc_home_hero_img  = $lvc_home_hero_term ? lvc_field( 'hero_image_url', $lvc_home_hero_term ) : '';
+if ( ! $lvc_home_hero_img ) {
+	$lvc_home_hero_img = lvc_area_image( 'riviera-maya' );
+}
 
 $lvc_area_cards = array(
 	array( 'Cozumel', 'cozumel', '/cozumel/', 'Residencias Reef condos and island stays for divers, couples, and guests who want a relaxed beachfront base.' ),
