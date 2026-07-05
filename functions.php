@@ -24,6 +24,7 @@ foreach ( array(
 	'inc/property/data.php',
 	'inc/property/fields.php',
 	'inc/property/term-fields.php',
+	'inc/property/homepage-fields.php',
 	'inc/property/area-lander-map.php',
 	'inc/inquiry/ajax-handler.php',
 	'inc/conversion/whatsapp-float.php',
