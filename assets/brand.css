@@ -128,7 +128,7 @@ h1, h2, h3, h4, h5 {
   border-bottom: 1px solid var(--lvc-border);
 }
 .lvc-header__inner {
-  max-width: var(--lvc-maxw); margin: 0 auto;
+  width: 100%;
   display: flex; align-items: center; gap: 1.5rem;
   padding: .9rem var(--lvc-px);
 }
