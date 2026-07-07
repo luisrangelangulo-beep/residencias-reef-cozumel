@@ -27,7 +27,7 @@ foreach ( array(
 	'inc/property/homepage-fields.php',
 	'inc/property/area-lander-map.php',
 	'inc/inquiry/ajax-handler.php',
-	'inc/conversion/whatsapp-float.php',
+	'inc/conversion/float-actions.php',
 	'inc/conversion/inquiry-frontend.php',
 	'inc/sync/rest-sync.php',
 	'inc/seo/schema.php',

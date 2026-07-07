@@ -27,6 +27,16 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		<h1 class="lvc-sec-title"><?php echo esc_html( $lvc_plural ); ?></h1>
 	</section>
 
+	<nav class="lvc-archive-areas" aria-label="Browse by area">
+		<span class="lvc-archive-areas__label">Browse by area:</span>
+		<a href="<?php echo esc_url( home_url( '/cozumel/' ) ); ?>">Cozumel</a>
+		<a href="<?php echo esc_url( home_url( '/tulum-villa-rentals/' ) ); ?>">Tulum</a>
+		<a href="<?php echo esc_url( home_url( '/playa-del-carmen/' ) ); ?>">Playa del Carmen</a>
+		<a href="<?php echo esc_url( home_url( '/soliman-bay/' ) ); ?>">Soliman Bay</a>
+		<a href="<?php echo esc_url( home_url( '/akumal/' ) ); ?>">Akumal</a>
+		<a href="<?php echo esc_url( home_url( '/puerto-aventuras/' ) ); ?>">Puerto Aventuras</a>
+	</nav>
+
 	<form class="lvc-filter" method="get" data-lvc-filter>
 		<?php foreach ( $lvc_filter_taxes as $tax ) :
 			$terms = get_terms( array( 'taxonomy' => $tax, 'hide_empty' => true ) );
