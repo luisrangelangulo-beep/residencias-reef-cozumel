@@ -15,6 +15,13 @@ add_action( 'wp_footer', 'lvc_render_float_actions' );
 
 if ( ! function_exists( 'lvc_render_float_actions' ) ) {
 	function lvc_render_float_actions() {
+		// Villa single pages already have their own hero CTAs and a sticky
+		// WhatsApp/Inquire bar — the global stack would just duplicate them
+		// and can visually collide with that bar on mobile.
+		if ( is_singular( lvc_config( 'cpt', 'villas' ) ) ) {
+			return;
+		}
+
 		$wa_url = lvc_whatsapp_url();
 		$email  = (string) lvc_config( 'support_email', '' );
 		?>
