@@ -47,7 +47,7 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				'cpt_plural'       => 'Villas',
 				'cpt_archive_slug' => 'villas',         // Matches live rewrite: has_archive => 'villas'.
 				'cpt_rewrite_slug' => 'villas',         // Matches live rewrite: single => /villas/{slug}/.
-				'register_cpt'     => false,            // CPT UI owns `villas` on the live site — do not re-register.
+				'register_cpt'     => true,             // Theme now takes over `villas` registration from CPT UI (2026-07) — args reconciled to match exactly.
 
 				/* ── Taxonomies: slug => [ plural label, singular label ] ─
 				 * Live site has `area` (hierarchical: Riviera Maya > Cozumel/
@@ -59,11 +59,11 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				 * hierarchy plays the destination+area role Los Cabos split
 				 * across two flat taxonomies. */
 				'taxonomies' => array(
-					'area'       => array( 'Areas', 'Area' ),
-					'bedrooms'   => array( 'Bedrooms', 'Bedrooms' ),
-					'collection' => array( 'Collections', 'Collection' ),
+					'area'       => array( 'Areas', 'Area', 'hierarchical' => true, 'rewrite_slug' => 'area' ),
+					'bedrooms'   => array( 'Bedrooms', 'Bedrooms', 'hierarchical' => false, 'rewrite_slug' => 'bedrooms' ),
+					'collection' => array( 'Collections', 'Collection', 'hierarchical' => false, 'rewrite_slug' => 'collections' ), // plural — matches live CPT UI rewrite; a default 'collection' slug 404s every /collections/... URL
 				),
-				'register_taxonomies' => false, // CPT UI owns these on the live site — do not re-register.
+				'register_taxonomies' => true, // Theme now takes over from CPT UI (2026-07) — args reconciled to match exactly (area hierarchical, collection→collections).
 
 				/* ── Page slugs (nav + internal links) ────────────────── */
 				'pages' => array(

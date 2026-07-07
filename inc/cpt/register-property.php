@@ -44,7 +44,7 @@ function lvc_register_property_model() {
 				'with_front' => false,
 			),
 			'menu_icon'          => 'dashicons-admin-home',
-			'supports'           => array( 'title', 'thumbnail', 'revisions' ),
+			'supports'           => array( 'title', 'editor', 'thumbnail' ),
 			'hierarchical'       => false,
 			'query_var'          => true,
 		) );
@@ -55,8 +55,10 @@ function lvc_register_property_model() {
 			if ( taxonomy_exists( $tax ) ) {
 				continue;
 			}
-			$plural_l   = isset( $labels[0] ) ? $labels[0] : ucfirst( $tax );
-			$singular_l = isset( $labels[1] ) ? $labels[1] : $plural_l;
+			$plural_l     = isset( $labels[0] ) ? $labels[0] : ucfirst( $tax );
+			$singular_l   = isset( $labels[1] ) ? $labels[1] : $plural_l;
+			$hierarchical = isset( $labels['hierarchical'] ) ? (bool) $labels['hierarchical'] : false;
+			$rewrite_slug = isset( $labels['rewrite_slug'] ) ? (string) $labels['rewrite_slug'] : $tax;
 
 			register_taxonomy( $tax, array( $cpt ), array(
 				'labels' => array(
@@ -76,8 +78,8 @@ function lvc_register_property_model() {
 				'show_ui'           => true,
 				'show_admin_column' => true,
 				'show_in_rest'      => true,
-				'hierarchical'      => false,
-				'rewrite'           => array( 'slug' => $tax, 'with_front' => false ),
+				'hierarchical'      => $hierarchical,
+				'rewrite'           => array( 'slug' => $rewrite_slug, 'with_front' => true ),
 			) );
 		}
 	}
