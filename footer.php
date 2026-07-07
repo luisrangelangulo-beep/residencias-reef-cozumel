@@ -7,8 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Top destinations/areas for the link columns (by property count).
-$lvc_dest = get_terms( array( 'taxonomy' => 'destination', 'hide_empty' => true, 'number' => 6, 'orderby' => 'count', 'order' => 'DESC' ) );
+// Top areas for the link column (by property count). No `destination` taxonomy on this site — `area` plays that role.
 $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'number' => 8, 'orderby' => 'count', 'order' => 'DESC' ) );
 ?>
 <footer class="lvc-footer">
@@ -61,7 +60,7 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 		<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( lvc_brand() ); ?></span>
 		<nav aria-label="Legal">
 			<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Privacy</a>
-			<a href="<?php echo esc_url( home_url( '/terms-and-conditions/' ) ); ?>">Terms</a>
+			<a href="<?php echo esc_url( home_url( '/rental-policies/' ) ); ?>">Terms</a>
 		</nav>
 	</div>
 </footer>
