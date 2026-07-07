@@ -31,7 +31,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		</div>
 	</section>
 
-	<nav class="lvc-archive-areas" aria-label="Browse by area">
+	<nav class="lvc-archive-areas lvc-wide-wrap" aria-label="Browse by area">
 		<span class="lvc-archive-areas__label">Browse by area:</span>
 		<a href="<?php echo esc_url( home_url( '/cozumel/' ) ); ?>">Cozumel</a>
 		<a href="<?php echo esc_url( home_url( '/tulum-villa-rentals/' ) ); ?>">Tulum</a>
@@ -41,7 +41,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		<a href="<?php echo esc_url( home_url( '/puerto-aventuras/' ) ); ?>">Puerto Aventuras</a>
 	</nav>
 
-	<form class="lvc-filter" method="get" data-lvc-filter>
+	<form class="lvc-filter lvc-wide-wrap" method="get" data-lvc-filter>
 		<?php foreach ( $lvc_filter_taxes as $tax ) :
 			$terms = get_terms( array( 'taxonomy' => $tax, 'hide_empty' => true ) );
 			if ( is_wp_error( $terms ) || ! $terms ) { continue; }
@@ -61,20 +61,22 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		<button type="submit" class="lvc-btn lvc-filter__submit">Filter</button>
 	</form>
 
-	<section class="lvc-section">
-		<?php if ( have_posts() ) : ?>
-			<p class="lvc-archive__count"><?php echo esc_html( sprintf( '%d %s', (int) $GLOBALS['wp_query']->found_posts, $lvc_plural ) ); ?></p>
-			<div class="lvc-grid lvc-grid--3">
-				<?php while ( have_posts() ) : the_post(); ?>
-					<?php get_template_part( 'template-parts/card-property', null, array( 'id' => get_the_ID() ) ); ?>
-				<?php endwhile; ?>
-			</div>
-			<nav class="lvc-pagination" aria-label="Pagination">
-				<?php echo paginate_links( array( 'mid_size' => 1, 'prev_text' => '&larr;', 'next_text' => '&rarr;' ) ); ?>
-			</nav>
-		<?php else : ?>
-			<p class="lvc-empty">No <?php echo esc_html( strtolower( $lvc_plural ) ); ?> match those filters. <a href="<?php echo esc_url( lvc_archive_url() ); ?>">Clear filters</a>.</p>
-		<?php endif; ?>
+	<section class="lvc-wide-section">
+		<div class="lvc-wide-wrap">
+			<?php if ( have_posts() ) : ?>
+				<p class="lvc-archive__count"><?php echo esc_html( sprintf( '%d %s', (int) $GLOBALS['wp_query']->found_posts, $lvc_plural ) ); ?></p>
+				<div class="lvc-grid lvc-grid--3">
+					<?php while ( have_posts() ) : the_post(); ?>
+						<?php get_template_part( 'template-parts/card-property', null, array( 'id' => get_the_ID() ) ); ?>
+					<?php endwhile; ?>
+				</div>
+				<nav class="lvc-pagination" aria-label="Pagination">
+					<?php echo paginate_links( array( 'mid_size' => 1, 'prev_text' => '&larr;', 'next_text' => '&rarr;' ) ); ?>
+				</nav>
+			<?php else : ?>
+				<p class="lvc-empty">No <?php echo esc_html( strtolower( $lvc_plural ) ); ?> match those filters. <a href="<?php echo esc_url( lvc_archive_url() ); ?>">Clear filters</a>.</p>
+			<?php endif; ?>
+		</div>
 	</section>
 </main>
 <?php

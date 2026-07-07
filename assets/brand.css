@@ -226,14 +226,18 @@ h1, h2, h3, h4, h5 {
 .lvc-archive-hero__inner { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; text-align: center; }
 @media (max-width: 720px) { .lvc-archive-hero { min-height: auto; padding: 6rem 0 4rem; } }
 
+/* ── Wide content wrap (matches home/area-lander/magazine-hub width) ── */
+.lvc-wide-section { padding: clamp(4rem, 7vw, 7rem) 0; }
+.lvc-wide-wrap { width: min(1480px, calc(100% - clamp(2rem, 6vw, 6rem))); margin: 0 auto; }
+
 /* ── Archive area-browse strip ────────────────────────────────────── */
-.lvc-archive-areas { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; max-width: var(--lvc-maxw); margin: 0 auto; padding: 0 var(--lvc-px) 1.5rem; }
+.lvc-archive-areas { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; padding-top: 2.2rem; padding-bottom: 1.5rem; }
 .lvc-archive-areas__label { color: var(--lvc-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; }
 .lvc-archive-areas a { color: var(--lvc-accent); font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; }
 .lvc-archive-areas a:hover { color: var(--lvc-accent-hover); }
 
 /* ── Filter bar ────────────────────────────────────────────────────── */
-.lvc-filter { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; max-width: var(--lvc-maxw); margin: 0 auto; padding: 0 var(--lvc-px) 1.5rem; }
+.lvc-filter { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; padding-bottom: 1.5rem; }
 .lvc-filter__group { display: flex; flex-direction: column; gap: .35rem; }
 .lvc-filter__group span { font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; color: var(--lvc-muted); }
 .lvc-filter__select { background: var(--lvc-card); border: 1px solid var(--lvc-border); color: var(--lvc-text); padding: .6rem .8rem; border-radius: var(--lvc-radius); min-width: 170px; font-size: 1rem; }
