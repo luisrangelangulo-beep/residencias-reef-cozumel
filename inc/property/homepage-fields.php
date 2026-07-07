@@ -44,4 +44,21 @@ function lvc_register_homepage_settings() {
 			array( array( 'param' => 'options_page', 'operator' => '==', 'value' => 'lvc-homepage-settings' ) ),
 		),
 	) );
+
+	acf_add_local_field_group( array(
+		'key'    => 'group_lvc_archive_hero_settings',
+		'title'  => 'Villas Archive Hero',
+		'fields' => array(
+			array(
+				'key'          => 'field_lvc_archive_hero_url',
+				'label'        => 'Hero Image URL',
+				'name'         => 'archive_hero_image_url',
+				'type'         => 'url',
+				'instructions' => 'Cloudflare R2 image for the /villas/ archive hero background.',
+			),
+		),
+		'location' => array(
+			array( array( 'param' => 'options_page', 'operator' => '==', 'value' => 'lvc-homepage-settings' ) ),
+		),
+	) );
 }

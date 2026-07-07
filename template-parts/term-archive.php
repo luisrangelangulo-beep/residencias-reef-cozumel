@@ -157,7 +157,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	.lvc-tax-breadcrumb a{color:var(--lvc-muted)!important}.lvc-tax-breadcrumb a:hover{color:var(--lvc-accent)!important}
 	.lvc-tax-breadcrumb li:not(:last-child):after{content:'\203A';margin-left:.5rem;color:rgba(255,255,255,.25)}
 	.lvc-tax-hero{position:relative;min-height:min(720px,82vh);display:flex;align-items:center;isolation:isolate;padding:clamp(7rem,10vw,10rem) 0;background:var(--lvc-bg-deep) var(--tax-hero-img,none) center/cover no-repeat}
-	.lvc-tax-hero:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,12,15,.95),rgba(10,12,15,.72) 52%,rgba(10,12,15,.5)),linear-gradient(0deg,rgba(10,12,15,.9),rgba(10,12,15,.22) 52%,rgba(10,12,15,.62))}
+	.lvc-tax-hero:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,12,15,.95),rgba(10,12,15,.72) 48%,rgba(10,12,15,.48)),linear-gradient(0deg,rgba(10,12,15,.9),rgba(10,12,15,.25) 52%,rgba(10,12,15,.64))}
 	.lvc-tax-hero__inner{max-width:930px}
 	.lvc-tax-hero .lvc-tax-copy{max-width:760px;margin-top:1.25rem;color:rgba(243,243,241,.86)}
 	.lvc-tax-chips{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.45rem}

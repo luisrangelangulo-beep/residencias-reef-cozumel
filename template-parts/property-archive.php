@@ -17,14 +17,18 @@ $lvc_plural = lvc_config( 'cpt_plural', 'Villas' );
 // Build filter options from taxonomies that exist.
 $lvc_filter_taxes = array_intersect( array( 'area', 'bedrooms', 'beach_access', 'property_type' ), array_keys( (array) lvc_config( 'taxonomies', array() ) ) );
 
+$lvc_archive_hero_img = lvc_field( 'archive_hero_image_url', 'option' );
+
 if ( function_exists( 'lvc_schema_collection' ) ) {
 	lvc_schema_collection();
 }
 ?>
 <main class="lvc-archive">
-	<section class="lvc-archive__head lvc-section">
-		<p class="lvc-eyebrow"><?php echo esc_html( lvc_brand() ); ?></p>
-		<h1 class="lvc-sec-title"><?php echo esc_html( $lvc_plural ); ?></h1>
+	<section class="lvc-archive-hero" <?php echo $lvc_archive_hero_img ? 'style="--archive-hero-img:url(\'' . esc_url( $lvc_archive_hero_img ) . '\')"' : ''; ?>>
+		<div class="lvc-archive-hero__inner">
+			<p class="lvc-eyebrow"><?php echo esc_html( lvc_brand() ); ?></p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( $lvc_plural ); ?></h1>
+		</div>
 	</section>
 
 	<nav class="lvc-archive-areas" aria-label="Browse by area">

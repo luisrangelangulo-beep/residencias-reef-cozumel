@@ -35,7 +35,7 @@
 
 .lvc-ed-hero {
   position: relative;
-  min-height: min(660px, 78vh);
+  min-height: min(720px, 82vh);
   display: flex;
   align-items: center;
   isolation: isolate;
@@ -49,8 +49,8 @@
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(90deg, rgba(10,12,15,.94), rgba(10,12,15,.72) 52%, rgba(10,12,15,.46)),
-    linear-gradient(0deg, rgba(10,12,15,.9), rgba(10,12,15,.18) 52%, rgba(10,12,15,.6));
+    linear-gradient(90deg, rgba(10,12,15,.95), rgba(10,12,15,.72) 48%, rgba(10,12,15,.48)),
+    linear-gradient(0deg, rgba(10,12,15,.9), rgba(10,12,15,.25) 52%, rgba(10,12,15,.64));
 }
 
 .lvc-ed-kicker {

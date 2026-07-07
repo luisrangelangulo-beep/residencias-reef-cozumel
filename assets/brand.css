@@ -220,6 +220,12 @@ h1, h2, h3, h4, h5 {
 .lvc-cta__inner p { color: var(--lvc-soft); margin: .6rem 0 1.4rem; }
 .lvc-section__more { text-align: center; margin-top: 2rem; }
 
+/* ── Villas archive hero ───────────────────────────────────────────── */
+.lvc-archive-hero { position: relative; min-height: min(720px, 82vh); display: flex; align-items: center; isolation: isolate; padding: clamp(7rem, 10vw, 10rem) 0; background: var(--lvc-bg-deep) var(--archive-hero-img, none) center/cover no-repeat; }
+.lvc-archive-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10,12,15,.95), rgba(10,12,15,.72) 48%, rgba(10,12,15,.48)), linear-gradient(0deg, rgba(10,12,15,.9), rgba(10,12,15,.25) 52%, rgba(10,12,15,.64)); }
+.lvc-archive-hero__inner { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; text-align: center; }
+@media (max-width: 720px) { .lvc-archive-hero { min-height: auto; padding: 6rem 0 4rem; } }
+
 /* ── Archive area-browse strip ────────────────────────────────────── */
 .lvc-archive-areas { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; max-width: var(--lvc-maxw); margin: 0 auto; padding: 0 var(--lvc-px) 1.5rem; }
 .lvc-archive-areas__label { color: var(--lvc-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; }
