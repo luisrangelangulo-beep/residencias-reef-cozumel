@@ -37,17 +37,17 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 	<div class="lvc-form__row">
 		<div class="lvc-form__group">
 			<label for="lvc-checkin">Check-in</label>
-			<input id="lvc-checkin" type="date" name="checkin">
+			<input id="lvc-checkin" type="date" name="checkin" required>
 		</div>
 		<div class="lvc-form__group">
 			<label for="lvc-checkout">Check-out</label>
-			<input id="lvc-checkout" type="date" name="checkout">
+			<input id="lvc-checkout" type="date" name="checkout" required>
 		</div>
 	</div>
 	<div class="lvc-form__row">
 		<div class="lvc-form__group">
 			<label for="lvc-guests">Guests</label>
-			<input id="lvc-guests" type="number" name="guests" min="1" max="100">
+			<input id="lvc-guests" type="number" name="guests" min="1" max="100" required>
 		</div>
 		<div class="lvc-form__group">
 			<label for="lvc-phone">Phone / WhatsApp</label>
@@ -55,8 +55,12 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 		</div>
 	</div>
 	<div class="lvc-form__group">
-		<label for="lvc-message">Message</label>
-		<textarea id="lvc-message" name="message" required></textarea>
+		<label for="lvc-budget">Approximate Budget (Optional)</label>
+		<input id="lvc-budget" type="text" name="budget" placeholder="USD per night or total budget range">
+	</div>
+	<div class="lvc-form__group">
+		<label for="lvc-message">Message (Optional)</label>
+		<textarea id="lvc-message" name="message"></textarea>
 	</div>
 
 	<p class="lvc-form__status" data-inquiry-status aria-live="polite"></p>

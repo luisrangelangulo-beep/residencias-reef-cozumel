@@ -11,8 +11,9 @@
  *   _wpnonce     = wp_create_nonce( <inquiry_action> )
  *   website      = ""   (honeypot — must stay empty)
  *   lvc_ts       = <timestamp at render>  (time-trap)
- * Plus: name, email, message (required); optional phone, property_name,
- * source_url, inquiry_type ('guest'|'owner'), and any of the extra fields below.
+ * Plus: name, email, checkin, checkout, guests (required); optional phone,
+ * message, budget, property_name, source_url, inquiry_type ('guest'|'owner'),
+ * and any of the extra fields below.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -75,10 +76,14 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 		$property    = isset( $_POST['property_name'] ) ? sanitize_text_field( wp_unslash( $_POST['property_name'] ) ) : '';
 		$source_url  = isset( $_POST['source_url'] ) ? esc_url_raw( wp_unslash( $_POST['source_url'] ) ) : '';
 		$type        = isset( $_POST['inquiry_type'] ) ? sanitize_key( wp_unslash( $_POST['inquiry_type'] ) ) : 'guest';
+		$checkin     = isset( $_POST['checkin'] ) ? sanitize_text_field( wp_unslash( $_POST['checkin'] ) ) : '';
+		$checkout    = isset( $_POST['checkout'] ) ? sanitize_text_field( wp_unslash( $_POST['checkout'] ) ) : '';
+		$guests      = isset( $_POST['guests'] ) ? absint( $_POST['guests'] ) : 0;
+		$budget      = isset( $_POST['budget'] ) ? sanitize_text_field( wp_unslash( $_POST['budget'] ) ) : '';
 
 		// Generic capture of any known optional fields, in a stable order.
 		$extra_keys = apply_filters( 'lvc_inquiry_extra_fields', array(
-			'destination', 'area', 'checkin', 'checkout', 'guests', 'bedrooms', 'preferred_area', 'listing_url',
+			'destination', 'area', 'checkin', 'checkout', 'guests', 'budget', 'bedrooms', 'preferred_area', 'listing_url',
 		) );
 		$extra = array();
 		foreach ( (array) $extra_keys as $k ) {
@@ -87,8 +92,29 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			}
 		}
 
-		if ( '' === $name || '' === $email || '' === $message ) {
-			wp_send_json_error( array( 'message' => 'Please fill in name, email, and message.' ), 400 );
+		// Dates and guest count matter far more for qualifying a lead than a
+		// free-text message, so message is optional; check-in/check-out/
+		// guests are not (previously only name/email/message were required,
+		// so leads routinely arrived with no dates, unquotable on first
+		// touch). Owner inquiries don't book a stay, so they're exempt.
+		$is_owner = ( 'owner' === $type );
+		if ( ! $is_owner ) {
+			if ( '' === $name || '' === $email || '' === $checkin || '' === $checkout || $guests < 1 ) {
+				wp_send_json_error( array( 'message' => 'Please fill in your name, email, dates, and guest count.' ), 400 );
+			}
+			$checkin_dt  = DateTime::createFromFormat( 'Y-m-d', $checkin );
+			$checkout_dt = DateTime::createFromFormat( 'Y-m-d', $checkout );
+			if ( ! $checkin_dt || ! $checkout_dt ) {
+				wp_send_json_error( array( 'message' => 'Please enter valid dates.' ), 400 );
+			}
+			if ( $checkout_dt <= $checkin_dt ) {
+				wp_send_json_error( array( 'message' => 'Check-out must be after check-in.' ), 400 );
+			}
+			if ( $checkin_dt < new DateTime( 'today' ) ) {
+				wp_send_json_error( array( 'message' => 'Check-in cannot be in the past.' ), 400 );
+			}
+		} elseif ( '' === $name || '' === $email ) {
+			wp_send_json_error( array( 'message' => 'Please fill in your name and email.' ), 400 );
 		}
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error( array( 'message' => 'Please enter a valid email address.' ), 400 );
@@ -103,7 +129,6 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			$property = trim( lvc_config( 'brand_name', '' ) . ' Inquiry' );
 		}
 
-		$is_owner = ( 'owner' === $type );
 		$support  = (string) lvc_config( 'support_email', '' );
 		$owner    = (string) lvc_config( 'owner_email', '' );
 		$owner    = '' !== $owner ? $owner : $support;
@@ -125,7 +150,7 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 		if ( $source_url ) {
 			$body .= "Source:  {$source_url}\n";
 		}
-		$body .= "\nMessage:\n{$message}\n";
+		$body .= "\nMessage:\n" . ( $message ?: '(none)' ) . "\n";
 		$body .= "\n---\nIP: " . ( $_SERVER['REMOTE_ADDR'] ?? '-' ) . "\n";
 
 		$headers = array(
@@ -137,13 +162,42 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			$headers[] = 'Cc: ' . $support;
 		}
 
+		// Persist BEFORE attempting delivery — these leads are worth
+		// $30k-45k each; previously the inbox was the only record, so an
+		// SMTP outage, spam-folder landing, or throttling meant the lead
+		// was gone for good.
+		$inquiry_post_id = 0;
+		if ( function_exists( 'lvc_save_inquiry' ) ) {
+			$inquiry_post_id = lvc_save_inquiry( array(
+				'type'         => $type,
+				'name'         => $name,
+				'email'        => $email,
+				'phone'        => $phone,
+				'checkin'      => $checkin,
+				'checkout'     => $checkout,
+				'guests'       => $guests,
+				'budget'       => $budget,
+				'message'      => $message,
+				'property'     => $property,
+				'source_url'   => $source_url,
+				'extra'        => $extra,
+				'ip'           => $_SERVER['REMOTE_ADDR'] ?? '',
+				'site'         => (string) lvc_config( 'brand_name', home_url() ),
+			) );
+		}
+
 		$sent = wp_mail( $recipient, $subject, $body, $headers );
 
+		if ( $inquiry_post_id && ! $sent ) {
+			update_post_meta( $inquiry_post_id, 'mail_failed', 1 );
+		}
+
 		if ( $sent ) {
-			do_action( 'lvc_inquiry_submitted', compact( 'name', 'email', 'phone', 'property', 'type' ) );
+			do_action( 'lvc_inquiry_submitted', compact( 'name', 'email', 'phone', 'property', 'type', 'inquiry_post_id' ) );
 			wp_send_json_success( array( 'message' => 'Thank you. We will respond ' . lvc_config( 'response_time', 'soon' ) . '.' ) );
 		}
 
+		// Email failed, but the lead is safely stored (mail_failed flag above).
 		wp_send_json_error( array( 'message' => 'Email delivery failed. Please try again or message us on WhatsApp.' ), 500 );
 	}
 }
