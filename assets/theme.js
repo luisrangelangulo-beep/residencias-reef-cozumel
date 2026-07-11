@@ -22,6 +22,20 @@
   var forms = document.querySelectorAll('[data-lvc-inquiry]');
 
   Array.prototype.forEach.call(forms, function (form) {
+    // Check-in cannot be in the past; check-out cannot be before check-in.
+    var lvcCheckin = form.querySelector('[name="checkin"]');
+    var lvcCheckout = form.querySelector('[name="checkout"]');
+    if (lvcCheckin && lvcCheckout) {
+      var lvcToday = new Date().toISOString().slice(0, 10);
+      lvcCheckin.min = lvcToday;
+      lvcCheckin.addEventListener('change', function () {
+        lvcCheckout.min = lvcCheckin.value || lvcToday;
+        if (lvcCheckout.value && lvcCheckin.value && lvcCheckout.value <= lvcCheckin.value) {
+          lvcCheckout.value = '';
+        }
+      });
+    }
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
