@@ -34,18 +34,15 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 	<section class="lvc-hero lvc-hero--page">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">For Villa Owners</p>
-			<h1 class="lvc-hero__title">Market your villa to <em>qualified guests</em></h1>
+			<h1 class="lvc-hero__title">List Your Villa <em>With Us</em></h1>
 			<p class="lvc-hero__sub">If you own a luxury villa, we help present it, get it found, and turn searches into qualified direct-booking inquiries.</p>
 			<div class="lvc-hero__cta"><a class="lvc-btn" href="#owner-inquiry">Speak With Us</a></div>
 		</div>
 	</section>
 
 	<section class="lvc-section">
-		<div class="lvc-sec-header"><p class="lvc-eyebrow">How We Help</p><h2 class="lvc-sec-title">Better visibility, better <em>inquiries</em></h2></div>
-		<div class="lvc-grid lvc-grid--3">
-			<div class="lvc-help__step"><h3>Dedicated villa presentation</h3><p>Polished pages with luxury copy, SEO structure, image presentation, and direct-booking positioning.</p></div>
-			<div class="lvc-help__step"><h3>SEO &amp; search visibility</h3><p>Positioned for beachfront, golf, family, and area-specific searches that bring qualified guests.</p></div>
-			<div class="lvc-help__step"><h3>Qualified, direct inquiries</h3><p>Guests understand the fit before they inquire — fewer mismatched leads, no platform markup.</p></div>
+		<div class="lcv-page-content">
+			<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
 		</div>
 	</section>
 

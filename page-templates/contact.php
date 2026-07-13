@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $lvc_faqs = array(
 	array( 'q' => 'How do I book a villa?', 'a' => 'Send your dates, group size, and what matters most. A specialist will shortlist villas in your preferred destination and confirm availability and rates before you commit.' ),
-	array( 'q' => 'Do you charge platform or booking fees?', 'a' => 'No. You book direct with the villa team — there are no marketplace markups or platform fees.' ),
+	array( 'q' => 'Do you charge platform or booking fees?', 'a' => 'No. You book direct with us — no marketplace markups or platform fees.' ),
 	array( 'q' => 'Are chef and staff included?', 'a' => 'It depends on the villa. Many include housekeeping and staff; chef service may be included or arranged. We confirm inclusions before you book.' ),
 	array( 'q' => 'How quickly will you respond?', 'a' => 'We typically respond ' . lvc_config( 'response_time', 'within 24 hours' ) . '.' ),
 );
@@ -40,6 +40,9 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 	</section>
 
 	<section class="lvc-section">
+		<div class="lcv-page-content" style="text-align:center;max-width:760px;margin-bottom:2.5rem">
+			<p>We&rsquo;re based in the Riviera Maya &mdash; same timezone, and we know the properties we&rsquo;re talking about. Whether you want a shortlist for specific dates, have a question about an area, or own a villa you&rsquo;re thinking of listing, get in touch.</p>
+		</div>
 		<div class="lvc-contact__grid">
 			<div class="lvc-contact__form">
 				<p class="lvc-eyebrow">Villa Inquiry</p>
@@ -60,6 +63,8 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 					<?php endif; ?>
 					<li><span>Response</span><?php echo esc_html( ucfirst( lvc_config( 'response_time', 'within 24 hours' ) ) ); ?></li>
 				</ul>
+				<h2 class="lvc-sec-title" style="margin-top:2rem">Own a villa?</h2>
+				<p style="color:var(--lvc-soft);line-height:1.7;margin-top:.6rem">If you own a villa or beachfront condo in the Riviera Maya or Cozumel, see <a href="https://residencias-reef-cozumel.com/list-your-villa/" style="color:var(--lvc-accent);text-decoration:underline">listing your villa with us</a> &mdash; direct bookings alongside your existing channels, non-exclusive.</p>
 			</aside>
 		</div>
 	</section>
