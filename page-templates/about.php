@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $lvc_cpt    = lvc_config( 'cpt', 'villa' );
 $lvc_count  = (int) ( wp_count_posts( $lvc_cpt )->publish ?? 0 );
-$lvc_dests  = (int) wp_count_terms( array( 'taxonomy' => 'destination', 'hide_empty' => false ) );
+$lvc_dests  = (int) wp_count_terms( array( 'taxonomy' => 'area', 'hide_empty' => false ) );
 
 $lvc_principles = array(
 	array( 'Local specialists', 'We focus on the communities, the villas, and the practical details that make a stay — not a generic global catalogue.' ),
@@ -37,7 +37,7 @@ get_header();
 	<section class="lvc-trust">
 		<div class="lvc-trust__inner">
 			<?php if ( $lvc_count ) : ?><span><strong><?php echo esc_html( $lvc_count ); ?>+</strong> Luxury Villas</span><?php endif; ?>
-			<?php if ( $lvc_dests > 1 ) : ?><span><strong><?php echo esc_html( $lvc_dests ); ?></strong> Destinations</span><?php endif; ?>
+			<?php if ( $lvc_dests > 1 ) : ?><span><strong><?php echo esc_html( $lvc_dests ); ?></strong> Areas</span><?php endif; ?>
 			<span><strong>Direct</strong> Booking — No Fees</span>
 		</div>
 	</section>

@@ -34,6 +34,8 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 			<input id="lvc-email" type="email" name="email" required>
 		</div>
 	</div>
+	<?php // Owner leads don't book a stay, so dates/guests/budget only apply to guest inquiries. ?>
+	<?php if ( 'owner' !== $lvc_type ) : ?>
 	<div class="lvc-form__row">
 		<div class="lvc-form__group">
 			<label for="lvc-checkin">Check-in</label>
@@ -58,8 +60,14 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 		<label for="lvc-budget">Approximate Budget (Optional)</label>
 		<input id="lvc-budget" type="text" name="budget" placeholder="USD per night or total budget range">
 	</div>
+	<?php else : ?>
 	<div class="lvc-form__group">
-		<label for="lvc-message">Message (Optional)</label>
+		<label for="lvc-phone">Phone / WhatsApp</label>
+		<input id="lvc-phone" type="text" name="phone">
+	</div>
+	<?php endif; ?>
+	<div class="lvc-form__group">
+		<label for="lvc-message"><?php echo esc_html( 'owner' === $lvc_type ? 'Tell us about your villa (Optional)' : 'Message (Optional)' ); ?></label>
 		<textarea id="lvc-message" name="message"></textarea>
 	</div>
 

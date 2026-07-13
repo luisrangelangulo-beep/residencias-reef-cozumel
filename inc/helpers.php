@@ -58,8 +58,33 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 }
 
 /**
+ * Legacy field-name aliases (canonical => legacy).
+ *
+ * The live property data was imported under the original RMOF generator schema
+ * (`bedrooms`, `bathrooms`, `max_guests`, `property_description`,
+ * `h1_property_title`), while theme-core templates, the Schema.org builder, and
+ * the sheet-sync all use the newer canonical names (`bed_count`, `bath_count`,
+ * `guests_max`, `property_descr`, `h1_title`). Until the existing villas are
+ * re-synced to the canonical names, `lvc_field()` reads canonical-first and
+ * falls back to the legacy name so cards, single templates, and schema populate
+ * from either schema. Filterable so a fully-migrated brand can drop the shim.
+ */
+if ( ! function_exists( 'lvc_field_aliases' ) ) {
+	function lvc_field_aliases() {
+		return apply_filters( 'lvc_field_aliases', array(
+			'h1_title'       => 'h1_property_title',
+			'bed_count'      => 'bedrooms',
+			'bath_count'     => 'bathrooms',
+			'guests_max'     => 'max_guests',
+			'property_descr' => 'property_description',
+		) );
+	}
+}
+
+/**
  * ACF field with a graceful fallback chain when the plugin or value is absent.
- * Safe to call even if ACF is not active.
+ * Reads the canonical field name first, then any legacy alias (see
+ * lvc_field_aliases()). Safe to call even if ACF is not active.
  */
 if ( ! function_exists( 'lvc_field' ) ) {
 	function lvc_field( $name, $post_id = null, $default = '' ) {
@@ -67,6 +92,12 @@ if ( ! function_exists( 'lvc_field' ) ) {
 			return $default;
 		}
 		$value = get_field( $name, $post_id );
+		if ( null === $value || '' === $value || array() === $value ) {
+			$aliases = lvc_field_aliases();
+			if ( isset( $aliases[ $name ] ) ) {
+				$value = get_field( $aliases[ $name ], $post_id );
+			}
+		}
 		return ( null === $value || '' === $value || array() === $value ) ? $default : $value;
 	}
 }

@@ -55,7 +55,7 @@ $area_name    = $area_term ? $area_term->name : '';
 $region_name  = $region_term ? $region_term->name : lvc_config( 'region', '' );
 $location_line = ( $area_name && $area_name !== $region_name ) ? $area_name . ', ' . $region_name : ( $area_name ?: $region_name );
 
-$area_url = ( $area_term && ! is_wp_error( $term_link = get_term_link( $area_term ) ) ) ? $term_link : lvc_archive_url();
+$area_url = $area_term ? lvc_area_lander_url_by_term( $area_term ) : lvc_archive_url();
 
 $best_for_text = (int) $max_guests >= 10 ? 'Best for families and groups' : 'Best for couples and families';
 $beach_positioning = $area_name ?: $region_name;
@@ -276,7 +276,7 @@ get_header();
 </main>
 
 <script>
-(function(){var sticky=document.getElementById('rrcSticky');var inquiry=document.getElementById('inquiry');var toggleSticky=function(){if(!sticky){return;}var y=window.scrollY||window.pageYOffset||0;sticky.classList.toggle('is-visible',y>700&&(!inquiry||inquiry.getBoundingClientRect().top>250));};window.addEventListener('scroll',toggleSticky,{passive:true});toggleSticky();var arrivalInput=document.querySelector('input[name="arrival_date"]');var departureInput=document.querySelector('input[name="departure_date"]');if(arrivalInput&&departureInput){arrivalInput.addEventListener('change',function(){if(this.value){departureInput.min=this.value;if(departureInput.value&&departureInput.value<=this.value){departureInput.value='';}}});}var galleryTrack=document.querySelector('[data-rrc-gallery-track]');var galleryPrev=document.querySelector('[data-rrc-gallery-prev]');var galleryNext=document.querySelector('[data-rrc-gallery-next]');if(galleryTrack&&galleryPrev&&galleryNext){var scrollGallery=function(direction){var distance=Math.max(galleryTrack.clientWidth*.72,420);galleryTrack.scrollBy({left:direction*distance,behavior:'smooth'});};galleryPrev.addEventListener('click',function(){scrollGallery(-1);});galleryNext.addEventListener('click',function(){scrollGallery(1);});}})();
+(function(){var sticky=document.getElementById('rrcSticky');var inquiry=document.getElementById('inquiry');var toggleSticky=function(){if(!sticky){return;}var y=window.scrollY||window.pageYOffset||0;sticky.classList.toggle('is-visible',y>700&&(!inquiry||inquiry.getBoundingClientRect().top>250));};window.addEventListener('scroll',toggleSticky,{passive:true});toggleSticky();var checkinInput=document.querySelector('input[name="checkin"]');var checkoutInput=document.querySelector('input[name="checkout"]');if(checkinInput&&checkoutInput){checkinInput.addEventListener('change',function(){if(this.value){checkoutInput.min=this.value;if(checkoutInput.value&&checkoutInput.value<=this.value){checkoutInput.value='';}}});}var galleryTrack=document.querySelector('[data-rrc-gallery-track]');var galleryPrev=document.querySelector('[data-rrc-gallery-prev]');var galleryNext=document.querySelector('[data-rrc-gallery-next]');if(galleryTrack&&galleryPrev&&galleryNext){var scrollGallery=function(direction){var distance=Math.max(galleryTrack.clientWidth*.72,420);galleryTrack.scrollBy({left:direction*distance,behavior:'smooth'});};galleryPrev.addEventListener('click',function(){scrollGallery(-1);});galleryNext.addEventListener('click',function(){scrollGallery(1);});}})();
 </script>
 
 <?php get_footer(); ?>
