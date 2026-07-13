@@ -208,18 +208,6 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 	) );
 	?>
 
-	<?php if ( $lvc_intro ) : ?>
-	<section class="lvc-area-section">
-		<div class="lvc-area-wrap lvc-area-intro">
-			<div>
-				<span class="lvc-area-kicker">About <?php echo esc_html( $lvc_term ? $lvc_term->name : 'This Area' ); ?></span>
-				<h2 class="lvc-area-title">Is <?php echo esc_html( $lvc_term ? $lvc_term->name : 'this area' ); ?> right for your group?</h2>
-			</div>
-			<div class="lvc-area-panel lvc-area-copy"><?php echo wp_kses_post( wpautop( $lvc_intro ) ); ?></div>
-		</div>
-	</section>
-	<?php endif; ?>
-
 	<section class="lvc-area-section lvc-area-section--alt" id="villas">
 		<div class="lvc-area-wrap">
 			<header class="lvc-area-head">
@@ -260,6 +248,18 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 			<?php endif; ?>
 		</div>
 	</section>
+
+	<?php if ( $lvc_intro ) : ?>
+	<section class="lvc-area-section">
+		<div class="lvc-area-wrap lvc-area-intro">
+			<div>
+				<span class="lvc-area-kicker">About <?php echo esc_html( $lvc_term ? $lvc_term->name : 'This Area' ); ?></span>
+				<h2 class="lvc-area-title">Is <?php echo esc_html( $lvc_term ? $lvc_term->name : 'this area' ); ?> right for your group?</h2>
+			</div>
+			<div class="lvc-area-panel lvc-area-copy"><?php echo wp_kses_post( wpautop( $lvc_intro ) ); ?></div>
+		</div>
+	</section>
+	<?php endif; ?>
 
 	<?php if ( $lvc_why || $lvc_high ) : ?>
 	<section class="lvc-area-section">

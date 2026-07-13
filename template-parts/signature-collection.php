@@ -96,15 +96,15 @@ if ( ! $lvc_sig_css_done ) :
 	.lvc-sig__all{display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.7rem 1.3rem;border:1px solid rgba(255,255,255,.28);color:var(--lvc-text);font-size:.82rem;border-radius:var(--lvc-radius);white-space:nowrap}
 	.lvc-sig__all:hover{border-color:var(--lvc-gold,var(--lvc-accent));color:var(--lvc-gold,var(--lvc-accent))}
 	.lvc-sig__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,1.6vw,1.5rem)}
-	.lvc-sig__card{position:relative;display:block;border:1px solid var(--lvc-border);border-radius:var(--lvc-radius);overflow:hidden;background:var(--lvc-bg-alt,#111)}
-	.lvc-sig__media{position:relative;aspect-ratio:3/2;overflow:hidden}
-	.lvc-sig__media img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+	.lvc-sig__card{position:relative;display:flex;flex-direction:column;border:1px solid var(--lvc-border);border-radius:var(--lvc-radius);overflow:hidden;background:var(--lvc-bg-alt,#111);text-decoration:none}
+	.lvc-sig__media{display:block;position:relative;aspect-ratio:3/2;overflow:hidden}
+	.lvc-sig__media img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
 	.lvc-sig__card:hover .lvc-sig__media img{transform:scale(1.04)}
 	.lvc-sig__flag{position:absolute;top:.7rem;left:.7rem;z-index:2;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lvc-text);background:rgba(10,12,15,.6);border:1px solid rgba(255,255,255,.18);padding:.28rem .55rem;border-radius:20px}
 	.lvc-sig__area{position:absolute;bottom:.7rem;left:.7rem;z-index:2;font-size:.68rem;letter-spacing:.06em;color:#f3f3f1;background:rgba(10,12,15,.55);padding:.3rem .6rem;border-radius:20px}
-	.lvc-sig__body{padding:1rem 1.1rem 1.15rem}
-	.lvc-sig__name{margin:0 0 .35rem;font-family:var(--lvc-font-display);font-size:1.12rem;font-weight:300;line-height:1.25;color:var(--lvc-text)}
-	.lvc-sig__meta{margin:0 0 .7rem;color:var(--lvc-muted);font-size:.8rem;letter-spacing:.03em}
+	.lvc-sig__body{display:block;padding:1rem 1.1rem 1.15rem}
+	.lvc-sig__name{display:block;margin:0 0 .35rem;font-family:var(--lvc-font-display);font-size:1.12rem;font-weight:300;line-height:1.25;color:var(--lvc-text)}
+	.lvc-sig__meta{display:block;margin:0 0 .7rem;color:var(--lvc-muted);font-size:.8rem;letter-spacing:.03em}
 	.lvc-sig__link{display:inline-flex;align-items:center;gap:.35rem;color:var(--lvc-accent);font-size:.82rem}
 	.lvc-sig__card:hover .lvc-sig__link{color:var(--lvc-gold,var(--lvc-accent))}
 	@media(max-width:1000px){.lvc-sig__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
