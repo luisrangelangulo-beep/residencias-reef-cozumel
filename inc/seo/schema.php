@@ -195,3 +195,39 @@ if ( lvc_config( 'noindex_thin_terms', true ) ) {
 		return $robots;
 	}, 99 );
 }
+
+/**
+ * Augment AIOSEO's existing Organization node with facts its UI can't set:
+ * the legal entity behind the trading name, and the areas served. AIOSEO already
+ * emits ONE Organization node (Search Appearance → Knowledge Graph), so we add
+ * to it rather than output a second, duplicate node. foundingDate is set
+ * natively in AIOSEO; we only fill it here as a fallback. No-op if AIOSEO is
+ * inactive or emits no Organization node.
+ */
+add_filter( 'aioseo_schema_output', function ( $graph ) {
+	if ( ! is_array( $graph ) ) {
+		return $graph;
+	}
+	foreach ( $graph as &$node ) {
+		if ( ! is_array( $node ) || empty( $node['@type'] ) ) {
+			continue;
+		}
+		$type   = $node['@type'];
+		$is_org = ( is_string( $type ) && false !== stripos( $type, 'Organization' ) )
+			|| ( is_array( $type ) && in_array( 'Organization', $type, true ) );
+		if ( ! $is_org ) {
+			continue;
+		}
+		if ( empty( $node['legalName'] ) ) {
+			$node['legalName'] = 'Retreats Luxury Oceanfront Rentals';
+		}
+		if ( empty( $node['foundingDate'] ) ) {
+			$node['foundingDate'] = '2012-01-01';
+		}
+		if ( empty( $node['areaServed'] ) ) {
+			$node['areaServed'] = array( 'Riviera Maya', 'Cozumel' );
+		}
+	}
+	unset( $node );
+	return $graph;
+}, 20 );
