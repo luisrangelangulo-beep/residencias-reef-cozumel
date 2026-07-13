@@ -121,11 +121,7 @@ while ( have_posts() ) :
 	$lvc_tier     = lvc_field( 'from_rate_tier', $lvc_id );
 	$lvc_area_obj = lvc_property_area_term( $lvc_id );
 	$lvc_area_n   = $lvc_area_obj ? $lvc_area_obj->name : '';
-	$lvc_area_url = '';
-	if ( $lvc_area_obj ) {
-		$lvc_area_link = get_term_link( $lvc_area_obj );
-		$lvc_area_url  = is_wp_error( $lvc_area_link ) ? '' : $lvc_area_link;
-	}
+	$lvc_area_url = $lvc_area_obj ? lvc_area_lander_url_by_term( $lvc_area_obj ) : '';
 
 	$lvc_area_links       = lvc_single_term_links( $lvc_id, 'area' );
 	$lvc_collection_links = lvc_single_term_links( $lvc_id, 'collection' );

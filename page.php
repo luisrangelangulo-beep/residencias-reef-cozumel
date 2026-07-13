@@ -17,35 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$lvc_current_page_id   = get_queried_object_id();
-$lvc_current_page_slug = $lvc_current_page_id ? get_post_field( 'post_name', $lvc_current_page_id ) : '';
-
-if ( 'magazine' === $lvc_current_page_slug ) {
-	$lvc_magazine_template = locate_template( 'page-templates/magazine.php' );
-	if ( $lvc_magazine_template ) {
-		include $lvc_magazine_template;
-		return;
-	}
-}
-
-if ( 'riviera-maya-villa-rentals' === $lvc_current_page_slug ) {
-	$lvc_riviera_template = locate_template( 'page-templates/riviera-maya-villa-rentals.php' );
-	if ( $lvc_riviera_template ) {
-		include $lvc_riviera_template;
-		return;
-	}
-}
-
-if ( function_exists( 'lvc_area_lander_map' ) && $lvc_current_page_slug ) {
-	$lvc_area_lander_map = lvc_area_lander_map();
-	if ( isset( $lvc_area_lander_map[ $lvc_current_page_slug ] ) ) {
-		$lvc_area_template = locate_template( 'page-templates/area-lander.php' );
-		if ( $lvc_area_template ) {
-			include $lvc_area_template;
-			return;
-		}
-	}
-}
+// Slug-based routing to magazine / riviera / area-lander templates is handled
+// centrally by the `template_include` filter in functions.php (priority 99),
+// which also overrides Elementor/custom page-template assignments. Keeping a
+// second copy here only risked the two lists drifting apart.
 
 get_header();
 

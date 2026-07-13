@@ -84,13 +84,3 @@ function lvc_register_property_model() {
 		}
 	}
 }
-
-/**
- * Convenience: the active property post type. Use this in templates/queries
- * instead of a hardcoded 'villa' so brands can switch the CPT in one place.
- */
-if ( ! function_exists( 'lvc_property_type' ) ) {
-	function lvc_property_type() {
-		return (string) lvc_config( 'cpt', 'villa' );
-	}
-}
