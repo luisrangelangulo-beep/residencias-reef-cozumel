@@ -34,6 +34,10 @@
 }
 
 .lvc-ed-hero {
+  /* Default beach hero for editorial content pages (Concierge, etc.) that have
+     no featured image. page.php sets --lvc-ed-hero-img inline when a page DOES
+     have a featured image, and that inline value overrides this default. */
+  --lvc-ed-hero-img: url('https://pub-cad2340af7894206a8fbca2d29a27967.r2.dev/System%20Desktop%20Backgrounds/sunny-day-on-coochiemudlo-island-brisbane-queens-2026-03-16-01-22-42-utc.webp');
   position: relative;
   min-height: min(720px, 82vh);
   display: flex;
