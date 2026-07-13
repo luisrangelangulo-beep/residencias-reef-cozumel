@@ -199,6 +199,15 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 		</div>
 	</section>
 
+	<?php
+	get_template_part( 'template-parts/signature-collection', null, array(
+		'area_term'  => $lvc_term instanceof WP_Term ? $lvc_term : null,
+		'title'      => $lvc_term ? 'Standout stays in <em>' . esc_html( $lvc_term->name ) . '</em>' : 'Villas we would book first',
+		'view_all'   => '#villas',
+		'view_label' => 'See the full collection',
+	) );
+	?>
+
 	<?php if ( $lvc_intro ) : ?>
 	<section class="lvc-area-section">
 		<div class="lvc-area-wrap lvc-area-intro">
