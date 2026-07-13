@@ -164,7 +164,21 @@ h1, h2, h3, h4, h5 {
 }
 .lvc-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,12,15,.55), rgba(10,12,15,.82)); }
 .lvc-hero__inner { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; }
-.lvc-hero--page { padding: clamp(70px, 9vw, 130px) var(--lvc-px); }
+/* Core content pages (About, Contact, How It Works, For Owners, legal, …).
+   Match the site-wide hero height used by area/tax/magazine heroes
+   [min(720px,82vh)] so every hero on the site is the same height, and ship a
+   default beach hero image so these pages aren't a flat dark box. Any template
+   may still override --lvc-hero-img inline for a page-specific image. */
+.lvc-hero--page {
+  --lvc-hero-img: url('https://pub-cad2340af7894206a8fbca2d29a27967.r2.dev/System%20Desktop%20Backgrounds/sunny-day-on-coochiemudlo-island-brisbane-queens-2026-03-16-01-22-42-utc.webp');
+  min-height: min(720px, 82vh);
+  display: flex;
+  align-items: center;
+  padding: clamp(70px, 9vw, 130px) var(--lvc-px);
+}
+@media (max-width: 720px) {
+  .lvc-hero--page { min-height: auto; }
+}
 .lvc-hero__title {
   font-size: clamp(2.027rem, 1.4rem + 2vw, 3.815rem);
   font-weight: 200; letter-spacing: .8px; color: var(--lvc-text); margin-bottom: .4em;
