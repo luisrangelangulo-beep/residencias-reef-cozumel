@@ -200,6 +200,17 @@ if ( lvc_config( 'noindex_thin_terms', true ) ) {
 		}
 		return $robots;
 	}, 99 );
+
+	// AIOSEO disables core wp_robots and owns the robots meta output, so the
+	// thin-archive noindex above only takes effect when ALSO applied through
+	// AIOSEO's own filter. 'noindex' => 'noindex' noindexes; leaving 'nofollow'
+	// empty keeps FOLLOW so link equity still flows to the villas.
+	add_filter( 'aioseo_robots_meta', function ( $attributes ) {
+		if ( is_tax( 'bedrooms' ) || is_category() || is_tag() ) {
+			$attributes['noindex'] = 'noindex';
+		}
+		return (array) $attributes;
+	} );
 }
 
 /**
