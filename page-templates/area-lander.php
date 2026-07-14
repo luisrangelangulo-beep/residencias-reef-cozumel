@@ -249,6 +249,44 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 		</div>
 	</section>
 
+	<?php
+	// Full crawlable index — one contextual internal link to EVERY villa in this
+	// area, so villas past page 1 of the paginated grid aren't left orphaned.
+	// Shown only when the area has more villas than the grid's first page (9).
+	$lvc_all_area = $lvc_term ? new WP_Query( array(
+		'post_type'      => $lvc_cpt,
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'no_found_rows'  => true,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'tax_query'      => array( array( 'taxonomy' => 'area', 'field' => 'term_id', 'terms' => (int) $lvc_term->term_id ) ),
+	) ) : null;
+	if ( $lvc_all_area && $lvc_all_area->post_count > 9 ) : ?>
+	<style>
+	.lcv-villa-index{list-style:none;margin:2rem 0 0;padding:0;columns:3;column-gap:2.5rem}
+	.lcv-villa-index li{break-inside:avoid;margin:0 0 .7rem;padding:0 0 .7rem;border-bottom:1px solid var(--lvc-border)}
+	.lcv-villa-index a{color:var(--lvc-soft);font-size:.95rem;line-height:1.45;text-decoration:none}
+	.lcv-villa-index a:hover{color:var(--lvc-accent)}
+	@media(max-width:900px){.lcv-villa-index{columns:2}}
+	@media(max-width:560px){.lcv-villa-index{columns:1}}
+	</style>
+	<section class="lvc-area-section lcv-area-all-villas" aria-label="Full villa index">
+		<div class="lvc-area-wrap">
+			<header class="lvc-area-head">
+				<span class="lvc-area-kicker">Full Collection</span>
+				<h2 class="lvc-area-title">All villas in <em><?php echo esc_html( $lvc_term->name ); ?></em></h2>
+				<p class="lvc-area-copy"><?php echo (int) $lvc_all_area->post_count; ?> properties in <?php echo esc_html( $lvc_term->name ); ?> &mdash; browse the complete list.</p>
+			</header>
+			<ul class="lcv-villa-index">
+				<?php while ( $lvc_all_area->have_posts() ) : $lvc_all_area->the_post(); ?>
+					<li><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_field( 'h1_property_title' ) ?: get_the_title() ); ?></a></li>
+				<?php endwhile; ?>
+			</ul>
+		</div>
+	</section>
+	<?php endif; wp_reset_postdata(); ?>
+
 	<?php if ( $lvc_intro ) : ?>
 	<section class="lvc-area-section">
 		<div class="lvc-area-wrap lvc-area-intro">

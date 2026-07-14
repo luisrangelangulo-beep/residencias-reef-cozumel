@@ -62,6 +62,10 @@ function lvc_archive_filters( $q ) {
 		return;
 	}
 
+	// Shallower pagination = shallower crawl depth for the 150-villa archive
+	// (10/page = 15 pages; 30/page = 5). Helps deep villas get discovered.
+	$q->set( 'posts_per_page', 30 );
+
 	$tax_query = array();
 	foreach ( array_keys( (array) lvc_config( 'taxonomies', array() ) ) as $tax ) {
 		if ( ! empty( $_GET[ $tax ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
