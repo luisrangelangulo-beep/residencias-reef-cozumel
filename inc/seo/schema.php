@@ -192,6 +192,12 @@ if ( lvc_config( 'noindex_thin_terms', true ) ) {
 				$robots['noindex'] = true;
 			}
 		}
+		// Thin, near-duplicate listing archives: bedroom-count pages plus the
+		// default category/tag archives. noindex, FOLLOW — link equity still
+		// flows through to the villas; keeps crawl budget on the villa pages.
+		if ( is_tax( 'bedrooms' ) || is_category() || is_tag() ) {
+			$robots['noindex'] = true;
+		}
 		return $robots;
 	}, 99 );
 }
