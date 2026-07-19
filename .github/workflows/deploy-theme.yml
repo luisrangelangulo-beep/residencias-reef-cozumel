@@ -139,3 +139,40 @@ jobs:
             fi
 
             echo "✅ Deploy complete."
+
+      - name: Smoke test key pages
+        run: |
+          set -uo pipefail
+          FAILED=0
+          check() {
+            local url="$1"
+            local code
+            code=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 "$url" || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "OK (200): $url"
+            else
+              echo "::error::FAIL (expected 200, got $code): $url"
+              FAILED=1
+            fi
+          }
+          BASE="https://residencias-reef-cozumel.com"
+          echo "— Core pages —"
+          check "$BASE/"
+          check "$BASE/villas/"
+          check "$BASE/area/riviera-maya/"
+          check "$BASE/area/tulum/"
+          check "$BASE/residencias-reef-condos-cozumel/"
+          check "$BASE/riviera-maya-villa-rentals/"
+          check "$BASE/property-request/"
+          check "$BASE/contact/"
+          check "$BASE/magazine/"
+          echo "— A live villa page (discovered via REST) —"
+          # Use slug, not link: REST returns links with JSON-escaped slashes
+          # (https:\/\/...), which curl cannot resolve. Slugs are URL-safe.
+          SLUG=$(curl -s --max-time 30 "$BASE/wp-json/wp/v2/villas?per_page=1&_fields=slug" | sed -n 's/.*"slug":"\([^"]*\)".*/\1/p')
+          if [ -n "$SLUG" ]; then check "$BASE/villas/$SLUG/"; else echo "::warning::Could not discover a villa slug via REST"; fi
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::Smoke test failed — see failures above. The deploy already completed; investigate before assuming the site is healthy."
+            exit 1
+          fi
+          echo "✅ All smoke tests passed."
