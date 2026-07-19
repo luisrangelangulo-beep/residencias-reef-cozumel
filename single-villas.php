@@ -78,7 +78,12 @@ $gallery_square_urls = $lvc_parse_gallery_urls( $gallery_squares );
 $all_gallery_urls    = array_values( array_unique( array_merge( $gallery_slider_urls, $gallery_square_urls ) ) );
 $photo_count         = count( $all_gallery_urls );
 
-$hero_image = lvc_property_image( $villa_id, 'full' );
+// Hero prefers its own field; lvc_property_image() leads with feature_image,
+// which is the card crop and not necessarily the right full-bleed shot.
+$hero_image = trim( (string) get_post_meta( $villa_id, 'hero_image', true ) );
+if ( ! $hero_image ) {
+	$hero_image = lvc_property_image( $villa_id, 'full' );
+}
 if ( ! $hero_image && $all_gallery_urls ) {
 	$hero_image = $all_gallery_urls[0];
 }

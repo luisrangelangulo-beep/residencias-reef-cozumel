@@ -40,6 +40,19 @@ if ( ! function_exists( 'lvc_whatsapp_url' ) ) {
  */
 if ( ! function_exists( 'lvc_property_image' ) ) {
 	function lvc_property_image( $post_id, $size = 'large' ) {
+		/*
+		 * Curated fields first. Without them the card image resolved to whichever
+		 * URL happened to be first in the gallery — true for 99 of 150 villas —
+		 * so cards swapped whenever a gallery was re-ordered or re-synced. The
+		 * gallery fallback is kept last so nothing renders blank.
+		 */
+		foreach ( array( 'feature_image', 'hero_image' ) as $field ) {
+			$curated = trim( (string) get_post_meta( $post_id, $field, true ) );
+			if ( $curated ) {
+				return esc_url( $curated );
+			}
+		}
+
 		$img = get_post_meta( $post_id, 'fifu_image_url', true );
 		if ( ! $img ) {
 			$img = get_the_post_thumbnail_url( $post_id, $size );

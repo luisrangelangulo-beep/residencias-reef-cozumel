@@ -62,6 +62,8 @@ function lvc_register_property_fields() {
 
 		/* ── Media ────────────────────────────────────────────────── */
 		array( 'key' => 'field_lvc_tab_media', 'label' => 'Media', 'type' => 'tab' ),
+		array( 'key' => 'field_lvc_hero_image', 'label' => 'Hero Image', 'name' => 'hero_image', 'type' => 'url', 'instructions' => 'Full-bleed image for the villa page hero. Falls back to the featured image, then the first gallery URL, when empty.' ),
+		array( 'key' => 'field_lvc_feature_image', 'label' => 'Feature Image (Cards/Grid)', 'name' => 'feature_image', 'type' => 'url', 'instructions' => 'Image shown on villa cards across the site (homepage, area grids, related villas). Set this so the card image is stable — without it the card falls back to whichever URL happens to be first in the gallery, which changes whenever the gallery is re-ordered or re-synced.' ),
 		array( 'key' => 'field_lvc_gallery', 'label' => 'Gallery URLs', 'name' => 'gallery_squares', 'type' => 'textarea', 'instructions' => 'One Cloudflare R2 image URL per line. The first is the hero fallback when no FIFU / featured image is set.' ),
 
 		/* ── FAQ (flat — 1:1 with the generator) ──────────────────── */
