@@ -16,8 +16,10 @@
 .lvc-area-hero > .lvc-area-wrap.lvc-area-hero__inner,
 .lvc-rm-hero > .lvc-rm-wrap,
 .lvc-ed-hero > .lvc-ed-wrap {
-  width: min(1480px, calc(100% - clamp(2rem, 6vw, 6rem))) !important;
-  max-width: 1480px !important;
+  /* Full-bleed, so hero inners line up with the now full-width content below
+     them instead of sitting in a narrower 1480px column. */
+  width: min(100%, calc(100% - clamp(2rem, 6vw, 6rem))) !important;
+  max-width: none !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
