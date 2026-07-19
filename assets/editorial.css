@@ -14,7 +14,9 @@
 }
 
 .lvc-ed-wrap {
-  width: min(1480px, calc(100% - clamp(2rem, 6vw, 6rem)));
+  /* Full-bleed, matching .lvc-wide-wrap. Article body keeps its own
+     readability cap via .lvc-article__body. */
+  width: min(100%, calc(100% - clamp(2rem, 6vw, 6rem)));
   margin: 0 auto;
 }
 

@@ -68,13 +68,15 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ── Layout primitives ─────────────────────────────────────────────── */
+/* Full-bleed page sections: content spans the viewport with percentage side
+   padding rather than being centred in a fixed column. --lvc-maxw is left in
+   place — the footer, trust bar and villa single body grid still use it. */
 .lvc-section {
   padding: var(--lvc-pad-section) var(--lvc-px);
-  max-width: var(--lvc-maxw);
+  max-width: none;
   margin: 0 auto;
 }
 .lvc-section--alt { background: var(--lvc-bg-alt); max-width: none; }
-.lvc-section--alt > * { max-width: var(--lvc-maxw); margin-left: auto; margin-right: auto; }
 .lvc-container { max-width: var(--lvc-maxw); margin: 0 auto; padding: 0 var(--lvc-px); }
 
 /* ── Editable page body (About / How It Works / For Owners, via the_content) ── */
@@ -254,7 +256,9 @@ h1, h2, h3, h4, h5 {
 
 /* ── Wide content wrap (matches home/area-lander/magazine-hub width) ── */
 .lvc-wide-section { padding: clamp(4rem, 7vw, 7rem) 0; }
-.lvc-wide-wrap { width: min(1480px, calc(100% - clamp(2rem, 6vw, 6rem))); margin: 0 auto; }
+/* Full-bleed: 100% instead of a 1480px cap, so min() resolves to the
+   calc() and content spans the viewport minus the side pad. Matches Punta Mita. */
+.lvc-wide-wrap { width: min(100%, calc(100% - clamp(2rem, 6vw, 6rem))); margin: 0 auto; }
 
 /* ── Archive area-browse strip ────────────────────────────────────── */
 .lvc-archive-areas { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; padding-top: 2.2rem; padding-bottom: 1.5rem; }
