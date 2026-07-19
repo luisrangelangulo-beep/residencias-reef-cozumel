@@ -218,7 +218,38 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 
 			<form class="lvc-area-filter-form" method="get" action="#villas">
 				<?php
-				$lvc_bedroom_terms = get_terms( array( 'taxonomy' => 'bedrooms', 'hide_empty' => true ) );
+				/*
+				 * Bedroom options for THIS area only, ordered numerically.
+				 *
+				 * Previously this listed every bedroom term on the site ordered
+				 * by name, so the dropdown read 1, 10, 11, 12 … 2, 3, 4 and
+				 * offered counts no villa in this area has — picking "16
+				 * Bedrooms" on a 14-villa Cozumel page returned nothing.
+				 */
+				$lvc_area_villa_ids = get_posts( array(
+					'post_type'      => $lvc_cpt,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+					'tax_query'      => array( array( 'taxonomy' => 'area', 'field' => 'slug', 'terms' => $lvc_aslug ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				) );
+
+				$lvc_bedroom_terms = $lvc_area_villa_ids
+					? wp_get_object_terms( $lvc_area_villa_ids, 'bedrooms', array( 'orderby' => 'name' ) )
+					: array();
+
+				if ( ! is_wp_error( $lvc_bedroom_terms ) && $lvc_bedroom_terms ) {
+					// "10 Bedrooms" must sort after "9 Bedrooms", so compare the
+					// leading integer rather than the string.
+					usort(
+						$lvc_bedroom_terms,
+						static function ( $a, $b ) {
+							return (int) $a->name <=> (int) $b->name;
+						}
+					);
+				}
+
 				if ( ! is_wp_error( $lvc_bedroom_terms ) && $lvc_bedroom_terms ) :
 					$lvc_current_bedrooms = isset( $_GET['bedrooms'] ) ? sanitize_title( wp_unslash( $_GET['bedrooms'] ) ) : '';
 					?>
