@@ -53,10 +53,10 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 			}
 		}
 
-		$img = get_post_meta( $post_id, 'fifu_image_url', true );
-		if ( ! $img ) {
-			$img = get_the_post_thumbnail_url( $post_id, $size );
-		}
+		// FIFU (Featured Image From URL) is no longer installed; only 4 villas
+		// still carry orphaned fifu_image_url meta. Dropped so the chain is
+		// curated field -> WordPress featured image -> gallery.
+		$img = get_the_post_thumbnail_url( $post_id, $size );
 		if ( ! $img ) {
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
 				$gallery = (string) get_post_meta( $post_id, $field, true );
