@@ -136,7 +136,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 <style>
 	.lvc-tax-page{background:var(--lvc-bg);color:var(--lvc-soft);font-family:var(--lvc-font-body)}
 	.lvc-tax-page *{box-sizing:border-box}
-	.lvc-tax-wrap{width:min(1480px,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
+	.lvc-tax-wrap{width:min(100%,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
 	.lvc-tax-narrow{width:min(980px,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
 	.lvc-tax-section{padding:clamp(4rem,7vw,7rem) 0}
 	.lvc-tax-section--alt{background:var(--lvc-bg-alt);border-top:1px solid var(--lvc-border);border-bottom:1px solid var(--lvc-border)}

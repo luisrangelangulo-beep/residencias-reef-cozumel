@@ -88,7 +88,7 @@ if ( ! $lvc_sig_css_done ) :
 	?>
 	<style>
 	.lvc-sig{padding:clamp(3.5rem,6vw,6rem) 0;background:var(--lvc-bg-deep,#0a0c0f)}
-	.lvc-sig__wrap{width:min(1480px,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
+	.lvc-sig__wrap{width:min(100%,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
 	.lvc-sig__head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin:0 0 clamp(1.5rem,3vw,2.5rem)}
 	.lvc-sig__kicker{display:block;margin:0 0 .7rem;color:var(--lvc-accent);font-size:.68rem;font-weight:400;letter-spacing:.2em;text-transform:uppercase}
 	.lvc-sig__title{margin:0;font-family:var(--lvc-font-display);font-size:clamp(1.75rem,3vw,2.75rem);font-weight:200;line-height:1.14;color:var(--lvc-text)}
