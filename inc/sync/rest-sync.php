@@ -117,24 +117,68 @@ function lvc_sync_upsert_villa( $v ) {
 	if ( '' === $slug ) {
 		$slug = sanitize_title( trim( lvc_sync_val( $v, 'community' ) . ' ' . lvc_sync_val( $v, 'lot' ) . ' ' . lvc_sync_val( $v, 'area' ) ) );
 	}
-	if ( '' === $slug && '' === $name ) {
-		return array( 'ok' => false, 'error' => 'Missing url and property_name.' );
-	}
-	if ( '' === $name ) {
-		$name = lvc_sync_label( $slug );
+	/*
+	 * ── IDENTITY ────────────────────────────────────────────────────────────
+	 * `wp_post_id` wins; the slug is only a fallback.
+	 *
+	 * This previously matched on the slug alone. Rename a villa in the sheet and
+	 * its slug changes, so the next run finds nothing and CREATES A SECOND POST —
+	 * which is what produced the duplicate Los Cabos listings. The sheet writes
+	 * `wp_post_id` back on every successful push, so from the second run onward
+	 * identity survives any rename.
+	 *
+	 * The connector must SEND that column, not merely write it back. Fixing this
+	 * receiver alone changes nothing.
+	 */
+	$existing_id = 0;
+	$sent_id     = (int) lvc_sync_val( $v, 'wp_post_id', 0 );
+
+	if ( $sent_id > 0 ) {
+		$p = get_post( $sent_id );
+		if ( $p && $p->post_type === $cpt && 'trash' !== $p->post_status ) {
+			$existing_id = $sent_id;
+		}
 	}
 
-	$existing = get_page_by_path( $slug, OBJECT, $cpt );
-	$postarr  = array(
+	if ( ! $existing_id && '' !== $slug ) {
+		$byslug = get_page_by_path( $slug, OBJECT, $cpt );
+		if ( $byslug ) {
+			$existing_id = (int) $byslug->ID;
+		}
+	}
+
+	// A resolved wp_post_id IS identity. Requiring a name alongside it blocks the
+	// most useful operation here: change one cell and push.
+	if ( ! $existing_id && '' === $slug && '' === $name ) {
+		return array( 'ok' => false, 'error' => 'Row identifies nothing: needs wp_post_id, url, or property_name.' );
+	}
+
+	$postarr = array(
 		'post_type'   => $cpt,
 		'post_status' => 'publish',
-		'post_title'  => $name,
-		'post_name'   => $slug,
 	);
 	$action = 'created';
-	if ( $existing ) {
-		$postarr['ID'] = $existing->ID;
+	if ( $existing_id ) {
+		$postarr['ID'] = $existing_id;
 		$action        = 'updated';
+	}
+
+	/*
+	 * Title and slug only CHANGE when supplied, so a partial update cannot
+	 * silently rename or re-slug a villa. The existing title is still passed
+	 * through on update because wp_insert_post() rejects a post whose title,
+	 * content and excerpt are all empty — even when only meta is changing.
+	 */
+	if ( '' !== $name ) {
+		$postarr['post_title'] = $name;
+	} elseif ( $existing_id ) {
+		$postarr['post_title'] = get_post_field( 'post_title', $existing_id );
+	} else {
+		$postarr['post_title'] = lvc_sync_label( $slug );
+	}
+
+	if ( '' !== $slug ) {
+		$postarr['post_name'] = $slug;
 	}
 	$post_id = wp_insert_post( $postarr, true );
 	if ( is_wp_error( $post_id ) ) {
