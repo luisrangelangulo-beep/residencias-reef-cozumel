@@ -363,33 +363,70 @@ get_header();
 	/*
 	 * Ownership cross-link.
 	 *
-	 * A guest reading a villa page in this building is the warmest buyer lead that
-	 * exists for it — they have already chosen the destination and the address.
-	 * This link existed years ago ("buy a piece of paradise") and was dropped in
-	 * the rebuild; the two sites have had no connection since.
+	 * A guest reading a villa page is the warmest buyer lead that exists for that
+	 * building — they have already chosen the destination and the address. This
+	 * link existed years ago ("buy a piece of paradise") and was dropped in the
+	 * rebuild; the two sites have had no connection since.
 	 *
-	 * Deliberately quiet and placed last. It must never compete with the booking
+	 * The link is DERIVED from the villa's community, not hardcoded. This site
+	 * rents across several buildings, so a fixed link would tell a Kiino guest to
+	 * buy at Residencias Reef. Only communities we actually sell in get a specific
+	 * page; anything else falls back to the catalogue rather than guessing.
+	 *
+	 * Deliberately quiet and placed last — it must never compete with the booking
 	 * inquiry, which is what this page is for.
-	 *
-	 * Filterable so it can be repointed or removed without touching the template.
 	 */
-	$rrc_own = apply_filters( 'lvc_ownership_url', 'https://www.cozumel-real-estate.com/development/residencias-reef/' );
+	$rrc_re_base = 'https://www.cozumel-real-estate.com';
+
+	// community (as written on the villa) => development slug on the sales site
+	$rrc_dev_map = apply_filters( 'lvc_community_development_map', array(
+		'residencias reef' => 'residencias-reef',
+		'kiino'            => 'kiino',
+		'the stella'       => 'the-stella',
+		'stella'           => 'the-stella',
+		'athimar'          => 'athimar',
+		'galia'            => 'galia',
+		'elementos'        => 'elementos',
+		'cozumel seaside'  => 'cozumel-seaside',
+		'seaside'          => 'cozumel-seaside',
+		'coral princess'   => 'coral-princess',
+	) );
+
+	$rrc_key      = strtolower( trim( (string) $community ) );
+	$rrc_dev_slug = isset( $rrc_dev_map[ $rrc_key ] ) ? $rrc_dev_map[ $rrc_key ] : '';
+	$rrc_own      = $rrc_dev_slug
+		? $rrc_re_base . '/development/' . $rrc_dev_slug . '/'
+		: $rrc_re_base . '/properties/';
+	$rrc_own      = apply_filters( 'lvc_ownership_url', $rrc_own, $community );
 	?>
 	<?php if ( $rrc_own ) : ?>
 		<section class="rrc-own rrc-section-sm" aria-label="Ownership at this property">
 			<div class="rrc-narrow">
 				<span class="rrc-eyebrow">Ownership</span>
 				<h2 class="rrc-title">Thinking beyond a stay?</h2>
-				<p>
-					Residences here are privately owned, and most change hands quietly between
-					owners rather than being listed publicly. If owning at Residencias Reef is
-					something you would consider, we handle that side too.
-				</p>
-				<p>
-					<a href="<?php echo esc_url( $rrc_own ); ?>" class="rrc-btn rrc-btn--outline" rel="noopener">
-						See Residencias Reef for sale &rarr;
-					</a>
-				</p>
+				<?php if ( $rrc_dev_slug ) : ?>
+					<p>
+						Residences at <?php echo esc_html( $community ); ?> are privately owned, and most
+						change hands quietly between owners rather than being listed publicly. If owning
+						here is something you would consider, we handle that side too.
+					</p>
+					<p>
+						<a href="<?php echo esc_url( $rrc_own ); ?>" class="rrc-btn rrc-btn--outline" rel="noopener">
+							See <?php echo esc_html( $community ); ?> for sale &rarr;
+						</a>
+					</p>
+				<?php else : ?>
+					<p>
+						Many of the residences we rent are privately owned, and they often change hands
+						quietly between owners rather than being listed publicly. If ownership is
+						something you would consider, we handle that side too.
+					</p>
+					<p>
+						<a href="<?php echo esc_url( $rrc_own ); ?>" class="rrc-btn rrc-btn--outline" rel="noopener">
+							See what we have for sale &rarr;
+						</a>
+					</p>
+				<?php endif; ?>
 			</div>
 		</section>
 	<?php endif; ?>
