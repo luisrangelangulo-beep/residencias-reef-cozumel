@@ -359,6 +359,41 @@ get_header();
 	<div class="rrc-related__more"><?php foreach ( $rrc_more_links as $rrc_ml ) : ?><a class="rrc-btn rrc-btn--outline" href="<?php echo esc_url( $rrc_ml['url'] ); ?>"><?php echo esc_html( $rrc_ml['label'] ); ?> &rarr;</a><?php endforeach; ?></div>
 	</div></section><?php endif; ?>
 
+	<?php
+	/*
+	 * Ownership cross-link.
+	 *
+	 * A guest reading a villa page in this building is the warmest buyer lead that
+	 * exists for it — they have already chosen the destination and the address.
+	 * This link existed years ago ("buy a piece of paradise") and was dropped in
+	 * the rebuild; the two sites have had no connection since.
+	 *
+	 * Deliberately quiet and placed last. It must never compete with the booking
+	 * inquiry, which is what this page is for.
+	 *
+	 * Filterable so it can be repointed or removed without touching the template.
+	 */
+	$rrc_own = apply_filters( 'lvc_ownership_url', 'https://www.cozumel-real-estate.com/development/residencias-reef/' );
+	?>
+	<?php if ( $rrc_own ) : ?>
+		<section class="rrc-own rrc-section-sm" aria-label="Ownership at this property">
+			<div class="rrc-narrow">
+				<span class="rrc-eyebrow">Ownership</span>
+				<h2 class="rrc-title">Thinking beyond a stay?</h2>
+				<p>
+					Residences here are privately owned, and most change hands quietly between
+					owners rather than being listed publicly. If owning at Residencias Reef is
+					something you would consider, we handle that side too.
+				</p>
+				<p>
+					<a href="<?php echo esc_url( $rrc_own ); ?>" class="rrc-btn rrc-btn--outline" rel="noopener">
+						See Residencias Reef for sale &rarr;
+					</a>
+				</p>
+			</div>
+		</section>
+	<?php endif; ?>
+
 	<div class="rrc-sticky" id="rrcSticky" aria-label="Quick villa actions"><div class="rrc-sticky__inner"><div class="rrc-sticky__info"><div class="rrc-sticky__name"><?php echo esc_html( $h1_title ); ?></div><div class="rrc-sticky__meta"><?php echo esc_html( trim( implode( ' · ', array_filter( array( $bedrooms ? $bedrooms . ' bedrooms' : '', $max_guests ? 'sleeps ' . $max_guests : '', $location_line ) ) ) ) ); ?></div></div><div class="rrc-sticky__actions"><?php if ( $whatsapp_url ) : ?><a href="<?php echo esc_url( $whatsapp_url ); ?>" target="_blank" rel="noopener noreferrer" class="rrc-btn rrc-btn--outline">WhatsApp</a><?php endif; ?><a href="#inquiry" class="rrc-btn rrc-btn--primary">Inquire Now</a></div></div></div>
 </main>
 

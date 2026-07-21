@@ -40,6 +40,41 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 			</ul>
 		</nav>
 
+		<?php
+		/*
+		 * Cross-property links.
+		 *
+		 * These existed years ago ("buy a piece of paradise" → real estate, plus a
+		 * tours link) and were dropped during the rebuild. Guests staying here are
+		 * the warmest possible buyers for the same building, and the search data
+		 * shows the reverse too: rental-intent queries currently land on the
+		 * for-sale site, which cannot serve them.
+		 *
+		 * Filterable so a brand can drop or repoint one without a template edit.
+		 */
+		$lvc_sister = apply_filters( 'lvc_sister_sites', array(
+			array(
+				'label' => 'Buy at Residencias Reef',
+				'url'   => 'https://www.cozumel-real-estate.com/development/residencias-reef/',
+			),
+			array(
+				'label' => 'Cozumel Shore Excursions',
+				'url'   => 'https://www.cozumel-shore-excursions.com/',
+			),
+		) );
+		?>
+		<?php if ( $lvc_sister ) : ?>
+			<nav class="lvc-footer__col" aria-label="Also from us">
+				<h3 class="lvc-footer__heading">Also From Us</h3>
+				<ul>
+					<?php foreach ( $lvc_sister as $lvc_s ) : ?>
+						<?php if ( empty( $lvc_s['url'] ) || empty( $lvc_s['label'] ) ) { continue; } ?>
+						<li><a href="<?php echo esc_url( $lvc_s['url'] ); ?>" rel="noopener"><?php echo esc_html( $lvc_s['label'] ); ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			</nav>
+		<?php endif; ?>
+
 		<div class="lvc-footer__col lvc-footer__contact">
 			<h3 class="lvc-footer__heading">Contact</h3>
 			<ul>
