@@ -392,8 +392,43 @@ get_header();
 		'coral princess'   => 'coral-princess',
 	) );
 
+	/*
+	 * NOTE: `community` on this site holds the DESTINATION ("Cozumel",
+	 * "Puerto Aventuras"), not the building — the two sites use that word for
+	 * different concepts, and the building name is not stored as a field here.
+	 * So the community lookup rarely hits, and the villa slug is the reliable
+	 * signal: "kiino-condo-1c-cozumel" identifies its building, "casa-cenote-
+	 * puerto-aventuras" correctly identifies none.
+	 *
+	 * Matched on word boundaries to avoid a villa merely NAMED after a building
+	 * being linked to it.
+	 */
 	$rrc_key      = strtolower( trim( (string) $community ) );
 	$rrc_dev_slug = isset( $rrc_dev_map[ $rrc_key ] ) ? $rrc_dev_map[ $rrc_key ] : '';
+	$rrc_matched  = '';
+
+	if ( ! $rrc_dev_slug ) {
+		/*
+		 * The building lives in the hierarchical `area` taxonomy on this site
+		 * (Cozumel ▸ Residencias Reef Cozumel), which is the authoritative signal.
+		 * Slug and title are included only as a backstop for villas tagged at a
+		 * coarser level.
+		 */
+		$rrc_haystack = ' ' . str_replace( '-', ' ', strtolower(
+			$area_name . ' ' . get_post_field( 'post_name', get_the_ID() ) . ' ' . get_the_title()
+		) ) . ' ';
+
+		foreach ( $rrc_dev_map as $rrc_name => $rrc_slug ) {
+			if ( false !== strpos( $rrc_haystack, ' ' . $rrc_name . ' ' ) ) {
+				$rrc_dev_slug = $rrc_slug;
+				$rrc_matched  = ucwords( $rrc_name );
+				break;
+			}
+		}
+	}
+
+	// Name the building we actually matched, never the destination.
+	$rrc_label = $rrc_matched ? $rrc_matched : $community;
 	$rrc_own      = $rrc_dev_slug
 		? $rrc_re_base . '/development/' . $rrc_dev_slug . '/'
 		: $rrc_re_base . '/properties/';
@@ -406,13 +441,13 @@ get_header();
 				<h2 class="rrc-title">Thinking beyond a stay?</h2>
 				<?php if ( $rrc_dev_slug ) : ?>
 					<p>
-						Residences at <?php echo esc_html( $community ); ?> are privately owned, and most
+						Residences at <?php echo esc_html( $rrc_label ); ?> are privately owned, and most
 						change hands quietly between owners rather than being listed publicly. If owning
 						here is something you would consider, we handle that side too.
 					</p>
 					<p>
 						<a href="<?php echo esc_url( $rrc_own ); ?>" class="rrc-btn rrc-btn--outline" rel="noopener">
-							See <?php echo esc_html( $community ); ?> for sale &rarr;
+							See <?php echo esc_html( $rrc_label ); ?> for sale &rarr;
 						</a>
 					</p>
 				<?php else : ?>
