@@ -182,31 +182,45 @@ if ( lvc_config( 'theme_owns_schema', true ) ) {
 
 /* ── Thin-content + paged noindex hygiene. ──────────────────────────────── */
 if ( lvc_config( 'noindex_thin_terms', true ) ) {
-	add_filter( 'wp_robots', function ( $robots ) {
+	/**
+	 * Shared rule: should the current query be noindexed?
+	 *   - paginated archives (page 2+ is a near-copy of page 1);
+	 *   - a villa-taxonomy term holding fewer than min_index_count villas;
+	 *   - thin, near-duplicate listing archives: bedroom-count pages plus the
+	 *     default category/tag archives.
+	 * Kept in one place so the core (wp_robots) and AIOSEO outputs can never
+	 * drift apart — they did, and only the last rule was reaching AIOSEO.
+	 */
+	$lvc_should_noindex = function () {
 		if ( is_paged() ) {
-			$robots['noindex'] = true;
+			return true;
 		}
-		if ( is_tax( array_keys( (array) lvc_config( 'taxonomies', array() ) ) ) ) {
+		$taxes = array_keys( (array) lvc_config( 'taxonomies', array() ) );
+		if ( ! empty( $taxes ) && is_tax( $taxes ) ) {
 			$obj = get_queried_object();
-			if ( $obj instanceof WP_Term && $obj->count < (int) lvc_config( 'min_index_count', 1 ) ) {
-				$robots['noindex'] = true;
+			if ( $obj instanceof WP_Term && (int) $obj->count < (int) lvc_config( 'min_index_count', 1 ) ) {
+				return true;
 			}
 		}
-		// Thin, near-duplicate listing archives: bedroom-count pages plus the
-		// default category/tag archives. noindex, FOLLOW — link equity still
-		// flows through to the villas; keeps crawl budget on the villa pages.
-		if ( is_tax( 'bedrooms' ) || is_category() || is_tag() ) {
+		return is_tax( 'bedrooms' ) || is_category() || is_tag();
+	};
+
+	// noindex, FOLLOW throughout — link equity still flows through to the
+	// villas; this only keeps crawl budget off the near-duplicate archives.
+	add_filter( 'wp_robots', function ( $robots ) use ( $lvc_should_noindex ) {
+		if ( $lvc_should_noindex() ) {
 			$robots['noindex'] = true;
+			unset( $robots['index'] );
 		}
 		return $robots;
 	}, 99 );
 
 	// AIOSEO disables core wp_robots and owns the robots meta output, so the
-	// thin-archive noindex above only takes effect when ALSO applied through
-	// AIOSEO's own filter. 'noindex' => 'noindex' noindexes; leaving 'nofollow'
-	// empty keeps FOLLOW so link equity still flows to the villas.
-	add_filter( 'aioseo_robots_meta', function ( $attributes ) {
-		if ( is_tax( 'bedrooms' ) || is_category() || is_tag() ) {
+	// rule above only takes effect when ALSO applied through AIOSEO's own
+	// filter. 'noindex' => 'noindex' noindexes; leaving 'nofollow' empty
+	// keeps FOLLOW.
+	add_filter( 'aioseo_robots_meta', function ( $attributes ) use ( $lvc_should_noindex ) {
+		if ( $lvc_should_noindex() ) {
 			$attributes['noindex'] = 'noindex';
 		}
 		return (array) $attributes;
