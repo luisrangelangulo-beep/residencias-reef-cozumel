@@ -203,6 +203,30 @@ if ( lvc_config( 'theme_owns_schema', true ) ) {
 			if ( ! empty( $org_same ) && empty( $node['sameAs'] ) ) {
 				$data[ $key ]['sameAs'] = $org_same;
 			}
+			// Rank Math can emit this Organization as a stub (name only, no url/logo)
+			// even with a Knowledge Graph logo configured, which weakens the brand
+			// entity. Fill the two missing identity properties from data the site
+			// already owns. Guarded on empty: a no-op wherever Rank Math supplies them.
+			if ( empty( $node['url'] ) ) {
+				$data[ $key ]['url'] = home_url( '/' );
+			}
+			if ( empty( $node['logo'] ) ) {
+				$org_logo = '';
+				if ( class_exists( 'RankMath\Helper' ) ) {
+					$org_logo = (string) RankMath\Helper::get_settings( 'titles.knowledgegraph_logo' );
+				}
+				if ( '' === $org_logo ) {
+					$org_logo_id = get_theme_mod( 'custom_logo' );
+					$org_logo    = $org_logo_id ? (string) wp_get_attachment_image_url( $org_logo_id, 'full' ) : '';
+				}
+				if ( '' !== $org_logo ) {
+					$data[ $key ]['logo'] = array(
+						'@type'      => 'ImageObject',
+						'url'        => $org_logo,
+						'contentUrl' => $org_logo,
+					);
+				}
+			}
 		}
 		return $data;
 	}, 99 );
