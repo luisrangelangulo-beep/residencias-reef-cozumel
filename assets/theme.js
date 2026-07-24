@@ -6,6 +6,29 @@
 (function () {
   'use strict';
 
+  // ── Conversion event tracking (measurement) ───────────────────────
+  // Fires GA4 (gtag) + dataLayer events for the key direct-booking signals so
+  // every conversion path is measurable. Delegated at the document level, so it
+  // covers every current and future WhatsApp / phone link with no per-template
+  // wiring. gtag is provided by Site Kit / GA4; the dataLayer push covers GTM.
+  function lvcTrack(name, params) {
+    try {
+      if (window.gtag) { window.gtag('event', name, params || {}); }
+      if (window.dataLayer) { window.dataLayer.push(Object.assign({ event: name }, params || {})); }
+    } catch (_) {}
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) { return; }
+    var href = a.getAttribute('href') || '';
+    if (/(^|\/\/)(wa\.me|wa\.link|api\.whatsapp\.com)\//i.test(href) || /[?&]phone=\d/i.test(href)) {
+      lvcTrack('whatsapp_click', { link_url: href, location: a.getAttribute('data-lvc-loc') || 'link' });
+    } else if (/^tel:/i.test(href)) {
+      lvcTrack('call_click', { phone: href.replace(/^tel:/i, '') });
+    }
+  }, true);
+
+
   // ── Mobile nav drawer ──────────────────────────────────────────────────
   var toggle = document.querySelector('[data-lvc-drawer-toggle]');
   var drawer = document.querySelector('[data-lvc-drawer]');
@@ -56,8 +79,8 @@
               try {
                 var propEl = form.querySelector('[name="property_name"]');
                 var prop = propEl ? propEl.value : '';
-                if (window.gtag) { window.gtag('event', 'generate_lead', { form: 'inquiry', property: prop }); }
-                if (window.dataLayer) { window.dataLayer.push({ event: 'generate_lead', form_property: prop }); }
+                lvcTrack('generate_lead', { form: 'inquiry', property: prop });
+                lvcTrack('inquiry_submit', { form: 'inquiry', property: prop });
               } catch (_) {}
               form.reset();
             } else {

@@ -40,6 +40,8 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				'whatsapp_url'   => 'https://wa.me/529871130546', // TODO: confirm this number is WhatsApp-enabled
 				'response_time'  => 'within 24 hours',
 				'region'         => 'Riviera Maya, Mexico', // Used in page schema (areaServed).
+				// Social profile URLs → schema sameAs (knowledge-panel signal). Empty = omitted.
+				'social_profiles' => array(),
 
 				/* ── Property model (CPT) ─────────────────────────────── */
 				'cpt'              => 'villas',         // Already registered by CPT UI on the live site.
