@@ -41,7 +41,13 @@ if ( ! function_exists( 'lvc_config' ) ) {
 				'response_time'  => 'within 24 hours',
 				'region'         => 'Riviera Maya, Mexico', // Used in page schema (areaServed).
 				// Social profile URLs → schema sameAs (knowledge-panel signal). Empty = omitted.
-				'social_profiles' => array(),
+				'social_profiles' => array(
+					'https://www.facebook.com/rmoceanfront/',
+					'https://twitter.com/rmvillarentals',
+					'https://www.instagram.com/luxuryoceanfrontrentals/',
+					'https://in.pinterest.com/retreatsluxuryoceanfront/',
+					'https://www.youtube.com/channel/UCJMopNTDTjs4Qp89n5T_Orw',
+				),
 
 				/* ── Property model (CPT) ─────────────────────────────── */
 				'cpt'              => 'villas',         // Already registered by CPT UI on the live site.
