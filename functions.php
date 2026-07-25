@@ -144,3 +144,34 @@ add_filter( 'hello_elementor_page_title', '__return_false' );
 
 // Flush rewrites when the theme is activated so CPT/taxonomy URLs resolve.
 add_action( 'after_switch_theme', 'flush_rewrite_rules' );
+
+/* ── Remote image width (cached) ─────────────────────────────────────────
+ * One-time measurement per unique URL, cached permanently on success. Used
+ * by hero selection to refuse sources too small for full-bleed display. On
+ * fetch failure the width is unknown (0) — callers treat unknown as
+ * acceptable, so a network hiccup never demotes a real photo; the failure
+ * is retried after a day rather than cached forever.
+ */
+if ( ! function_exists( 'lvc_remote_image_width' ) ) {
+	function lvc_remote_image_width( $url ) {
+		$url = trim( (string) $url );
+		if ( '' === $url || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return 0;
+		}
+		$key   = 'lvc_imgw_' . md5( $url );
+		$known = get_option( $key, false );
+		if ( false !== $known ) {
+			return (int) $known;
+		}
+		if ( get_transient( $key . '_fail' ) ) {
+			return 0;
+		}
+		$size = @getimagesize( $url );
+		if ( is_array( $size ) && ! empty( $size[0] ) ) {
+			add_option( $key, (int) $size[0], '', 'no' );
+			return (int) $size[0];
+		}
+		set_transient( $key . '_fail', 1, DAY_IN_SECONDS );
+		return 0;
+	}
+}

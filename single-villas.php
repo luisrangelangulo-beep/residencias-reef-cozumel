@@ -80,9 +80,24 @@ $photo_count         = count( $all_gallery_urls );
 
 // Hero prefers its own field; lvc_property_image() leads with feature_image,
 // which is the card crop and not necessarily the right full-bleed shot.
+$lvc_hero_fits = static function ( $url ) {
+	if ( '' === $url || ! function_exists( 'lvc_remote_image_width' ) ) {
+		return '' !== $url;
+	}
+	// Unknown width (0 = measurement failed) passes — a network hiccup must
+	// never demote a real photo; measurably tiny (<1000px) steps aside.
+	$w = lvc_remote_image_width( $url );
+	return 0 === $w || $w >= 1000;
+};
 $hero_image = trim( (string) get_post_meta( $villa_id, 'hero_image', true ) );
+if ( ! $lvc_hero_fits( $hero_image ) ) {
+	$hero_image = '';
+}
 if ( ! $hero_image ) {
 	$hero_image = lvc_property_image( $villa_id, 'full' );
+	if ( ! $lvc_hero_fits( $hero_image ) ) {
+		$hero_image = '';
+	}
 }
 if ( ! $hero_image && $all_gallery_urls ) {
 	$hero_image = $all_gallery_urls[0];
