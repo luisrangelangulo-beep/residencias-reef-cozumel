@@ -152,10 +152,40 @@ add_action( 'after_switch_theme', 'flush_rewrite_rules' );
  * acceptable, so a network hiccup never demotes a real photo; the failure
  * is retried after a day rather than cached forever.
  */
+
+/* Image hosts the width-measurement helper may contact. */
+if ( ! function_exists( 'lvc_image_host_allowed' ) ) {
+	function lvc_image_host_allowed( $url ) {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		if ( '' === $host ) {
+			return false;
+		}
+		$site_host = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+		$allowed_exact    = array( $site_host, 'www.' . $site_host, 'images.rmoceanfrontrentals.com' );
+		$allowed_suffixes = array( '.r2.dev', '.wp.com' );
+		if ( in_array( $host, $allowed_exact, true ) ) {
+			return true;
+		}
+		foreach ( $allowed_suffixes as $suffix ) {
+			if ( strlen( $host ) > strlen( $suffix ) && substr( $host, -strlen( $suffix ) ) === $suffix ) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 if ( ! function_exists( 'lvc_remote_image_width' ) ) {
 	function lvc_remote_image_width( $url ) {
 		$url = trim( (string) $url );
 		if ( '' === $url || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return 0;
+		}
+		// SSRF guard: measurement performs a real HTTP fetch, so only hosts we
+		// actually store imagery on are ever contacted. Anything else (typo'd
+		// import data, injected URLs, internal addresses) returns unknown
+		// without network I/O.
+		if ( ! lvc_image_host_allowed( $url ) ) {
 			return 0;
 		}
 		$key   = 'lvc_imgw_' . md5( $url );
