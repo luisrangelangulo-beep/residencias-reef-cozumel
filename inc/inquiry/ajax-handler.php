@@ -26,6 +26,28 @@ add_action( 'init', function () {
 	add_action( 'wp_ajax_nopriv_' . $action, 'lvc_handle_inquiry' );
 } );
 
+if ( ! function_exists( 'lvc_turnstile_field' ) ) {
+	/**
+	 * Cloudflare Turnstile widget — rendered inside the inquiry form, right
+	 * before the submit button. The site key is public by design; the SECRET
+	 * lives in the lvc_turnstile_secret option (DB only, never in the repo).
+	 * When the secret is absent the widget is not rendered and the server
+	 * check is skipped, so forms keep working where Turnstile isn't
+	 * configured. FormData(form) picks up cf-turnstile-response automatically.
+	 */
+	function lvc_turnstile_field() {
+		if ( '' === trim( (string) get_option( 'lvc_turnstile_secret' ) ) ) {
+			return;
+		}
+		static $script_printed = false;
+		echo '<div class="cf-turnstile" data-sitekey="0x4AAAAAAD9OWyEgjF9Jz8os" data-theme="dark" style="margin:0 0 1rem;"></div>';
+		if ( ! $script_printed ) {
+			echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>';
+			$script_printed = true;
+		}
+	}
+}
+
 if ( ! function_exists( 'lvc_disposable_domains' ) ) {
 	function lvc_disposable_domains() {
 		return apply_filters( 'lvc_disposable_domains', array(
@@ -58,6 +80,38 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 				: ( time() - $ts );
 			if ( $delta >= 0 && $delta < 2 ) {
 				wp_send_json_error( array( 'message' => 'Please wait a moment and try again.' ), 429 );
+			}
+		}
+
+		// Cloudflare Turnstile — human verification. Only enforced when a
+		// secret is configured; lvc_turnstile_field() likewise only renders
+		// the widget then, so the two sides can never disagree. Fails OPEN
+		// on Cloudflare network errors: a lost real lead costs more than the
+		// rare spam the other layers would miss.
+		$ts_secret = trim( (string) get_option( 'lvc_turnstile_secret' ) );
+		if ( '' !== $ts_secret ) {
+			$ts_token = isset( $_POST['cf-turnstile-response'] ) ? sanitize_text_field( wp_unslash( $_POST['cf-turnstile-response'] ) ) : '';
+			$ts_ok    = false;
+			if ( '' !== $ts_token ) {
+				$ts_resp = wp_remote_post(
+					'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+					array(
+						'timeout' => 8,
+						'body'    => array(
+							'secret'   => $ts_secret,
+							'response' => $ts_token,
+						),
+					)
+				);
+				if ( is_wp_error( $ts_resp ) ) {
+					$ts_ok = true; // Cloudflare unreachable — fail open.
+				} else {
+					$ts_data = json_decode( wp_remote_retrieve_body( $ts_resp ), true );
+					$ts_ok   = ! empty( $ts_data['success'] );
+				}
+			}
+			if ( ! $ts_ok ) {
+				wp_send_json_error( array( 'message' => 'Human verification failed. Please refresh the page and try again.' ), 403 );
 			}
 		}
 

@@ -72,6 +72,7 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 	</div>
 
 	<p class="lvc-form__status" data-inquiry-status aria-live="polite"></p>
+	<?php lvc_turnstile_field(); ?>
 	<button type="submit" class="lvc-btn lvc-form__submit"><?php echo esc_html( $lvc_submit ); ?></button>
 	<p class="lvc-form__micro">We typically respond <?php echo esc_html( lvc_config( 'response_time', 'soon' ) ); ?>.</p>
 </form>

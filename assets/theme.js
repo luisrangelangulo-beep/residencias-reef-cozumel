@@ -88,7 +88,7 @@
             }
           })
           .catch(function () { setStatus('Network error. Please try again or message us on WhatsApp.'); })
-          .then(function () { if (btn) { btn.disabled = false; } });
+          .then(function () { if (btn) { btn.disabled = false; } try { if (window.turnstile) { window.turnstile.reset(); } } catch (_) {} });
       };
 
       // Refresh the nonce first (cache-safe), then submit.
