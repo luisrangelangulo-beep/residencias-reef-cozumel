@@ -242,3 +242,31 @@ add_action( 'after_rocket_clean_domain', function () {
 		'body'     => '{"purge_everything":true}',
 	] );
 } );
+
+/*
+ * Per-post purges must reach the edge too: content updated outside a full
+ * domain purge (sheet sync, quick edit) triggers Rocket's per-post purge —
+ * without this hook the Cloudflare copy stayed stale for the cache rule's
+ * full TTL. Purges the post's URL, the homepage, and its archive.
+ */
+add_action( 'after_rocket_clean_post', function ( $post ) {
+	$zone  = (string) get_option( 'lvc_cf_zone_id', '' );
+	$token = (string) get_option( 'lvc_cf_purge_token', '' );
+	if ( '' === $zone || '' === $token || ! is_object( $post ) ) {
+		return;
+	}
+	$urls = array_values( array_filter( array(
+		get_permalink( $post ),
+		home_url( '/' ),
+		get_post_type_archive_link( get_post_type( $post ) ),
+	) ) );
+	wp_remote_post( 'https://api.cloudflare.com/client/v4/zones/' . rawurlencode( $zone ) . '/purge_cache', array(
+		'timeout'  => 10,
+		'blocking' => false,
+		'headers'  => array(
+			'Authorization' => 'Bearer ' . $token,
+			'Content-Type'  => 'application/json',
+		),
+		'body'     => wp_json_encode( array( 'files' => $urls ) ),
+	) );
+} );
