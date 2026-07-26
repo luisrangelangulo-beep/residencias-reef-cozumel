@@ -205,3 +205,40 @@ if ( ! function_exists( 'lvc_remote_image_width' ) ) {
 		return 0;
 	}
 }
+
+/*
+ * WP Rocket's advanced-cache.php refuses to serve OR write page cache when
+ * wp-content/cache/wp-rocket/ is missing, and nothing recreates the folder on
+ * the front end - page caching dies silently site-wide (found live on all 7
+ * portfolio sites 2026-07-25). Recreate on detection.
+ */
+add_action( 'init', function () {
+	if ( defined( 'WP_ROCKET_ADVANCED_CACHE_PROBLEM' ) && defined( 'WP_ROCKET_CACHE_PATH' ) && ! is_dir( WP_ROCKET_CACHE_PATH ) ) {
+		wp_mkdir_p( WP_ROCKET_CACHE_PATH );
+	}
+} );
+
+/*
+ * Edge-purge companion to the Cloudflare "cache-anonymous-html" rule: once
+ * Cloudflare caches HTML at the edge, every WP Rocket purge (content edit,
+ * villa sync, manual purge) must also clear the edge or visitors see stale
+ * pages for the rule's TTL. Fire-and-forget so purging never slows admin.
+ * Credentials live ONLY in DB options (lvc_cf_zone_id / lvc_cf_purge_token
+ * - cache-purge-scoped token, never committed to the repo).
+ */
+add_action( 'after_rocket_clean_domain', function () {
+	$zone  = (string) get_option( 'lvc_cf_zone_id', '' );
+	$token = (string) get_option( 'lvc_cf_purge_token', '' );
+	if ( '' === $zone || '' === $token ) {
+		return;
+	}
+	wp_remote_post( 'https://api.cloudflare.com/client/v4/zones/' . rawurlencode( $zone ) . '/purge_cache', [
+		'timeout'  => 10,
+		'blocking' => false,
+		'headers'  => [
+			'Authorization' => 'Bearer ' . $token,
+			'Content-Type'  => 'application/json',
+		],
+		'body'     => '{"purge_everything":true}',
+	] );
+} );
