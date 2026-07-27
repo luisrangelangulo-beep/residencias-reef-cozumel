@@ -17,8 +17,15 @@ add_action( 'template_redirect', function () {
 		return;
 	}
 	$path = strtolower( trim( (string) parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' ) );
-	// residencias-reef-6100, residencias-reef-condo-6100, reef-condo-6100 …
-	if ( ! preg_match( '#^(?:residencias-)?reef-(?:cozumel-)?(?:condo-)?(\d{4})$#', $path, $m ) ) {
+	// The historical routes were nested (/cozumel-vacation-rentals/residencias-
+	// reef-condo-6100/), so match the LAST segment regardless of nesting —
+	// core's redirect_guess_404_permalink otherwise sends near-miss variants
+	// (e.g. …condo-5220 vs the real …condo-5220-cozumel slug) to the bare
+	// /villas/ archive, losing the unit.
+	$last = basename( $path );
+	// residencias-reef-6100, residencias-reef-condo-6100, reef-condo-6100,
+	// residencias-reef-condo-5220-cozumel …
+	if ( ! preg_match( '#^(?:residencias-)?reef-(?:cozumel-)?(?:condo-)?(\d{4})(?:-cozumel)?$#', $last, $m ) ) {
 		return;
 	}
 	$unit = $m[1];
@@ -42,4 +49,4 @@ add_action( 'template_redirect', function () {
 		wp_safe_redirect( get_permalink( (int) $hit[0] ), 301 );
 		exit;
 	}
-} );
+}, 1 ); // Before redirect_canonical (10), whose near-miss guess wins otherwise.

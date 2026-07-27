@@ -281,6 +281,9 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 					if ( $lvc_ftax === $lvc_own_tax || ! taxonomy_exists( $lvc_ftax ) ) { continue; }
 					$lvc_fterms = get_terms( array( 'taxonomy' => $lvc_ftax, 'hide_empty' => true ) );
 					if ( is_wp_error( $lvc_fterms ) || ! $lvc_fterms ) { continue; }
+					if ( 'bedrooms' === $lvc_ftax ) {
+						$lvc_fterms = lvc_sort_bedroom_terms( $lvc_fterms );
+					}
 					$lvc_fcur = isset( $_GET[ $lvc_ftax ] ) ? sanitize_title( wp_unslash( $_GET[ $lvc_ftax ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				?>
 					<label class="lvc-tax-filter__group">

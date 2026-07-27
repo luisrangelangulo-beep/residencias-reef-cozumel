@@ -239,16 +239,7 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 					? wp_get_object_terms( $lvc_area_villa_ids, 'bedrooms', array( 'orderby' => 'name' ) )
 					: array();
 
-				if ( ! is_wp_error( $lvc_bedroom_terms ) && $lvc_bedroom_terms ) {
-					// "10 Bedrooms" must sort after "9 Bedrooms", so compare the
-					// leading integer rather than the string.
-					usort(
-						$lvc_bedroom_terms,
-						static function ( $a, $b ) {
-							return (int) $a->name <=> (int) $b->name;
-						}
-					);
-				}
+				$lvc_bedroom_terms = lvc_sort_bedroom_terms( $lvc_bedroom_terms );
 
 				if ( ! is_wp_error( $lvc_bedroom_terms ) && $lvc_bedroom_terms ) :
 					$lvc_current_bedrooms = isset( $_GET['bedrooms'] ) ? sanitize_title( wp_unslash( $_GET['bedrooms'] ) ) : '';

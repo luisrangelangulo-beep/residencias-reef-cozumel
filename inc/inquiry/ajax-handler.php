@@ -305,6 +305,14 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			update_post_meta( $inquiry_post_id, 'client_uuid', $client_uuid );
 		}
 
+		// A failed save must not masquerade as a healthy submit (audit
+		// RRC-012): the notification email becomes the ONLY record, so say so
+		// in it, and leave a server-side trace for the operator.
+		if ( ! $inquiry_post_id ) {
+			error_log( sprintf( 'lvc_inquiry: persistence FAILED for %s (%s) — email is the only record.', $email, $property ) );
+			$body .= "\n*** WARNING: this lead FAILED to save to the site database. This email is the only record — copy it somewhere safe. ***\n";
+		}
+
 		$sent = wp_mail( $recipient, $subject, $body, $headers );
 
 		if ( $inquiry_post_id && ! $sent ) {
@@ -325,6 +333,7 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 					? 'Thank you. We will respond ' . lvc_config( 'response_time', 'soon' ) . '.'
 					: 'Your inquiry was received' . ( $inquiry_post_id ? ' (ref #' . (int) $inquiry_post_id . ')' : '' ) . '. Our email notification is delayed on our side — no need to resubmit; we will be in touch.',
 				'lead_id' => (int) $inquiry_post_id,
+				'saved'   => (bool) $inquiry_post_id,
 			) );
 		}
 		wp_send_json_error( array( 'message' => 'Something went wrong on our side. Please message us on WhatsApp.' ), 500 );

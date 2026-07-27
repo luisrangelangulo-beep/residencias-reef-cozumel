@@ -32,10 +32,42 @@
   var toggle = document.querySelector('[data-lvc-drawer-toggle]');
   var drawer = document.querySelector('[data-lvc-drawer]');
   if (toggle && drawer) {
+    var focusables = function () {
+      return drawer.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    };
+    var setOpen = function (open) {
+      if (open) { drawer.removeAttribute('hidden'); } else { drawer.setAttribute('hidden', ''); }
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        var first = focusables()[0];
+        if (first) { first.focus(); }
+      } else {
+        toggle.focus();
+      }
+    };
     toggle.addEventListener('click', function () {
-      var closed = drawer.hasAttribute('hidden');
-      if (closed) { drawer.removeAttribute('hidden'); } else { drawer.setAttribute('hidden', ''); }
-      toggle.setAttribute('aria-expanded', closed ? 'true' : 'false');
+      setOpen(drawer.hasAttribute('hidden'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (drawer.hasAttribute('hidden')) { return; }
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        setOpen(false);
+        return;
+      }
+      // Keep Tab cycling inside the open drawer (plus its toggle button).
+      if (e.key === 'Tab') {
+        var items = focusables();
+        if (!items.length) { return; }
+        var first = items[0];
+        var last = items[items.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === toggle)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     });
   }
 

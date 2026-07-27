@@ -186,6 +186,29 @@ if ( ! function_exists( 'lvc_field' ) ) {
 	}
 }
 
+/**
+ * Order a list of bedroom terms by their leading integer.
+ *
+ * Term names are strings ("10 Bedrooms"), so any name-ordered get_terms()
+ * call renders the dropdown as 1, 10, 11 … 2, 3. Every filter bar that
+ * offers a bedrooms select must pass its terms through this instead of
+ * relying on orderby=name.
+ */
+if ( ! function_exists( 'lvc_sort_bedroom_terms' ) ) {
+	function lvc_sort_bedroom_terms( $terms ) {
+		if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+			return $terms;
+		}
+		usort(
+			$terms,
+			static function ( $a, $b ) {
+				return (int) $a->name <=> (int) $b->name;
+			}
+		);
+		return $terms;
+	}
+}
+
 /** The active brand name (for headings, schema, email subjects). */
 if ( ! function_exists( 'lvc_brand' ) ) {
 	function lvc_brand() {

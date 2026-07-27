@@ -25,6 +25,14 @@ jobs:
       DEPLOY_TMP: /home/residenciasreefc/deploy_tmp/hello-elementor-child-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
+      - name: Production guard — main only
+        # workflow_dispatch can be pointed at any branch; production only
+        # ever ships approved main commits (audit RRC-011).
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Refusing to deploy ref '${{ github.ref }}' to production — only main is deployable."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

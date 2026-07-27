@@ -45,6 +45,9 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		<?php foreach ( $lvc_filter_taxes as $tax ) :
 			$terms = get_terms( array( 'taxonomy' => $tax, 'hide_empty' => true ) );
 			if ( is_wp_error( $terms ) || ! $terms ) { continue; }
+			if ( 'bedrooms' === $tax ) {
+				$terms = lvc_sort_bedroom_terms( $terms );
+			}
 			$current = isset( $_GET[ $tax ] ) ? sanitize_title( wp_unslash( $_GET[ $tax ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$obj = get_taxonomy( $tax );
 			?>

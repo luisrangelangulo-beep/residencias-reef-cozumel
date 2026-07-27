@@ -36,7 +36,7 @@ $lvc_specs = array_filter( array(
 		<span class="lvc-card__img" style="--lvc-card-img:url('<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>')">
 			<img src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>"
 				<?php if ( function_exists( 'lvc_cdn_srcset' ) ) : ?>srcset="<?php echo esc_attr( lvc_cdn_srcset( $lvc_img, array( 400, 800, 1200 ) ) ); ?>" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"<?php endif; ?>
-				alt="<?php echo esc_attr( $lvc_name ); ?>" loading="lazy" decoding="async">
+				alt="<?php echo esc_attr( $lvc_name ); ?>" width="800" height="600" loading="lazy" decoding="async">
 		</span>
 	<?php endif; ?>
 	<span class="lvc-card__body">
