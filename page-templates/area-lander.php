@@ -280,44 +280,6 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 		</div>
 	</section>
 
-	<?php
-	// Full crawlable index — one contextual internal link to EVERY villa in this
-	// area, so villas past page 1 of the paginated grid aren't left orphaned.
-	// Shown only when the area has more villas than the grid's first page (9).
-	$lvc_all_area = $lvc_term ? new WP_Query( array(
-		'post_type'      => $lvc_cpt,
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'no_found_rows'  => true,
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-		'tax_query'      => array( array( 'taxonomy' => 'area', 'field' => 'term_id', 'terms' => (int) $lvc_term->term_id ) ),
-	) ) : null;
-	if ( $lvc_all_area && $lvc_all_area->post_count > 9 ) : ?>
-	<style>
-	.lcv-villa-index{list-style:none;margin:2rem 0 0;padding:0;columns:3;column-gap:2.5rem}
-	.lcv-villa-index li{break-inside:avoid;margin:0 0 .7rem;padding:0 0 .7rem;border-bottom:1px solid var(--lvc-border)}
-	.lcv-villa-index a{color:var(--lvc-soft);font-size:.95rem;line-height:1.45;text-decoration:none}
-	.lcv-villa-index a:hover{color:var(--lvc-accent)}
-	@media(max-width:900px){.lcv-villa-index{columns:2}}
-	@media(max-width:560px){.lcv-villa-index{columns:1}}
-	</style>
-	<section class="lvc-area-section lcv-area-all-villas" aria-label="Full villa index">
-		<div class="lvc-area-wrap">
-			<header class="lvc-area-head">
-				<span class="lvc-area-kicker">Full Collection</span>
-				<h2 class="lvc-area-title">All villas in <em><?php echo esc_html( $lvc_term->name ); ?></em></h2>
-				<p class="lvc-area-copy"><?php echo (int) $lvc_all_area->post_count; ?> properties in <?php echo esc_html( $lvc_term->name ); ?> &mdash; browse the complete list.</p>
-			</header>
-			<ul class="lcv-villa-index">
-				<?php while ( $lvc_all_area->have_posts() ) : $lvc_all_area->the_post(); ?>
-					<li><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_field( 'h1_property_title' ) ?: get_the_title() ); ?></a></li>
-				<?php endwhile; ?>
-			</ul>
-		</div>
-	</section>
-	<?php endif; wp_reset_postdata(); ?>
-
 	<?php if ( $lvc_intro ) : ?>
 	<section class="lvc-area-section">
 		<div class="lvc-area-wrap lvc-area-intro">
@@ -375,6 +337,53 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 		</div>
 	</section>
 	<?php endif; ?>
+
+	<?php
+	/*
+	 * Full crawlable villa index — one contextual internal link to EVERY villa
+	 * in this area (this is what took the site from 113 "crawled not indexed"
+	 * villas to indexed; do NOT remove links from the DOM). Restyled compact +
+	 * moved to the page tail per Luis: a quiet A–Z directory rather than a
+	 * headline section — crawlers always reach it, browsers rarely need it.
+	 * Shown only when the area has more villas than the grid's first page (9).
+	 */
+	$lvc_all_area = $lvc_term ? new WP_Query( array(
+		'post_type'      => $lvc_cpt,
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'no_found_rows'  => true,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'tax_query'      => array( array( 'taxonomy' => 'area', 'field' => 'term_id', 'terms' => (int) $lvc_term->term_id ) ),
+	) ) : null;
+	if ( $lvc_all_area && $lvc_all_area->post_count > 9 ) : ?>
+	<style>
+	.lcv-area-all-villas{padding-top:clamp(2.5rem,4vw,3.5rem);padding-bottom:clamp(2.5rem,4vw,3.5rem);border-top:1px solid var(--lvc-border)}
+	.lcv-villa-index__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1rem;margin:0 0 1.25rem}
+	.lcv-villa-index__head h2{margin:0;font-family:var(--lvc-font-display);font-weight:300;font-size:1.15rem;color:var(--lvc-text)}
+	.lcv-villa-index__head span{color:var(--lvc-muted);font-size:.78rem}
+	.lcv-villa-index{list-style:none;margin:0;padding:0;columns:4;column-gap:2rem}
+	.lcv-villa-index li{break-inside:avoid;margin:0;padding:.3rem 0}
+	.lcv-villa-index a{color:var(--lvc-muted);font-size:.8rem;line-height:1.4;text-decoration:none}
+	.lcv-villa-index a:hover{color:var(--lvc-accent)}
+	@media(max-width:1100px){.lcv-villa-index{columns:3}}
+	@media(max-width:900px){.lcv-villa-index{columns:2}}
+	@media(max-width:560px){.lcv-villa-index{columns:1}}
+	</style>
+	<section class="lvc-area-section lcv-area-all-villas" aria-label="Full villa index">
+		<div class="lvc-area-wrap">
+			<div class="lcv-villa-index__head">
+				<h2><?php echo esc_html( $lvc_term->name ); ?> villa index</h2>
+				<span><?php echo (int) $lvc_all_area->post_count; ?> properties, A&ndash;Z</span>
+			</div>
+			<ul class="lcv-villa-index">
+				<?php while ( $lvc_all_area->have_posts() ) : $lvc_all_area->the_post(); ?>
+					<li><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_field( 'h1_property_title' ) ?: get_the_title() ); ?></a></li>
+				<?php endwhile; ?>
+			</ul>
+		</div>
+	</section>
+	<?php endif; wp_reset_postdata(); ?>
 
 	<section class="lvc-area-section lvc-area-cta">
 		<div class="lvc-area-narrow">
