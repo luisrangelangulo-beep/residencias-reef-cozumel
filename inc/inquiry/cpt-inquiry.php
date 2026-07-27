@@ -39,6 +39,14 @@ if ( ! function_exists( 'lvc_register_inquiry_cpt' ) ) {
 				'menu_icon'           => 'dashicons-email-alt2',
 				'menu_position'       => 26,
 				'supports'            => array( 'title' ),
+				// Least-privilege PII access: inquiries hold guest names,
+				// emails, and phone numbers, so they use their own capability
+				// set instead of inheriting 'post' caps. Without this an
+				// Editor or Author account can read every lead. Only
+				// manage_options (admins) is granted these caps below, and
+				// dynamically — see the user_has_cap filter — so removing this
+				// code removes the access with no orphaned capability rows.
+				'capability_type'     => array( 'lvc_inquiry', 'lvc_inquiries' ),
 				'capabilities'        => array(
 					'create_posts' => 'do_not_allow', // only created programmatically on submit
 				),
@@ -47,6 +55,38 @@ if ( ! function_exists( 'lvc_register_inquiry_cpt' ) ) {
 		);
 	}
 }
+
+/*
+ * Grant the custom inquiry capabilities to administrators only. Granted
+ * dynamically (not persisted to the DB role) so removing this code removes
+ * the access — no orphaned capability rows to clean up later, and no
+ * activation/deactivation hook to maintain.
+ */
+add_filter(
+	'user_has_cap',
+	function ( $allcaps ) {
+		if ( ! empty( $allcaps['manage_options'] ) ) {
+			foreach ( array(
+				'edit_lvc_inquiry',
+				'read_lvc_inquiry',
+				'delete_lvc_inquiry',
+				'edit_lvc_inquiries',
+				'edit_others_lvc_inquiries',
+				'read_private_lvc_inquiries',
+				'delete_lvc_inquiries',
+				'delete_private_lvc_inquiries',
+				'delete_published_lvc_inquiries',
+				'delete_others_lvc_inquiries',
+				'edit_private_lvc_inquiries',
+				'edit_published_lvc_inquiries',
+				'publish_lvc_inquiries',
+			) as $cap ) {
+				$allcaps[ $cap ] = true;
+			}
+		}
+		return $allcaps;
+	}
+);
 
 /**
  * Persist one inquiry submission as an `inquiry` post. Called before
@@ -156,4 +196,47 @@ add_action(
 	},
 	10,
 	2
+);
+
+/*
+ * PII retention: inquiries older than the retention window are deleted daily
+ * — long enough for repeat-guest context and any billing dispute, short
+ * enough to honor data-minimization. Default 24 months, matching RMOF / THV /
+ * PMVR. The window is filterable so a brand in a stricter jurisdiction can
+ * shorten it without editing core:
+ *     add_filter( 'lvc_inquiry_retention_months', fn() => 12 );
+ * A window of 0 (or negative) disables purging entirely.
+ */
+add_action(
+	'init',
+	function () {
+		if ( ! wp_next_scheduled( 'lvc_purge_old_inquiries' ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'lvc_purge_old_inquiries' );
+		}
+	}
+);
+
+add_action(
+	'lvc_purge_old_inquiries',
+	function () {
+		$months = (int) apply_filters( 'lvc_inquiry_retention_months', 24 );
+		if ( $months < 1 ) {
+			return; // Retention disabled.
+		}
+
+		$old = get_posts(
+			array(
+				'post_type'      => 'inquiry',
+				'post_status'    => 'any',
+				'posts_per_page' => 100,
+				'fields'         => 'ids',
+				'date_query'     => array(
+					array( 'before' => $months . ' months ago' ),
+				),
+			)
+		);
+		foreach ( $old as $post_id ) {
+			wp_delete_post( $post_id, true );
+		}
+	}
 );
