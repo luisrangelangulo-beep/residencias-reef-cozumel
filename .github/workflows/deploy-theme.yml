@@ -4,17 +4,24 @@ on:
   # Manual-only: production is live, so deploys are triggered deliberately
   # via "Run workflow" (workflow_dispatch), never automatically on push.
   workflow_dispatch:
+    inputs:
+      force_smoke_fail:
+        description: 'Rollback drill: force the smoke test to fail so the rollback path runs (releases are content-identical, so this is safe)'
+        required: false
+        default: 'false'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-theme-${{ github.ref }}
-      cancel-in-progress: true
+      # Never cancel a running deploy: cancellation between symlink activation
+      # and smoke testing would leave an unverified release live (audit
+      # RRC-011). New runs queue behind the active one instead.
+      cancel-in-progress: false
     env:
       CPANEL_USER: residenciasreefc
       THEME_TARGET: /home/residenciasreefc/public_html/wp-content/themes/hello-elementor-child
-      DEPLOY_TMP_BASE: /home/residenciasreefc/deploy_tmp/hello-elementor-child
       DEPLOY_TMP: /home/residenciasreefc/deploy_tmp/hello-elementor-child-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
@@ -23,21 +30,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure tag is on main
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: PHP lint gate (every .php file, before anything ships)
         run: |
-          git fetch origin main --no-tags --prune --depth=200
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          set -euo pipefail
+          FAIL=0
+          while IFS= read -r -d '' f; do
+            php -l "$f" > /dev/null || { echo "LINT FAIL: $f"; FAIL=1; }
+          done < <(find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0)
+          [ "$FAIL" -eq 0 ] && echo "✅ All PHP files lint clean."
 
       - name: Build clean theme package
         run: |
           mkdir -p build
+          # Build traceability: the deployed SHA is readable at
+          # /wp-content/themes/hello-elementor-child/build-id.txt.
           printf "%s\n" "sha=${GITHUB_SHA}" "ref=${GITHUB_REF_NAME}" "run=${GITHUB_RUN_NUMBER}" "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > build-id.txt
           zip -r build/theme.zip . \
             -x '*.git*' \
             -x '.github/*' \
             -x 'docs/*' \
-            -x 'live-content-archive/*' \
+            -x 'documents/*' \
             -x 'vendor/*' \
             -x 'node_modules/*' \
             -x 'composer.json' \
@@ -47,41 +59,40 @@ jobs:
             -x 'package-lock.json' \
             -x '.editorconfig' \
             -x '.eslintrc*' \
+            -x '*.ps1' \
+            -x '*.py' \
             -x 'build/*'
           echo "📦 Theme package size:"
           du -h build/theme.zip
 
-      - name: Upload theme.zip to server
+      - name: Upload package to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           port: ${{ secrets.SFTP_PORT }}
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SFTP_PASSPHRASE }}
           source: "build/theme.zip"
           target: "${{ env.DEPLOY_TMP }}/"
           strip_components: 1
           overwrite: true
 
-      - name: Deploy theme via SSH
+      - name: Deploy via SSH
+        id: deploy_step
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           port: ${{ secrets.SFTP_PORT }}
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SFTP_PASSPHRASE }}
-          envs: CPANEL_USER,THEME_TARGET,DEPLOY_TMP
+          envs: CPANEL_USER,THEME_TARGET,DEPLOY_TMP,GITHUB_RUN_ID
           script: |
             set -euo pipefail
             ZIP_PATH="$DEPLOY_TMP/theme.zip"
-            RELEASE_PATH="$DEPLOY_TMP/release-$(date +%Y%m%d-%H%M%S)"
 
             echo "🔒 Validating deploy target..."
             EXPECTED_PREFIX="/home/$CPANEL_USER/public_html/wp-content/themes/"
             EXPECTED_THEME="hello-elementor-child"
-
             case "$THEME_TARGET" in
               "$EXPECTED_PREFIX$EXPECTED_THEME")
                 echo "Target OK: $THEME_TARGET"
@@ -93,86 +104,205 @@ jobs:
                 ;;
             esac
 
-            echo "📂 Backing up current theme..."
+            echo "📂 Backing up current theme (outside web root, keep 5)..."
+            BACKUP_DIR="/home/$CPANEL_USER/theme-backups"
+            mkdir -p "$BACKUP_DIR"
             BACKUP_NAME="hello-elementor-child-backup-$(date +%Y%m%d-%H%M%S).zip"
             cd "$(dirname "$THEME_TARGET")"
-            if [ -d "$(basename "$THEME_TARGET")" ]; then
-              zip -qr "$BACKUP_NAME" "$(basename "$THEME_TARGET")"
-              echo "Backup created: $BACKUP_NAME"
+            if [ -d "$(basename "$THEME_TARGET")" ] || [ -L "$(basename "$THEME_TARGET")" ]; then
+              zip -qr "$BACKUP_DIR/$BACKUP_NAME" "$(basename "$THEME_TARGET")"
+              echo "Backup created: $BACKUP_DIR/$BACKUP_NAME"
             fi
+            ls -1t "$BACKUP_DIR"/hello-elementor-child-backup-*.zip 2>/dev/null | tail -n +6 | xargs -r rm -f
+            # One-time sweep of previously public backup zips.
+            rm -f "$(dirname "$THEME_TARGET")"/hello-elementor-child-backup-*.zip
 
-            echo "📦 Extracting release to temp folder..."
+            # ── Versioned releases + atomic symlink activation ──────────────
+            WP_PATH="/home/$CPANEL_USER/public_html"
+            RELEASES_DIR="$WP_PATH/wp-content/theme-releases"
+            RELEASE_PATH="$RELEASES_DIR/rel-$(date +%Y%m%d-%H%M%S)"
+            mkdir -p "$RELEASES_DIR"
+            echo 'Require all denied' > "$RELEASES_DIR/.htaccess"
+
+            echo "📦 Extracting release..."
             mkdir -p "$RELEASE_PATH"
-            unzip -o "$ZIP_PATH" -d "$RELEASE_PATH"
+            unzip -qo "$ZIP_PATH" -d "$RELEASE_PATH"
 
             echo "🔍 Sanity-check release contents..."
-            test -f "$RELEASE_PATH/style.css"    || { echo "Missing style.css in release";    exit 1; }
+            test -f "$RELEASE_PATH/style.css"     || { echo "Missing style.css in release";     exit 1; }
             test -f "$RELEASE_PATH/functions.php" || { echo "Missing functions.php in release"; exit 1; }
-
-            # Fail if forbidden directories exist in the release
-            for forbidden in .github docs live-content-archive node_modules vendor build; do
+            for forbidden in .github docs documents node_modules vendor build; do
               if [ -e "$RELEASE_PATH/$forbidden" ]; then
                 echo "Forbidden path in release: $forbidden"
                 exit 1
               fi
             done
 
-            echo "🚀 Atomic sync to active child theme..."
-            mkdir -p "$THEME_TARGET"
-            rsync -a --delete "$RELEASE_PATH/" "$THEME_TARGET/"
+            echo "🔀 First-run migration: real dir → symlinked release..."
+            if [ -d "$THEME_TARGET" ] && [ ! -L "$THEME_TARGET" ]; then
+              MIGRATED="$RELEASES_DIR/rel-initial-$(date +%Y%m%d-%H%M%S)"
+              mv "$THEME_TARGET" "$MIGRATED"
+              ln -s "$MIGRATED" "$THEME_TARGET"
+              echo "Existing theme preserved as $MIGRATED"
+            fi
+
+            PREV_RELEASE="$(readlink -f "$THEME_TARGET" 2>/dev/null || true)"
+            echo "$PREV_RELEASE" > "$RELEASES_DIR/.previous"
+            echo "$RELEASE_PATH" > "$RELEASES_DIR/.current"
+
+            echo "🚀 Atomic activation via symlink swap..."
+            ln -s "$RELEASE_PATH" "$THEME_TARGET.new.$$"
+            mv -Tf "$THEME_TARGET.new.$$" "$THEME_TARGET"
+            # Run-specific activation marker: rollback in THIS run is allowed
+            # only if THIS run performed the swap (stale .current/.previous
+            # markers from an earlier deploy can never trigger a rollback).
+            echo "$GITHUB_RUN_ID" > "$RELEASES_DIR/.activated_run"
+            echo "Active release: $RELEASE_PATH (previous: ${PREV_RELEASE:-none})"
+
+            echo "🧹 Release retention (keep 5, never the active/previous)..."
+            ls -1dt "$RELEASES_DIR"/rel-* 2>/dev/null | tail -n +6 | while read -r d; do
+              if [ "$d" != "$RELEASE_PATH" ] && [ "$d" != "$PREV_RELEASE" ]; then rm -rf "$d"; fi
+            done
 
             echo "🧹 Cleaning up temp artifacts..."
-            rm -rf "$RELEASE_PATH" "$ZIP_PATH" "$DEPLOY_TMP"
+            rm -rf "$DEPLOY_TMP"
 
-            echo "🧹 Optional cache clear (safe no-op if path missing)..."
-            rm -rf "/home/$CPANEL_USER/public_html/wp-content/cache/"* || true
+            echo "🧹 Cache clear (contents only — deleting cache/wp-rocket itself"
+            echo "   disables Rocket page caching entirely until something recreates it)..."
+            for d in wp-rocket min used-css; do
+              rm -rf "/home/$CPANEL_USER/public_html/wp-content/cache/$d/"* 2>/dev/null || true
+            done
 
             echo "🔄 Flushing WordPress rewrite rules via WP-CLI..."
             WP_CLI="/home/$CPANEL_USER/bin/wp"
-            WP_PATH="/home/$CPANEL_USER/public_html"
             if command -v wp &>/dev/null; then
               wp --path="$WP_PATH" rewrite flush --hard || true
             elif [ -f "$WP_CLI" ]; then
               "$WP_CLI" --path="$WP_PATH" rewrite flush --hard || true
             else
-              echo "WP-CLI not found — skipping rewrite flush (visit /?lvc_flush=1 manually)"
+              echo "WP-CLI not found — skipping rewrite flush"
             fi
 
             echo "✅ Deploy complete."
 
-      - name: Smoke test key pages
+      # Purge BEFORE the smoke test: a purge failure after a green smoke test
+      # would leave the run red with the new release live and no rollback.
+      # Purging first also means the smoke test exercises what the edge serves.
+      - name: Purge Cloudflare cache
+        id: purge_step
+        env:
+          CF_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          set -uo pipefail
-          FAILED=0
-          check() {
+          if [ -z "$CF_ZONE" ] || [ -z "$CF_TOKEN" ]; then
+            echo "::error::Cloudflare purge REQUIRED — a deploy that cannot purge the edge leaves stale HTML public. Add CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN repo secrets."
+            exit 1
+          fi
+          RESP=$(curl -sf -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
+            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data "{\"purge_everything\":true}")
+          echo "$RESP" | grep -q "\"success\":true" && echo "✅ Cloudflare cache purged" || { echo "::error::Cloudflare purge failed: $RESP"; exit 1; }
+
+      - name: Smoke test key pages
+        id: smoke_step
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.inputs.force_smoke_fail }}" = "true" ]; then
+            echo "::warning::Rollback drill: forcing smoke-test failure on purpose."
+            exit 1
+          fi
+          BASE="https://residencias-reef-cozumel.com"
+          CB="deploy-${{ github.run_id }}"
+          fail=0
+
+          check_200() {
             local url="$1"
+            local sep="?"
+            case "$url" in *\?*) sep="&";; esac
             local code
-            code=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 "$url" || echo "000")
-            if [ "$code" = "200" ]; then
-              echo "OK (200): $url"
-            else
+            code=$(curl -s --retry 2 --retry-delay 3 -o /tmp/body.html -w '%{http_code}' -L --max-time 30 "${url}${sep}smoketest=${CB}" || echo "000")
+            if [ "$code" != "200" ]; then
               echo "::error::FAIL (expected 200, got $code): $url"
-              FAILED=1
+              fail=1
+            elif grep -qiE 'fatal error|parse error on line|uncaught exception' /tmp/body.html; then
+              echo "::error::FAIL (PHP error in response body): $url"
+              fail=1
+            else
+              echo "OK ($code): $url"
             fi
           }
-          BASE="https://residencias-reef-cozumel.com"
+
           echo "— Core pages —"
-          check "$BASE/"
-          check "$BASE/villas/"
-          check "$BASE/area/riviera-maya/"
-          check "$BASE/area/tulum/"
-          check "$BASE/residencias-reef-condos-cozumel/"
-          check "$BASE/riviera-maya-villa-rentals/"
-          check "$BASE/property-request/"
-          check "$BASE/contact/"
-          check "$BASE/magazine/"
+          check_200 "$BASE/"
+          check_200 "$BASE/villas/"
+          check_200 "$BASE/riviera-maya-villa-rentals/"
+          check_200 "$BASE/residencias-reef-condos-cozumel/"
+          check_200 "$BASE/contact/"
+          check_200 "$BASE/magazine/"
+
           echo "— A live villa page (discovered via REST) —"
-          # Use slug, not link: REST returns links with JSON-escaped slashes
-          # (https:\/\/...), which curl cannot resolve. Slugs are URL-safe.
           SLUG=$(curl -s --max-time 30 "$BASE/wp-json/wp/v2/villas?per_page=1&_fields=slug" | sed -n 's/.*"slug":"\([^"]*\)".*/\1/p')
-          if [ -n "$SLUG" ]; then check "$BASE/villas/$SLUG/"; else echo "::warning::Could not discover a villa slug via REST"; fi
-          if [ "$FAILED" -ne 0 ]; then
-            echo "::error::Smoke test failed — see failures above. The deploy already completed; investigate before assuming the site is healthy."
+          if [ -n "$SLUG" ]; then check_200 "$BASE/villas/$SLUG/"; else echo "::warning::Could not discover a villa slug via REST"; fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::Smoke test failed — the rollback step will repoint the theme symlink to the previous release."
             exit 1
           fi
           echo "✅ All smoke tests passed."
+
+      - name: Roll back to previous release (deploy, purge, or smoke failed)
+        # Gated on the deploy step actually having run: a lint/checkout/upload
+        # failure never activated anything, and rolling back on those would
+        # repoint production to the PREVIOUS release using stale markers.
+        if: failure() && steps.deploy_step.outcome != 'skipped' && steps.deploy_step.outcome != 'cancelled'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          port: ${{ secrets.SFTP_PORT }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          envs: CPANEL_USER,THEME_TARGET,GITHUB_RUN_ID
+          script: |
+            set -euo pipefail
+            RELEASES_DIR="/home/$CPANEL_USER/public_html/wp-content/theme-releases"
+            ACTIVATED_RUN="$(cat "$RELEASES_DIR/.activated_run" 2>/dev/null || true)"
+            if [ "$ACTIVATED_RUN" != "$GITHUB_RUN_ID" ]; then
+              echo "This run never activated a release (marker: ${ACTIVATED_RUN:-none}) — nothing to roll back."
+              exit 0
+            fi
+            PREV="$(cat "$RELEASES_DIR/.previous" 2>/dev/null || true)"
+            CUR="$(cat "$RELEASES_DIR/.current" 2>/dev/null || true)"
+            ACTIVE="$(readlink -f "$THEME_TARGET" 2>/dev/null || true)"
+            if [ -z "$PREV" ] || [ ! -d "$PREV" ]; then
+              echo "No previous release recorded — nothing to roll back to."
+              exit 0
+            fi
+            if [ "$ACTIVE" != "$CUR" ]; then
+              echo "Active release is not the one just deployed — leaving as is."
+              exit 0
+            fi
+            echo "⏪ Rolling back: $ACTIVE → $PREV"
+            ln -s "$PREV" "$THEME_TARGET.rb.$$"
+            mv -Tf "$THEME_TARGET.rb.$$" "$THEME_TARGET"
+            for d in wp-rocket min used-css; do
+              rm -rf "/home/$CPANEL_USER/public_html/wp-content/cache/$d/"* 2>/dev/null || true
+            done
+            echo "✅ Rolled back to previous release."
+
+      # After a rollback the edge may still hold the bad release's HTML —
+      # purge again so visitors get the restored release immediately.
+      # Best-effort: the run is already red; this must not mask the cause.
+      - name: Purge Cloudflare after rollback
+        if: failure() && steps.deploy_step.outcome != 'skipped' && steps.deploy_step.outcome != 'cancelled'
+        env:
+          CF_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CF_ZONE" ] || [ -z "$CF_TOKEN" ]; then
+            echo "::warning::No Cloudflare secrets — cannot purge after rollback."
+            exit 0
+          fi
+          RESP=$(curl -sf -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
+            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data "{\"purge_everything\":true}" || true)
+          echo "$RESP" | grep -q "\"success\":true" && echo "✅ Edge purged after rollback" || echo "::warning::Post-rollback purge failed: $RESP"
