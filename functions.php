@@ -32,6 +32,7 @@ foreach ( array(
 	'inc/conversion/inquiry-frontend.php',
 	'inc/sync/rest-sync.php',
 	'inc/seo/schema.php',
+	'inc/seo/legacy-redirects.php',
 	'inc/template-router.php',
 ) as $lvc_relative ) {
 	$lvc_path = LVC_DIR . '/' . $lvc_relative;
@@ -161,7 +162,7 @@ if ( ! function_exists( 'lvc_image_host_allowed' ) ) {
 			return false;
 		}
 		$site_host = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
-		$allowed_exact    = array( $site_host, 'www.' . $site_host, 'images.rmoceanfrontrentals.com' );
+		$allowed_exact    = array( $site_host, 'www.' . $site_host, 'images.' . $site_host, 'images.rmoceanfrontrentals.com' );
 		$allowed_suffixes = array( '.r2.dev', '.wp.com' );
 		if ( in_array( $host, $allowed_exact, true ) ) {
 			return true;
