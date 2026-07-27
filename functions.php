@@ -31,7 +31,6 @@ foreach ( array(
 	'inc/inquiry/ajax-handler.php',
 	'inc/conversion/float-actions.php',
 	'inc/conversion/inquiry-frontend.php',
-	'inc/sync/rest-sync.php',
 	'inc/seo/schema.php',
 	'inc/seo/legacy-redirects.php',
 	'inc/template-router.php',
