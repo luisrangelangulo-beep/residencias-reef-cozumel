@@ -67,8 +67,39 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ), 403 );
 		}
 
-		// Honeypot — bots fill hidden fields.
-		if ( ! empty( $_POST['website'] ) ) {
+		/*
+		 * Honeypot — bots fill hidden fields. Two safeguards against the
+		 * failure mode where a REAL lead dies with a fake success (proven on
+		 * a sibling site, where browser autofill filled name="website"):
+		 * the field is now lvc_hp (legacy name still checked for cached
+		 * pages), and hits are stored as spam-flagged records (per-IP
+		 * capped) so a false positive is recoverable, never silently lost.
+		 */
+		if ( ! empty( $_POST['lvc_hp'] ) || ! empty( $_POST['website'] ) ) {
+			$hp_rate_key = 'lvc_inq_' . md5( (string) ( $_SERVER['REMOTE_ADDR'] ?? 'unknown' ) );
+			$hp_count    = (int) get_transient( $hp_rate_key );
+			if ( $hp_count < 6 && function_exists( 'lvc_save_inquiry' ) ) {
+				set_transient( $hp_rate_key, $hp_count + 1, HOUR_IN_SECONDS );
+				$hp_id = lvc_save_inquiry( array(
+					'type'       => 'guest',
+					'name'       => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+					'email'      => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '',
+					'phone'      => isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '',
+					'checkin'    => isset( $_POST['checkin'] ) ? sanitize_text_field( wp_unslash( $_POST['checkin'] ) ) : '',
+					'checkout'   => isset( $_POST['checkout'] ) ? sanitize_text_field( wp_unslash( $_POST['checkout'] ) ) : '',
+					'guests'     => isset( $_POST['guests'] ) ? absint( $_POST['guests'] ) : 0,
+					'budget'     => '',
+					'message'    => isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '',
+					'property'   => isset( $_POST['property_name'] ) ? sanitize_text_field( wp_unslash( $_POST['property_name'] ) ) : '',
+					'source_url' => isset( $_POST['source_url'] ) ? esc_url_raw( wp_unslash( $_POST['source_url'] ) ) : '',
+					'extra'      => array(),
+					'ip'         => $_SERVER['REMOTE_ADDR'] ?? '',
+					'site'       => (string) lvc_config( 'brand_name', home_url() ),
+				) );
+				if ( $hp_id ) {
+					update_post_meta( $hp_id, 'spam_suspect', 1 );
+				}
+			}
 			wp_send_json_success( array( 'message' => 'Thank you.' ) );
 		}
 
@@ -136,8 +167,12 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 		$budget      = isset( $_POST['budget'] ) ? sanitize_text_field( wp_unslash( $_POST['budget'] ) ) : '';
 
 		// Generic capture of any known optional fields, in a stable order.
+		// UTM/attribution + property context ride along so paid-campaign
+		// source and the exact unit reach the stored lead (audit RRC-012/020).
 		$extra_keys = apply_filters( 'lvc_inquiry_extra_fields', array(
 			'destination', 'area', 'checkin', 'checkout', 'guests', 'budget', 'bedrooms', 'preferred_area', 'listing_url',
+			'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'landing_page', 'referrer',
+			'property_id', 'adults', 'children',
 		) );
 		$extra = array();
 		foreach ( (array) $extra_keys as $k ) {
@@ -216,6 +251,32 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			$headers[] = 'Cc: ' . $support;
 		}
 
+		/*
+		 * Idempotency (audit RRC-012): one UUID per form load — a retry after
+		 * a mail failure or a network hiccup must not create a second lead.
+		 * The duplicate flag rides back so analytics never double-counts.
+		 */
+		$client_uuid = isset( $_POST['client_uuid'] ) ? sanitize_text_field( wp_unslash( $_POST['client_uuid'] ) ) : '';
+		if ( '' !== $client_uuid && preg_match( '/^[0-9a-f-]{16,64}$/i', $client_uuid ) ) {
+			$dupe = get_posts( array(
+				'post_type'      => 'inquiry',
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_key'       => 'client_uuid',
+				'meta_value'     => $client_uuid,
+				'date_query'     => array( array( 'after' => '24 hours ago' ) ),
+				'no_found_rows'  => true,
+			) );
+			if ( $dupe ) {
+				wp_send_json_success( array(
+					'message'   => 'Your inquiry was already received (ref #' . (int) $dupe[0] . '). We will be in touch — no need to resubmit.',
+					'lead_id'   => (int) $dupe[0],
+					'duplicate' => true,
+				) );
+			}
+		}
+
 		// Persist BEFORE attempting delivery — these leads are worth
 		// $30k-45k each; previously the inbox was the only record, so an
 		// SMTP outage, spam-folder landing, or throttling meant the lead
@@ -240,18 +301,32 @@ if ( ! function_exists( 'lvc_handle_inquiry' ) ) {
 			) );
 		}
 
+		if ( $inquiry_post_id && '' !== $client_uuid && preg_match( '/^[0-9a-f-]{16,64}$/i', $client_uuid ) ) {
+			update_post_meta( $inquiry_post_id, 'client_uuid', $client_uuid );
+		}
+
 		$sent = wp_mail( $recipient, $subject, $body, $headers );
 
 		if ( $inquiry_post_id && ! $sent ) {
 			update_post_meta( $inquiry_post_id, 'mail_failed', 1 );
 		}
 
-		if ( $sent ) {
-			do_action( 'lvc_inquiry_submitted', compact( 'name', 'email', 'phone', 'property', 'type', 'inquiry_post_id' ) );
-			wp_send_json_success( array( 'message' => 'Thank you. We will respond ' . lvc_config( 'response_time', 'soon' ) . '.' ) );
-		}
+		do_action( 'lvc_inquiry_submitted', compact( 'name', 'email', 'phone', 'property', 'type', 'inquiry_post_id' ) );
 
-		// Email failed, but the lead is safely stored (mail_failed flag above).
-		wp_send_json_error( array( 'message' => 'Email delivery failed. Please try again or message us on WhatsApp.' ), 500 );
+		/*
+		 * Saved lead = success (audit RRC-012): the old mail-failure path
+		 * told the visitor to retry a lead that was already stored — the
+		 * retry created a duplicate. A stored lead gets a success receipt
+		 * either way; only total failure (no store AND no mail) errors.
+		 */
+		if ( $inquiry_post_id || $sent ) {
+			wp_send_json_success( array(
+				'message' => $sent
+					? 'Thank you. We will respond ' . lvc_config( 'response_time', 'soon' ) . '.'
+					: 'Your inquiry was received' . ( $inquiry_post_id ? ' (ref #' . (int) $inquiry_post_id . ')' : '' ) . '. Our email notification is delayed on our side — no need to resubmit; we will be in touch.',
+				'lead_id' => (int) $inquiry_post_id,
+			) );
+		}
+		wp_send_json_error( array( 'message' => 'Something went wrong on our side. Please message us on WhatsApp.' ), 500 );
 	}
 }

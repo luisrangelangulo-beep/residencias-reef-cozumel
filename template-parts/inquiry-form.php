@@ -19,10 +19,15 @@ $lvc_submit   = isset( $args['submit_label'] ) ? (string) $args['submit_label'] 
 	<input type="hidden" name="_wpnonce" value="<?php echo esc_attr( wp_create_nonce( $lvc_action ) ); ?>">
 	<input type="hidden" name="inquiry_type" value="<?php echo esc_attr( $lvc_type ); ?>">
 	<input type="hidden" name="property_name" value="<?php echo esc_attr( $lvc_prop ); ?>">
+	<?php // Exact unit/property ID on the stored lead (audit RRC-012) — only meaningful on villa singles. ?>
+	<?php if ( is_singular( lvc_config( 'cpt', 'villas' ) ) ) : ?>
+		<input type="hidden" name="property_id" value="<?php echo esc_attr( (string) get_the_ID() ); ?>">
+	<?php endif; ?>
 	<input type="hidden" name="source_url" value="<?php echo esc_url( get_permalink() ?: home_url( '/' ) ); ?>">
 	<input type="hidden" name="lvc_ts" value="<?php echo esc_attr( time() ); ?>">
 	<?php // Honeypot — visually hidden; bots fill it, humans don't. ?>
-	<input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="lvc-form__hp">
+	<?php // Honeypot: meaningless name — name="website" invited browser autofill to fill it for real humans (silent lead loss, proven on a sibling site). ?>
+	<input type="text" name="lvc_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="lvc-form__hp">
 
 	<div class="lvc-form__row">
 		<div class="lvc-form__group">
