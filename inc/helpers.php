@@ -35,16 +35,59 @@ if ( ! function_exists( 'lvc_whatsapp_url' ) ) {
 }
 
 /**
- * Best-available image URL for a property.
- * Order: FIFU meta → featured image → first URL found in an ACF gallery field.
+ * Best-available image URL for a property — one pipeline for cards AND
+ * heroes (portfolio pattern, per PMVR/Tulum/Republic).
+ *
+ * card (default): feature_image → hero_image → featured image → gallery.
+ * hero: two-tier size guard over [hero_image, feature_image] — ≥1600px
+ *       preferred (a hero-grade card image IS the hero), ≥1000px accepted,
+ *       unknown width (0 = measurement failed) passes so a network hiccup
+ *       never demotes a real photo — then featured image, then the first
+ *       gallery URL that clears ≥1000.
  */
 if ( ! function_exists( 'lvc_property_image' ) ) {
-	function lvc_property_image( $post_id, $size = 'large' ) {
+	function lvc_property_image( $post_id, $size = 'large', $context = 'card' ) {
+		$width_ok = static function ( $url, $min ) {
+			if ( ! function_exists( 'lvc_remote_image_width' ) ) {
+				return true;
+			}
+			$w = lvc_remote_image_width( $url );
+			return 0 === $w || $w >= $min;
+		};
+
+		if ( 'hero' === $context ) {
+			$candidates = array();
+			foreach ( array( 'hero_image', 'feature_image' ) as $field ) {
+				$u = trim( (string) get_post_meta( $post_id, $field, true ) );
+				if ( '' !== $u ) {
+					$candidates[] = $u;
+				}
+			}
+			foreach ( array( 1600, 1000 ) as $min ) {
+				foreach ( $candidates as $u ) {
+					if ( $width_ok( $u, $min ) ) {
+						return esc_url( $u );
+					}
+				}
+			}
+			$img = get_the_post_thumbnail_url( $post_id, $size );
+			if ( $img ) {
+				return esc_url( $img );
+			}
+			foreach ( array( 'gallery_slider', 'gallery_squares', 'gallery' ) as $field ) {
+				$gallery = (string) get_post_meta( $post_id, $field, true );
+				if ( $gallery && preg_match( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) && $width_ok( $m[0], 1000 ) ) {
+					return esc_url( $m[0] );
+				}
+			}
+			return '';
+		}
+
 		/*
-		 * Curated fields first. Without them the card image resolved to whichever
-		 * URL happened to be first in the gallery — true for 99 of 150 villas —
-		 * so cards swapped whenever a gallery was re-ordered or re-synced. The
-		 * gallery fallback is kept last so nothing renders blank.
+		 * Card: curated fields first. Without them the card image resolved to
+		 * whichever URL happened to be first in the gallery — true for 99 of
+		 * 150 villas — so cards swapped whenever a gallery was re-ordered or
+		 * re-synced. The gallery fallback is kept last so nothing renders blank.
 		 */
 		foreach ( array( 'feature_image', 'hero_image' ) as $field ) {
 			$curated = trim( (string) get_post_meta( $post_id, $field, true ) );
@@ -52,10 +95,6 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 				return esc_url( $curated );
 			}
 		}
-
-		// FIFU (Featured Image From URL) is no longer installed; only 4 villas
-		// still carry orphaned fifu_image_url meta. Dropped so the chain is
-		// curated field -> WordPress featured image -> gallery.
 		$img = get_the_post_thumbnail_url( $post_id, $size );
 		if ( ! $img ) {
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
@@ -67,6 +106,38 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 			}
 		}
 		return $img ? esc_url( $img ) : '';
+	}
+}
+
+/* ── Image CDN helpers — right-sized variants via Photon (i0.wp.com) ─────
+ * Same pattern as THV/RMOF/Republic: free, no account, and Photon never
+ * upscales, so HD originals pass through untouched while phones stop
+ * downloading 2000px files for 400px card slots.
+ */
+if ( ! function_exists( 'lvc_cdn_img' ) ) {
+	function lvc_cdn_img( $url, $width ) {
+		$url = trim( (string) $url );
+		if ( '' === $url || 0 !== strpos( $url, 'http' ) ) {
+			return $url;
+		}
+		$host = wp_parse_url( $url, PHP_URL_HOST );
+		if ( ! $host ) {
+			return $url;
+		}
+		if ( preg_match( '/^i[0-3]\.wp\.com$/', $host ) ) {
+			return add_query_arg( 'w', (int) $width, $url );
+		}
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		return 'https://i0.wp.com/' . $host . $path . '?w=' . (int) $width . '&ssl=1';
+	}
+}
+if ( ! function_exists( 'lvc_cdn_srcset' ) ) {
+	function lvc_cdn_srcset( $url, array $widths ) {
+		$parts = array();
+		foreach ( $widths as $w ) {
+			$parts[] = lvc_cdn_img( $url, $w ) . ' ' . (int) $w . 'w';
+		}
+		return implode( ', ', $parts );
 	}
 }
 

@@ -78,27 +78,14 @@ $gallery_square_urls = $lvc_parse_gallery_urls( $gallery_squares );
 $all_gallery_urls    = array_values( array_unique( array_merge( $gallery_slider_urls, $gallery_square_urls ) ) );
 $photo_count         = count( $all_gallery_urls );
 
-// Hero prefers its own field; lvc_property_image() leads with feature_image,
-// which is the card crop and not necessarily the right full-bleed shot.
-$lvc_hero_fits = static function ( $url ) {
-	if ( '' === $url || ! function_exists( 'lvc_remote_image_width' ) ) {
-		return '' !== $url;
-	}
-	// Unknown width (0 = measurement failed) passes — a network hiccup must
-	// never demote a real photo; measurably tiny (<1000px) steps aside.
-	$w = lvc_remote_image_width( $url );
-	return 0 === $w || $w >= 1000;
-};
-$hero_image = trim( (string) get_post_meta( $villa_id, 'hero_image', true ) );
-if ( ! $lvc_hero_fits( $hero_image ) ) {
-	$hero_image = '';
-}
-if ( ! $hero_image ) {
-	$hero_image = lvc_property_image( $villa_id, 'full' );
-	if ( ! $lvc_hero_fits( $hero_image ) ) {
-		$hero_image = '';
-	}
-}
+/*
+ * One hero pipeline for the whole theme (portfolio pattern): the 'hero'
+ * context runs the two-tier size guard (≥1600 preferred — a hero-grade
+ * feature image IS the hero — then ≥1000, unknown passes) over hero_image
+ * and feature_image, then thumbnail, then a size-guarded gallery URL.
+ * This template previously ran its own single-tier chain.
+ */
+$hero_image = lvc_property_image( $villa_id, 'full', 'hero' );
 if ( ! $hero_image && $all_gallery_urls ) {
 	$hero_image = $all_gallery_urls[0];
 }
@@ -299,7 +286,7 @@ get_header();
 
 <main class="rrc-villa">
 	<section class="rrc-hero" aria-label="<?php echo esc_attr( $h1_title ); ?>">
-		<?php if ( $hero_image ) : ?><div class="rrc-hero__bg" style="background-image:url('<?php echo esc_url( $hero_image ); ?>');" role="img" aria-label="<?php echo esc_attr( $h1_title . ' in ' . $location_line ); ?>"></div><?php endif; ?>
+		<?php if ( $hero_image ) : ?><div class="rrc-hero__bg" style="background-image:url('<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $hero_image, 2000 ) : $hero_image ); ?>');" role="img" aria-label="<?php echo esc_attr( $h1_title . ' in ' . $location_line ); ?>"></div><?php endif; ?>
 		<?php if ( $photo_count ) : ?><a href="#gallery" class="rrc-photo-link"><?php echo esc_html( $photo_count ); ?> Photos</a><?php endif; ?>
 		<div class="rrc-container rrc-hero__grid">
 			<div class="rrc-hero__copy">

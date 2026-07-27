@@ -33,8 +33,10 @@ $lvc_specs = array_filter( array(
 ?>
 <a class="lvc-card" href="<?php echo esc_url( $lvc_url ); ?>" aria-label="<?php echo esc_attr( $lvc_name ); ?>">
 	<?php if ( $lvc_img ) : ?>
-		<span class="lvc-card__img" style="--lvc-card-img:url('<?php echo esc_url( $lvc_img ); ?>')">
-			<img src="<?php echo esc_url( $lvc_img ); ?>" alt="<?php echo esc_attr( $lvc_name ); ?>" loading="lazy" decoding="async">
+		<span class="lvc-card__img" style="--lvc-card-img:url('<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>')">
+			<img src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>"
+				<?php if ( function_exists( 'lvc_cdn_srcset' ) ) : ?>srcset="<?php echo esc_attr( lvc_cdn_srcset( $lvc_img, array( 400, 800, 1200 ) ) ); ?>" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"<?php endif; ?>
+				alt="<?php echo esc_attr( $lvc_name ); ?>" loading="lazy" decoding="async">
 		</span>
 	<?php endif; ?>
 	<span class="lvc-card__body">
