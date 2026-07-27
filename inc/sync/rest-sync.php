@@ -1,19 +1,30 @@
 <?php
 /**
- * Luxury Villa Theme Core — Sheet → WordPress sync receiver.
+ * Luxury Villa Theme Core — Sheet → WordPress sync receiver (governed).
  * ─────────────────────────────────────────────────────────────────────────
  * POST /wp-json/lvc/v1/sync   (the Google-Sheet connector pushes here)
  *
- * Auth:  header  X-LVC-Sync-Token  must equal the `lvc_sync_token` option
- *        (set once per site; never stored in the repo).
- * Body:  { "villas": [ { ...one villa's fields... }, ... ] }  (or a single object)
+ * Auth:  header X-LVC-Sync-Token ONLY (query-param auth removed — audit
+ *        RRC-023: tokens in URLs leak into access logs and analytics).
  *
- * Per villa it UPSERTS the CPT by slug (so re-running updates, never duplicates):
- *   - post at the `url` slug (preserves live ranking slugs), fallback community+lot+area
- *   - the 33 ACF fields (only those present in the payload)
- *   - taxonomy terms: destination, area, amenity (one per canonical token),
- *     collection (from travel_experience), bedrooms (from bed_count), catering
- *   - Rank Math title/description, FIFU featured image
+ * Governance (audit RRC-004, ported from the Republic receiver):
+ *   - dry_run: true      → validate + report, write NOTHING
+ *   - allow_term_create  → unknown taxonomy terms are SKIPPED with a warning
+ *                          unless this flag is true (no more taxonomy sprawl
+ *                          from sheet typos). Code-derived terms (bedrooms
+ *                          "N Bedrooms") are exempt.
+ *   - "-" as a field/term value = explicit clear; "" = no change
+ *   - NEW records missing core fields are created as DRAFT (quarantined)
+ *   - updates PRESERVE post_status (a sync can no longer republish a
+ *     paused/off-market unit)
+ *   - off_market field accepted; enforcement lives in
+ *     inc/property/off-market.php
+ *   - amenity set is resolved BEFORE replacing (a row of unknown names can
+ *     no longer wipe curated terms)
+ *   - batch `ok` reflects row failures
+ *
+ * Identity: wp_post_id wins; slug is fallback (rename-safe — see the
+ * Los Cabos duplicate lesson below).
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -34,18 +45,15 @@ add_action( 'rest_api_init', function () {
 	) );
 } );
 
-/** Shared-secret auth: header X-LVC-Sync-Token (or ?token=) vs the lvc_sync_token option. */
+/** Shared-secret auth: header X-LVC-Sync-Token ONLY vs the lvc_sync_token option. */
 function lvc_sync_auth( $request ) {
 	$token = (string) get_option( 'lvc_sync_token', '' );
 	if ( '' === $token ) {
 		return new WP_Error( 'lvc_no_token', 'Sync token not configured on this site.', array( 'status' => 503 ) );
 	}
 	$sent = (string) $request->get_header( 'x_lvc_sync_token' );
-	if ( '' === $sent ) {
-		$sent = (string) $request->get_param( 'token' );
-	}
 	if ( '' === $sent || ! hash_equals( $token, $sent ) ) {
-		return new WP_Error( 'lvc_bad_token', 'Invalid sync token.', array( 'status' => 401 ) );
+		return new WP_Error( 'lvc_bad_token', 'Invalid sync token (header X-LVC-Sync-Token required).', array( 'status' => 401 ) );
 	}
 	return true;
 }
@@ -53,10 +61,14 @@ function lvc_sync_auth( $request ) {
 function lvc_sync_handle( WP_REST_Request $request ) {
 	$body = (array) $request->get_json_params();
 
+	// Governance flags — per-request, read by the helpers via globals.
+	$GLOBALS['lvc_sync_dry']         = ! empty( $body['dry_run'] );
+	$GLOBALS['lvc_sync_allow_terms'] = ! empty( $body['allow_term_create'] );
+
 	$villas = array();
 	if ( isset( $body['villas'] ) && is_array( $body['villas'] ) ) {
 		$villas = $body['villas'];
-	} elseif ( isset( $body['url'] ) || isset( $body['property_name'] ) ) {
+	} elseif ( isset( $body['url'] ) || isset( $body['property_name'] ) || isset( $body['wp_post_id'] ) ) {
 		$villas = array( $body );
 	}
 	if ( ! $villas ) {
@@ -64,14 +76,20 @@ function lvc_sync_handle( WP_REST_Request $request ) {
 	}
 
 	$results = array();
+	$all_ok  = true;
 	foreach ( $villas as $v ) {
-		$results[] = lvc_sync_upsert_villa( (array) $v );
+		$r = lvc_sync_upsert_villa( (array) $v );
+		if ( empty( $r['ok'] ) ) {
+			$all_ok = false;
+		}
+		$results[] = $r;
 	}
-	$created = count( array_filter( $results, function ( $r ) { return ! empty( $r['ok'] ) && 'created' === ( $r['action'] ?? '' ); } ) );
+	$created = count( array_filter( $results, function ( $r ) { return ! empty( $r['ok'] ) && 0 === strpos( (string) ( $r['action'] ?? '' ), 'created' ); } ) );
 	$updated = count( array_filter( $results, function ( $r ) { return ! empty( $r['ok'] ) && 'updated' === ( $r['action'] ?? '' ); } ) );
 
 	return new WP_REST_Response( array(
-		'ok'      => true,
+		'ok'      => $all_ok,
+		'dry_run' => ! empty( $GLOBALS['lvc_sync_dry'] ),
 		'count'   => count( $results ),
 		'created' => $created,
 		'updated' => $updated,
@@ -90,24 +108,111 @@ function lvc_sync_label( $token ) {
 	return ucwords( str_replace( array( '-', '_' ), ' ', strtolower( trim( (string) $token ) ) ) );
 }
 
-/** Ensure a term exists (by slug) and assign it to the post. $append=false replaces. */
-function lvc_sync_term( $post_id, $tax, $name, $append = true ) {
+/**
+ * Assign a term to the post. $append=false replaces.
+ *
+ * Unknown terms are NOT auto-created (audit RRC-004) — they are skipped and
+ * the warning is returned for the row report. Deliberate new terms require
+ * allow_term_create=true on the request. $force_create is for CODE-derived
+ * names only (bedrooms "N Bedrooms"), never raw sheet input. The literal
+ * value "-" clears the taxonomy.
+ *
+ * @return string|null Warning message, or null when assigned/cleared.
+ */
+function lvc_sync_term( $post_id, $tax, $name, $append = true, $force_create = false ) {
 	$name = trim( (string) $name );
-	if ( '' === $name || ! taxonomy_exists( $tax ) ) {
-		return;
+	if ( ! taxonomy_exists( $tax ) ) {
+		return null;
+	}
+	if ( '-' === $name ) {
+		if ( empty( $GLOBALS['lvc_sync_dry'] ) ) {
+			wp_set_object_terms( $post_id, array(), $tax, false );
+		}
+		return null;
+	}
+	if ( '' === $name ) {
+		return null;
 	}
 	$slug = sanitize_title( $name );
 	$term = get_term_by( 'slug', $slug, $tax );
 	if ( $term ) {
 		$tid = (int) $term->term_id;
-	} else {
+	} elseif ( $force_create || ! empty( $GLOBALS['lvc_sync_allow_terms'] ) ) {
+		if ( ! empty( $GLOBALS['lvc_sync_dry'] ) ) {
+			return "dry_run: would CREATE term '{$slug}' in {$tax}";
+		}
 		$res = wp_insert_term( $name, $tax, array( 'slug' => $slug ) );
 		if ( is_wp_error( $res ) ) {
-			return;
+			return "term '{$slug}' ({$tax}) failed: " . $res->get_error_message();
 		}
 		$tid = (int) $res['term_id'];
+	} else {
+		return "unknown term '{$slug}' in {$tax} skipped — pass allow_term_create=true if deliberate";
 	}
-	wp_set_object_terms( $post_id, array( $tid ), $tax, $append );
+	if ( empty( $GLOBALS['lvc_sync_dry'] ) ) {
+		wp_set_object_terms( $post_id, array( $tid ), $tax, $append );
+	}
+	return null;
+}
+
+/**
+ * Replace a post's terms with a comma-separated incoming SET — but resolve
+ * the whole set first (the old clear-then-assign flow wiped existing terms
+ * even when every incoming name failed to resolve).
+ *
+ * Semantics match lvc_sync_term(): '' = no change, '-' = explicit clear.
+ * The replace only happens when at least one incoming term resolved.
+ *
+ * @return string[] Warning messages (possibly empty).
+ */
+function lvc_sync_term_set( $post_id, $tax, $raw ) {
+	$raw = trim( (string) $raw );
+	if ( ! taxonomy_exists( $tax ) || '' === $raw ) {
+		return array();
+	}
+	if ( '-' === $raw ) {
+		if ( empty( $GLOBALS['lvc_sync_dry'] ) ) {
+			wp_set_object_terms( $post_id, array(), $tax, false );
+		}
+		return array();
+	}
+	$warnings = array();
+	$tids     = array();
+	foreach ( preg_split( '/[\r\n,]+/', $raw ) as $name ) {
+		$name = trim( (string) $name );
+		if ( '' === $name || '-' === $name ) {
+			continue;
+		}
+		$label = lvc_sync_label( $name );
+		$slug  = sanitize_title( $label );
+		$term  = get_term_by( 'slug', $slug, $tax );
+		if ( $term ) {
+			$tids[] = (int) $term->term_id;
+			continue;
+		}
+		if ( ! empty( $GLOBALS['lvc_sync_allow_terms'] ) ) {
+			if ( ! empty( $GLOBALS['lvc_sync_dry'] ) ) {
+				$warnings[] = "dry_run: would CREATE term '{$slug}' in {$tax}";
+				continue;
+			}
+			$res = wp_insert_term( $label, $tax, array( 'slug' => $slug ) );
+			if ( is_wp_error( $res ) ) {
+				$warnings[] = "term '{$slug}' ({$tax}) failed: " . $res->get_error_message();
+				continue;
+			}
+			$tids[] = (int) $res['term_id'];
+			continue;
+		}
+		$warnings[] = "unknown term '{$slug}' in {$tax} skipped — pass allow_term_create=true if deliberate";
+	}
+	if ( empty( $tids ) ) {
+		$warnings[] = "no {$tax} terms resolved — existing terms preserved";
+		return $warnings;
+	}
+	if ( empty( $GLOBALS['lvc_sync_dry'] ) ) {
+		wp_set_object_terms( $post_id, array_values( array_unique( $tids ) ), $tax, false );
+	}
+	return $warnings;
 }
 
 function lvc_sync_upsert_villa( $v ) {
@@ -126,9 +231,6 @@ function lvc_sync_upsert_villa( $v ) {
 	 * which is what produced the duplicate Los Cabos listings. The sheet writes
 	 * `wp_post_id` back on every successful push, so from the second run onward
 	 * identity survives any rename.
-	 *
-	 * The connector must SEND that column, not merely write it back. Fixing this
-	 * receiver alone changes nothing.
 	 */
 	$existing_id = 0;
 	$sent_id     = (int) lvc_sync_val( $v, 'wp_post_id', 0 );
@@ -147,20 +249,68 @@ function lvc_sync_upsert_villa( $v ) {
 		}
 	}
 
-	// A resolved wp_post_id IS identity. Requiring a name alongside it blocks the
-	// most useful operation here: change one cell and push.
 	if ( ! $existing_id && '' === $slug && '' === $name ) {
 		return array( 'ok' => false, 'error' => 'Row identifies nothing: needs wp_post_id, url, or property_name.' );
 	}
 
+	/*
+	 * Publication gate (audit RRC-004): a NEW record missing core fields is
+	 * quarantined as draft instead of going public incomplete. Updates keep
+	 * whatever status the post already has — a sync can no longer republish
+	 * a deliberately paused or off-market unit.
+	 */
+	$quarantine = array();
+	if ( ! $existing_id ) {
+		foreach ( array( 'property_name', 'area', 'bed_count', 'guests_max' ) as $req ) {
+			if ( '' === trim( (string) lvc_sync_val( $v, $req ) ) ) {
+				$quarantine[] = $req;
+			}
+		}
+	}
+
+	if ( ! empty( $GLOBALS['lvc_sync_dry'] ) ) {
+		// Dry run: report what WOULD happen, including term prevalidation.
+		$warnings = array();
+		$tax_specs = array(
+			array( 'area', lvc_sync_val( $v, 'area' ) ),
+			array( 'collection', lvc_sync_val( $v, 'travel_experience' ) ),
+			array( 'catering', lvc_sync_val( $v, 'catering_level' ) ),
+		);
+		foreach ( $tax_specs as $spec ) {
+			$val = trim( (string) $spec[1] );
+			if ( '' === $val || '-' === $val || ! taxonomy_exists( $spec[0] ) ) {
+				continue;
+			}
+			$check_slug = sanitize_title( lvc_sync_label( $val ) );
+			if ( ! get_term_by( 'slug', $check_slug, $spec[0] ) ) {
+				$warnings[] = "unknown term '{$check_slug}' in {$spec[0]} would be skipped";
+			}
+		}
+		foreach ( array_filter( array_map( 'trim', explode( ',', (string) lvc_sync_val( $v, 'amenities' ) ) ) ) as $tok ) {
+			$check_slug = sanitize_title( lvc_sync_label( $tok ) );
+			if ( ! get_term_by( 'slug', $check_slug, 'amenity' ) ) {
+				$warnings[] = "unknown term '{$check_slug}' in amenity would be skipped";
+			}
+		}
+		return array(
+			'ok'         => true,
+			'dry_run'    => true,
+			'slug'       => $slug,
+			'post_id'    => $existing_id,
+			'action'     => $existing_id ? 'would update' : ( $quarantine ? 'would create as DRAFT (missing: ' . implode( ', ', $quarantine ) . ')' : 'would create' ),
+			'warnings'   => $warnings,
+		);
+	}
+
 	$postarr = array(
 		'post_type'   => $cpt,
-		'post_status' => 'publish',
+		'post_status' => $quarantine ? 'draft' : 'publish',
 	);
-	$action = 'created';
+	$action = $quarantine ? 'created as draft (missing: ' . implode( ', ', $quarantine ) . ')' : 'created';
 	if ( $existing_id ) {
-		$postarr['ID'] = $existing_id;
-		$action        = 'updated';
+		$postarr['ID']          = $existing_id;
+		$postarr['post_status'] = get_post_field( 'post_status', $existing_id );
+		$action                 = 'updated';
 	}
 
 	/*
@@ -185,12 +335,14 @@ function lvc_sync_upsert_villa( $v ) {
 		return array( 'ok' => false, 'slug' => $slug, 'error' => $post_id->get_error_message() );
 	}
 
-	// ACF fields — set only those present in the payload.
+	// ACF fields — set only those present in the payload. off_market rides
+	// along; enforcement is inc/property/off-market.php.
 	$acf = array(
 		'community', 'lot', 'card_title', 'h1_title', 'villa_aliases',
 		'bed_count', 'bath_count', 'guests_max', 'from_rate_tier', 'featured',
 		'property_descr', 'indoor_living', 'outdoor_living', 'bedroom_desc',
 		'travel_experience', 'catering_level', 'catering_detail', 'tags', 'gallery_squares',
+		'off_market',
 		'faq_q1', 'faq_a1', 'faq_q2', 'faq_a2', 'faq_q3', 'faq_a3', 'faq_q4', 'faq_a4',
 	);
 	if ( function_exists( 'update_field' ) ) {
@@ -199,34 +351,32 @@ function lvc_sync_upsert_villa( $v ) {
 				update_field( $f, $v[ $f ], $post_id );
 			}
 		}
-		if ( '' === (string) lvc_sync_val( $v, 'card_title' ) ) {
+		if ( '' === (string) lvc_sync_val( $v, 'card_title' ) && '' !== $name ) {
+			// Guard (audit RRC-004 class): a partial update identified only by
+			// wp_post_id has an empty $name — writing it would erase the
+			// curated card title.
 			update_field( 'card_title', $name, $post_id );
 		}
 	}
 
-	// Taxonomy terms.
-	lvc_sync_term( $post_id, 'destination', lvc_sync_val( $v, 'destination' ), false );
-	lvc_sync_term( $post_id, 'area', lvc_sync_val( $v, 'area' ), false );
+	// Taxonomy terms. Warnings collect into the row report.
+	$term_warnings   = array();
+	$term_warnings[] = lvc_sync_term( $post_id, 'area', lvc_sync_val( $v, 'area' ), false );
 
-	$amenities = array_filter( array_map( 'trim', explode( ',', (string) lvc_sync_val( $v, 'amenities' ) ) ) );
-	if ( $amenities ) {
-		wp_set_object_terms( $post_id, array(), 'amenity' ); // reset, then add fresh
-		foreach ( $amenities as $tok ) {
-			lvc_sync_term( $post_id, 'amenity', lvc_sync_label( $tok ), true );
-		}
-	}
+	$term_warnings = array_merge( $term_warnings, lvc_sync_term_set( $post_id, 'amenity', lvc_sync_val( $v, 'amenities' ) ) );
 
 	$te = lvc_sync_val( $v, 'travel_experience' );
 	if ( $te ) {
-		lvc_sync_term( $post_id, 'collection', lvc_sync_label( $te ), false );
+		$term_warnings[] = lvc_sync_term( $post_id, 'collection', lvc_sync_label( $te ), false );
 	}
 	$bc = (int) lvc_sync_val( $v, 'bed_count' );
 	if ( $bc > 0 ) {
-		lvc_sync_term( $post_id, 'bedrooms', $bc . ' Bedrooms', false );
+		// Code-derived name — safe to create.
+		lvc_sync_term( $post_id, 'bedrooms', $bc . ' Bedrooms', false, true );
 	}
 	$cl = lvc_sync_val( $v, 'catering_level' );
 	if ( $cl ) {
-		lvc_sync_term( $post_id, 'catering', lvc_sync_label( $cl ), false );
+		$term_warnings[] = lvc_sync_term( $post_id, 'catering', lvc_sync_label( $cl ), false );
 	}
 
 	// Rank Math meta.
@@ -256,11 +406,29 @@ function lvc_sync_upsert_villa( $v ) {
 		update_post_meta( $post_id, 'fifu_image_alt', $name );
 	}
 
+	/*
+	 * Geography gate: no unit/villa may be PUBLISHED without an assigned
+	 * area term (a misspelled area on a new row used to pass the presence
+	 * check and publish unplaced). Quarantine + fail the row visibly.
+	 */
+	if ( 'publish' === get_post_field( 'post_status', $post_id ) && ! has_term( '', 'area', $post_id ) ) {
+		wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+		return array(
+			'ok'       => false,
+			'slug'     => $slug,
+			'post_id'  => (int) $post_id,
+			'action'   => $action . ' — QUARANTINED to draft',
+			'error'    => 'no area term resolved — published record demoted to draft until geography is fixed',
+			'warnings' => array_values( array_filter( $term_warnings ) ),
+		);
+	}
+
 	return array(
-		'ok'      => true,
-		'slug'    => $slug,
-		'post_id' => (int) $post_id,
-		'action'  => $action,
-		'url'     => get_permalink( $post_id ),
+		'ok'       => true,
+		'slug'     => $slug,
+		'post_id'  => (int) $post_id,
+		'action'   => $action,
+		'url'      => get_permalink( $post_id ),
+		'warnings' => array_values( array_filter( $term_warnings ) ),
 	);
 }

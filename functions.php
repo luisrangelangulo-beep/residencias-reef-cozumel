@@ -26,6 +26,7 @@ foreach ( array(
 	'inc/property/term-fields.php',
 	'inc/property/homepage-fields.php',
 	'inc/property/area-lander-map.php',
+	'inc/property/off-market.php',
 	'inc/inquiry/cpt-inquiry.php',
 	'inc/inquiry/ajax-handler.php',
 	'inc/conversion/float-actions.php',
