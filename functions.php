@@ -203,8 +203,27 @@ if ( ! function_exists( 'lvc_remote_image_width' ) ) {
 			add_option( $key, (int) $size[0], '', 'no' );
 			return (int) $size[0];
 		}
+		/*
+		 * Distinguish CONFIRMED-DEAD (404/410 - the file is gone) from a
+		 * transient failure. 'Unknown passes' is right for a network hiccup
+		 * but let dead URLs win hero slots and render black (Casa Palomir
+		 * lesson, RMOF 2026-07-27). Dead caches permanently as -1; the
+		 * size guards treat -1 as reject.
+		 */
+		$head = wp_remote_head( $url, array( 'timeout' => 8, 'redirection' => 2 ) );
+		if ( ! is_wp_error( $head ) && in_array( (int) wp_remote_retrieve_response_code( $head ), array( 404, 410 ), true ) ) {
+			add_option( $key, -1, '', 'no' );
+			return -1;
+		}
 		set_transient( $key . '_fail', 1, DAY_IN_SECONDS );
 		return 0;
+	}
+}
+
+/** True when a URL has been measured and confirmed dead (404/410). */
+if ( ! function_exists( 'lvc_image_url_is_dead' ) ) {
+	function lvc_image_url_is_dead( $url ) {
+		return -1 === (int) get_option( 'lvc_imgw_' . md5( trim( (string) $url ) ), 0 );
 	}
 }
 
