@@ -192,6 +192,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	.lvc-tax-compare-card li:before{content:'•';position:absolute;left:0;color:var(--lvc-accent)}
 	.lvc-tax-siblings{list-style:none;padding:0;margin:0;display:flex;justify-content:center;gap:.65rem;flex-wrap:wrap}
 	.lvc-tax-siblings a{display:inline-flex;border:1px solid var(--lvc-border);padding:.62rem .95rem;color:var(--lvc-soft)!important}.lvc-tax-siblings a:hover{border-color:var(--lvc-accent);color:var(--lvc-accent)!important}
+	.lvc-tax-filter{display:flex;flex-wrap:wrap;align-items:end;gap:1rem;margin:0 0 1.5rem}.lvc-tax-filter__group{display:grid;gap:.35rem}.lvc-tax-filter__group span{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--lvc-accent)}.lvc-tax-filter__group select{background:var(--lvc-card);color:var(--lvc-text);border:1px solid var(--lvc-border);padding:.7rem .9rem;font-family:var(--lvc-font-body);font-size:.9rem;min-width:150px;border-radius:var(--lvc-radius)}.lvc-tax-filter__group select:focus{outline:none;border-color:var(--lvc-accent)}.lvc-tax-filter__clear{align-self:center;color:var(--lvc-muted);font-size:.82rem;text-decoration:underline}.lvc-tax-filter__clear:hover{color:var(--lvc-accent)}@media(max-width:720px){.lvc-tax-filter{flex-direction:column;align-items:stretch}.lvc-tax-filter__group select{width:100%}}
 	.lvc-tax-faq{display:grid;gap:.75rem}.lvc-tax-faq details{background:var(--lvc-card);border:1px solid var(--lvc-border);padding:1rem 1.15rem}.lvc-tax-faq summary{cursor:pointer;color:var(--lvc-text);font-family:var(--lvc-font-display);font-weight:300}.lvc-tax-faq p{margin:.75rem 0 0;color:var(--lvc-soft);line-height:1.7}
 	.lvc-tax-cta{background:var(--lvc-bg-deep);text-align:center;border-top:1px solid rgba(255,255,255,.12)}.lvc-tax-cta .lvc-tax-copy{max-width:680px;margin:1rem auto 0}
 	@media(max-width:1100px){.lvc-tax-intro,.lvc-tax-compare{grid-template-columns:1fr}.lvc-tax-panel{border-left:0;padding-left:0}.lvc-tax-grid,.lvc-tax-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lvc-tax-upgrade{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -265,6 +266,38 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	<section class="lvc-tax-section lvc-tax-section--alt" id="villas">
 		<div class="lvc-tax-wrap">
 			<header class="lvc-tax-head"><span class="lvc-tax-kicker">Villa Collection</span><h2 class="lvc-tax-title">Luxury villas in <em><?php echo esc_html( $lvc_area_label ); ?></em></h2><p class="lvc-tax-copy">Browse the current collection, then send your dates if you want help confirming availability, service level, and realistic alternatives.</p></header>
+			<?php
+			/*
+			 * Filter bar (portfolio pattern — Republic/PMVR): selects for the
+			 * OTHER villa taxonomies; the page's own term comes from the URL.
+			 * The router applies the params to taxonomy main queries, and
+			 * inc/seo/filter-params.php keeps filtered views noindexed with a
+			 * clean canonical.
+			 */
+			$lvc_own_tax = $lvc_term instanceof WP_Term ? $lvc_term->taxonomy : '';
+			?>
+			<form class="lvc-tax-filter" method="get" data-lvc-filter>
+				<?php foreach ( array( 'area' => 'Area', 'bedrooms' => 'Bedrooms', 'collection' => 'Collection', 'catering' => 'Catering' ) as $lvc_ftax => $lvc_flabel ) :
+					if ( $lvc_ftax === $lvc_own_tax || ! taxonomy_exists( $lvc_ftax ) ) { continue; }
+					$lvc_fterms = get_terms( array( 'taxonomy' => $lvc_ftax, 'hide_empty' => true ) );
+					if ( is_wp_error( $lvc_fterms ) || ! $lvc_fterms ) { continue; }
+					$lvc_fcur = isset( $_GET[ $lvc_ftax ] ) ? sanitize_title( wp_unslash( $_GET[ $lvc_ftax ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				?>
+					<label class="lvc-tax-filter__group">
+						<span><?php echo esc_html( $lvc_flabel ); ?></span>
+						<select name="<?php echo esc_attr( $lvc_ftax ); ?>">
+							<option value="">Any</option>
+							<?php foreach ( $lvc_fterms as $lvc_ft ) : ?>
+								<option value="<?php echo esc_attr( $lvc_ft->slug ); ?>" <?php selected( $lvc_fcur, $lvc_ft->slug ); ?>><?php echo esc_html( $lvc_ft->name ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</label>
+				<?php endforeach; ?>
+				<button type="submit" class="lvc-tax-btn">Filter</button>
+				<?php if ( array_intersect_key( $_GET, array_flip( array( 'area', 'bedrooms', 'collection', 'catering', 'guests', 'beds' ) ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+					<a class="lvc-tax-filter__clear" href="<?php echo esc_url( $lvc_term instanceof WP_Term ? lvc_term_archive_term_url( $lvc_term ) : $lvc_arch ); ?>">Clear</a>
+				<?php endif; ?>
+			</form>
 			<?php if ( have_posts() ) : ?>
 				<p class="lvc-tax-count"><?php echo esc_html( sprintf( '%d %s', (int) $GLOBALS['wp_query']->found_posts, lvc_config( 'cpt_plural', 'Villas' ) ) ); ?></p>
 				<div class="lvc-tax-grid">
@@ -301,9 +334,25 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	<section class="lvc-tax-section">
 		<div class="lvc-tax-wrap">
 			<header class="lvc-tax-head"><span class="lvc-tax-kicker">Explore More</span><h2 class="lvc-tax-title">Compare nearby <em><?php echo esc_html( $lvc_obj ? $lvc_obj->labels->name : 'areas' ); ?></em></h2></header>
-			<ul class="lvc-tax-siblings">
-				<?php foreach ( $lvc_siblings as $lvc_sibling ) : ?><li><a href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_sibling ) ); ?>"><?php echo esc_html( $lvc_sibling->name ); ?></a></li><?php endforeach; ?>
-			</ul>
+			<?php
+			// Image cards (portfolio pattern — text chips carried no imagery
+			// or counts). Reuses the template's own area-card component; the
+			// count is off-market-aware via lvc_active_villa_count_for_term().
+			?>
+			<div class="lvc-tax-card-grid">
+				<?php foreach ( $lvc_siblings as $lvc_sibling ) :
+					$lvc_sib_img = function_exists( 'lvc_term_archive_area_image' ) ? lvc_term_archive_area_image( $lvc_sibling->slug ) : '';
+					$lvc_sib_n   = function_exists( 'lvc_active_villa_count_for_term' ) ? lvc_active_villa_count_for_term( $lvc_sibling ) : (int) $lvc_sibling->count;
+				?>
+					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_sibling ) ); ?>" style="<?php echo $lvc_sib_img ? '--area-img:url(' . esc_url( $lvc_sib_img ) . ')' : ''; ?>">
+						<div class="lvc-tax-area-card__body">
+							<h3><?php echo esc_html( $lvc_sibling->name ); ?></h3>
+							<?php if ( $lvc_sib_n ) : ?><p><?php echo esc_html( sprintf( '%d %s', $lvc_sib_n, strtolower( lvc_config( 'cpt_plural', 'Villas' ) ) ) ); ?></p><?php endif; ?>
+							<span>Explore <?php echo esc_html( $lvc_sibling->name ); ?> &rarr;</span>
+						</div>
+					</a>
+				<?php endforeach; ?>
+			</div>
 		</div>
 	</section>
 	<?php endif; ?>

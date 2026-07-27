@@ -53,12 +53,19 @@ function lvc_route_taxonomy( $template ) {
  * Apply sanitized GET filters on the property archive (filter bar support).
  * Only touches the main query on the front-end CPT archive.
  */
+/**
+ * Apply sanitized GET filters on the property archive AND on villa taxonomy
+ * archives (portfolio pattern — filtered views stay noindexed with a clean
+ * canonical via inc/seo/filter-params.php, so this adds no crawl surface).
+ */
 add_action( 'pre_get_posts', 'lvc_archive_filters' );
 function lvc_archive_filters( $q ) {
 	if ( is_admin() || ! $q->is_main_query() ) {
 		return;
 	}
-	if ( ! $q->is_post_type_archive( lvc_config( 'cpt', 'villa' ) ) ) {
+	$taxes  = array_keys( (array) lvc_config( 'taxonomies', array() ) );
+	$on_tax = $q->is_tax( $taxes );
+	if ( ! $q->is_post_type_archive( lvc_config( 'cpt', 'villa' ) ) && ! $on_tax ) {
 		return;
 	}
 
@@ -66,8 +73,13 @@ function lvc_archive_filters( $q ) {
 	// (10/page = 15 pages; 30/page = 5). Helps deep villas get discovered.
 	$q->set( 'posts_per_page', 30 );
 
-	$tax_query = array();
-	foreach ( array_keys( (array) lvc_config( 'taxonomies', array() ) ) as $tax ) {
+	// APPEND to any existing clauses — overwriting here would clobber what
+	// other pre_get_posts hooks (the off-market exclusion) already added.
+	$tax_query = (array) $q->get( 'tax_query' );
+	foreach ( $taxes as $tax ) {
+		if ( $on_tax && $q->get( $tax ) ) {
+			continue; // The page's own term comes from the URL, not the filter bar.
+		}
 		if ( ! empty( $_GET[ $tax ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tax_query[] = array(
 				'taxonomy' => $tax,
@@ -76,7 +88,7 @@ function lvc_archive_filters( $q ) {
 			);
 		}
 	}
-	if ( count( $tax_query ) > 1 ) {
+	if ( count( $tax_query ) > 1 && ! isset( $tax_query['relation'] ) ) {
 		$tax_query['relation'] = 'AND';
 	}
 	if ( $tax_query ) {
