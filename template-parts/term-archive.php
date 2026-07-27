@@ -149,7 +149,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	.lvc-tax-head .lvc-tax-copy{max-width:760px;margin:1rem auto 0}
 	.lvc-tax-btns{display:flex;flex-wrap:wrap;gap:.85rem;align-items:center;margin-top:1.7rem}
 	.lvc-tax-btns--center{justify-content:center}
-	.lvc-tax-btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.85rem 1.45rem;border:1px solid var(--lvc-accent);background:var(--lvc-accent);color:#fff!important;font-size:.86rem;font-weight:500;border-radius:var(--lvc-radius)}
+	.lvc-tax-btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.85rem 1.45rem;border:1px solid var(--lvc-accent);background:var(--lvc-accent);color:#070c11!important;font-size:.86rem;font-weight:500;border-radius:var(--lvc-radius)}
 	.lvc-tax-btn--ghost{background:transparent!important;border-color:rgba(255,255,255,.28);color:var(--lvc-text)!important}
 	.lvc-tax-breadcrumb{border-bottom:1px solid var(--lvc-border);padding:.85rem 0;background:rgba(10,12,15,.72)}
 	.lvc-tax-breadcrumb ol{display:flex;gap:.5rem;flex-wrap:wrap;list-style:none;margin:0;padding:0}
@@ -171,7 +171,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	.lvc-tax-count{text-align:center;color:var(--lvc-muted);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 1.5rem}
 	.lvc-tax-pagination{display:flex;justify-content:center;align-items:center;gap:.45rem;margin-top:2.5rem;flex-wrap:wrap}
 	.lvc-tax-pagination .page-numbers{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:42px;padding:.55rem .8rem;border:1px solid var(--lvc-border);color:var(--lvc-soft);background:rgba(255,255,255,.02)}
-	.lvc-tax-pagination .page-numbers.current{background:var(--lvc-accent);border-color:var(--lvc-accent);color:#fff}
+	.lvc-tax-pagination .page-numbers.current{background:var(--lvc-accent);border-color:var(--lvc-accent);color:#070c11}
 	.lvc-tax-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 	.lvc-tax-area-card{position:relative;min-height:285px;display:flex;align-items:flex-end;padding:1.3rem;border:1px solid var(--lvc-border);background:var(--lvc-card) var(--area-img,none) center/cover no-repeat;overflow:hidden}
 	.lvc-tax-area-card:before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,15,.12),rgba(10,12,15,.92))}

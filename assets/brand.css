@@ -12,24 +12,26 @@
 /* ── Design tokens ─────────────────────────────────────────────────── */
 :root {
   /* Surfaces — blue-tinted near-black (reef/deep-water), not Los Cabos's green-black */
-  --lvc-bg:            #0A0C0F;
-  --lvc-bg-alt:        #10151C;
-  --lvc-bg-deep:       #16324F;   /* deep marine CTA / accent bands */
-  --lvc-card:          #10151C;
-  --lvc-border:        #1C2733;
+  --lvc-bg:            #070c11;
+  --lvc-bg-alt:        #0b1219;
+  --lvc-bg-deep:       #102b3a;   /* drop-off blue — deep CTA / accent bands */
+  --lvc-card:          #101823;
+  --lvc-border:        #1a2833;
   --lvc-border-soft:   rgba(255,255,255,0.06);
 
   /* Text */
-  --lvc-text:          #F3F3F1;
-  --lvc-soft:          #CCCCCC;
-  --lvc-muted:         #888888;
+  --lvc-text:          #f1f1ec;
+  --lvc-soft:          #cbcbc4;
+  --lvc-muted:         #8f9aa3;
 
-  /* Accent — reef blue (agreed replacement for a literal SaaS #2F5FF6:
-     desaturated/deepened so it reads hospitality, not dashboard) */
-  --lvc-accent:        #4C7FB8;
-  --lvc-accent-hover:  #6B98CC;
-  --lvc-gold:          #2F4C73;   /* secondary/pressed state — deeper navy, same family (was Los Cabos's warm gold) */
-  --lvc-accent-soft:   rgba(76,127,184,0.12);
+  /* Accent — "Palancar" sponge coral: the orange of Cozumel's cup corals
+     and elephant-ear sponges against the drop-off blue. Distinct from every
+     sibling site by design (no-default-luxury-palette rule); text on this
+     accent is DARK ink (#070c11) — it is a light color, white fails AA. */
+  --lvc-accent:        #e08a52;
+  --lvc-accent-hover:  #ea9b66;
+  --lvc-gold:          #4fa3b8;   /* secondary-accent SLOT (contract name) — reef blue of the Palancar drop-off */
+  --lvc-accent-soft:   rgba(224,138,82,0.12);
 
   /* Type — unchanged from Los Cabos (same restrained pairing) */
   --lvc-font-display:  'Albert Sans', system-ui, -apple-system, sans-serif;
@@ -121,12 +123,12 @@ h1, h2, h3, h4, h5 {
   padding: .85em 1.8em;
   border-radius: var(--lvc-radius);
   background: var(--lvc-accent);
-  color: #fff;
+  color: #070c11;
   border: 1px solid var(--lvc-accent);
   cursor: pointer;
   transition: background .2s ease, color .2s ease, border-color .2s ease;
 }
-.lvc-btn:hover { background: var(--lvc-accent-hover); border-color: var(--lvc-accent-hover); color: #fff; }
+.lvc-btn:hover { background: var(--lvc-accent-hover); border-color: var(--lvc-accent-hover); color: #070c11; }
 .lvc-btn--ghost {
   background: transparent;
   color: var(--lvc-text);
@@ -292,7 +294,7 @@ h1, h2, h3, h4, h5 {
 /* ── Pagination ────────────────────────────────────────────────────── */
 .lvc-pagination { display: flex; gap: .4rem; justify-content: center; margin-top: 2.5rem; }
 .lvc-pagination .page-numbers { padding: .5rem .85rem; border: 1px solid var(--lvc-border); border-radius: var(--lvc-radius); color: var(--lvc-soft); }
-.lvc-pagination .current { background: var(--lvc-accent); border-color: var(--lvc-accent); color: #fff; }
+.lvc-pagination .current { background: var(--lvc-accent); border-color: var(--lvc-accent); color: #070c11; }
 
 /* ── Single property ───────────────────────────────────────────────── */
 .lvc-single__hero { position: relative; min-height: 62vh; display: flex; align-items: flex-end; }
@@ -396,7 +398,7 @@ h1, h2, h3, h4, h5 {
 .lvc-fab { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 22px rgba(0,0,0,.4); color: #fff; }
 .lvc-fab:hover { color: #fff; transform: scale(1.05); }
 .lvc-fab--wa { background: #25D366; }
-.lvc-fab--email { background: var(--lvc-accent); }
+.lvc-fab--email { background: var(--lvc-accent); color: #070c11; }
 .lvc-fab--globe { background: var(--lvc-card); border: 1px solid var(--lvc-border); color: var(--lvc-text); }
 .lvc-fab--globe:hover { color: var(--lvc-text); }
 
@@ -449,10 +451,10 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ── Button text contrast ──────────────────────────────────────────── */
-.lvc-btn { color: #fff !important; }
+.lvc-btn { color: #070c11 !important; }
 .lvc-btn--ghost { color: var(--lvc-text) !important; background: transparent !important; }
 .lvc-btn--ghost:hover { color: var(--lvc-accent) !important; }
 
 /* ── Hover/pressed state → deep navy (secondary reef tone) ──────────── */
-.lvc-btn:hover            { background: var(--lvc-gold); border-color: var(--lvc-gold); color: #fff !important; }
+.lvc-btn:hover            { background: var(--lvc-gold); border-color: var(--lvc-gold); color: #070c11 !important; }
 .lvc-btn--ghost:hover     { background: transparent !important; border-color: var(--lvc-gold); color: var(--lvc-gold) !important; }

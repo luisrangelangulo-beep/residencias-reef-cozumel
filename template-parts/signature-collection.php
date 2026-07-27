@@ -87,7 +87,7 @@ if ( ! $lvc_sig_css_done ) :
 	$lvc_sig_css_done = true;
 	?>
 	<style>
-	.lvc-sig{padding:clamp(3.5rem,6vw,6rem) 0;background:var(--lvc-bg-deep,#0a0c0f)}
+	.lvc-sig{padding:clamp(3.5rem,6vw,6rem) 0;background:var(--lvc-bg-deep,#070c11)}
 	.lvc-sig__wrap{width:min(100%,calc(100% - clamp(2rem,6vw,6rem)));margin:0 auto}
 	.lvc-sig__head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin:0 0 clamp(1.5rem,3vw,2.5rem)}
 	.lvc-sig__kicker{display:block;margin:0 0 .7rem;color:var(--lvc-accent);font-size:.68rem;font-weight:400;letter-spacing:.2em;text-transform:uppercase}
@@ -101,7 +101,7 @@ if ( ! $lvc_sig_css_done ) :
 	.lvc-sig__media img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
 	.lvc-sig__card:hover .lvc-sig__media img{transform:scale(1.04)}
 	.lvc-sig__flag{position:absolute;top:.7rem;left:.7rem;z-index:2;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lvc-text);background:rgba(10,12,15,.6);border:1px solid rgba(255,255,255,.18);padding:.28rem .55rem;border-radius:20px}
-	.lvc-sig__area{position:absolute;bottom:.7rem;left:.7rem;z-index:2;font-size:.68rem;letter-spacing:.06em;color:#f3f3f1;background:rgba(10,12,15,.55);padding:.3rem .6rem;border-radius:20px}
+	.lvc-sig__area{position:absolute;bottom:.7rem;left:.7rem;z-index:2;font-size:.68rem;letter-spacing:.06em;color:#f1f1ec;background:rgba(10,12,15,.55);padding:.3rem .6rem;border-radius:20px}
 	.lvc-sig__body{display:block;padding:1rem 1.1rem 1.15rem}
 	.lvc-sig__name{display:block;margin:0 0 .35rem;font-family:var(--lvc-font-display);font-size:1.12rem;font-weight:300;line-height:1.25;color:var(--lvc-text)}
 	.lvc-sig__meta{display:block;margin:0 0 .7rem;color:var(--lvc-muted);font-size:.8rem;letter-spacing:.03em}
