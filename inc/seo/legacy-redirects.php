@@ -3,50 +3,72 @@
  * Legacy Residencias Reef unit URLs → canonical /villas/ pages.
  *
  * The pre-rebuild site exposed the five units at /residencias-reef-{unit}/
- * (plus loose variants). Those paths 404 today (audit RRC-010 — the
- * "template divergence" the auditor saw was actually a dead route behind a
- * stale cache). One-hop 301 by unit number, resolved against the LIVE post
- * so a future slug change cannot strand the redirect.
+ * and nested under /cozumel-vacation-rentals/… (audit RRC-010). One-hop 301
+ * by unit number, resolved against the LIVE post so a future slug change
+ * cannot strand the redirect.
+ *
+ * Two request shapes reach here, so the guard checks both:
+ *  - a plain 404 (unknown root-level or nested path);
+ *  - a PHANTOM ATTACHMENT query — WP parses any unresolved nested path as
+ *    "attachment under the parent slug", and AIOSEO's attachment-URL
+ *    redirect then wins the race and sends the visitor to a generic page,
+ *    losing the unit. Hooked at `wp` priority 0 to run before it.
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_action( 'template_redirect', function () {
-	if ( ! is_404() ) {
-		return;
-	}
-	$path = strtolower( trim( (string) parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' ) );
-	// The historical routes were nested (/cozumel-vacation-rentals/residencias-
-	// reef-condo-6100/), so match the LAST segment regardless of nesting —
-	// core's redirect_guess_404_permalink otherwise sends near-miss variants
-	// (e.g. …condo-5220 vs the real …condo-5220-cozumel slug) to the bare
-	// /villas/ archive, losing the unit.
-	$last = basename( $path );
-	// residencias-reef-6100, residencias-reef-condo-6100, reef-condo-6100,
-	// residencias-reef-condo-5220-cozumel …
-	if ( ! preg_match( '#^(?:residencias-)?reef-(?:cozumel-)?(?:condo-)?(\d{4})(?:-cozumel)?$#', $last, $m ) ) {
-		return;
-	}
-	$unit = $m[1];
-	$hit  = get_posts( array(
-		'post_type'      => 'villas',
-		'post_status'    => 'publish',
-		'posts_per_page' => 1,
-		'fields'         => 'ids',
-		'no_found_rows'  => true,
-		's'              => 'Residencias Reef ' . $unit,
-	) );
-	if ( ! $hit ) {
-		// Fallback: slug scan (search can miss when the number is only in the slug).
-		global $wpdb;
-		$hit = $wpdb->get_col( $wpdb->prepare(
-			"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'villas' AND post_status = 'publish' AND post_name LIKE %s LIMIT 1",
-			'%' . $wpdb->esc_like( $unit ) . '%'
+if ( ! function_exists( 'lvc_legacy_unit_redirect' ) ) {
+	function lvc_legacy_unit_redirect() {
+		static $ran = false;
+		if ( $ran ) {
+			return;
+		}
+
+		$phantom_attachment = '' !== (string) get_query_var( 'attachment' ) && ! get_queried_object();
+		if ( ! is_404() && ! $phantom_attachment ) {
+			return; // Gate may still pass on the later hook — don't latch yet.
+		}
+		$ran = true;
+
+		$path = strtolower( trim( (string) parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' ) );
+		// The historical routes were nested (/cozumel-vacation-rentals/residencias-
+		// reef-condo-6100/), so match the LAST segment regardless of nesting —
+		// core's redirect_guess_404_permalink otherwise sends near-miss variants
+		// (e.g. …condo-5220 vs the real …condo-5220-cozumel slug) to the bare
+		// /villas/ archive, losing the unit.
+		$last = basename( $path );
+		// residencias-reef-6100, residencias-reef-condo-6100, reef-condo-6100,
+		// residencias-reef-condo-5220-cozumel …
+		if ( ! preg_match( '#^(?:residencias-)?reef-(?:cozumel-)?(?:condo-)?(\d{4})(?:-cozumel)?$#', $last, $m ) ) {
+			return;
+		}
+		$unit = $m[1];
+		$hit  = get_posts( array(
+			'post_type'      => 'villas',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+			's'              => 'Residencias Reef ' . $unit,
 		) );
+		if ( ! $hit ) {
+			// Fallback: slug scan (search can miss when the number is only in the slug).
+			global $wpdb;
+			$hit = $wpdb->get_col( $wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'villas' AND post_status = 'publish' AND post_name LIKE %s LIMIT 1",
+				'%' . $wpdb->esc_like( $unit ) . '%'
+			) );
+		}
+		if ( $hit ) {
+			wp_safe_redirect( get_permalink( (int) $hit[0] ), 301 );
+			exit;
+		}
 	}
-	if ( $hit ) {
-		wp_safe_redirect( get_permalink( (int) $hit[0] ), 301 );
-		exit;
-	}
-}, 1 ); // Before redirect_canonical (10), whose near-miss guess wins otherwise.
+}
+
+// `wp` fires after the main query is resolved but before any plugin's
+// template_redirect handlers (AIOSEO's attachment redirect included).
+add_action( 'wp', 'lvc_legacy_unit_redirect', 0 );
+// Backstop for anything that only becomes a 404 at template time.
+add_action( 'template_redirect', 'lvc_legacy_unit_redirect', 1 );
