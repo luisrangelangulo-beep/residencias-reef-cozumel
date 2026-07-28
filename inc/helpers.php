@@ -45,6 +45,31 @@ if ( ! function_exists( 'lvc_whatsapp_url' ) ) {
  *       never demotes a real photo — then featured image, then the first
  *       gallery URL that clears ≥1000.
  */
+/**
+ * URLs from a gallery field, which stores them as "url, url, url".
+ *
+ * A greedy /https?:\/\/[^\s"'<>]+/ does NOT exclude commas, so every URL but
+ * the last came back with a trailing comma attached and 404'd — the card and
+ * hero resolvers both shipped that bug. Split on the actual separators
+ * instead of pattern-matching around them.
+ */
+if ( ! function_exists( 'lvc_image_list' ) ) {
+	function lvc_image_list( $value ) {
+		if ( ! is_string( $value ) || '' === $value ) {
+			return array();
+		}
+		// Same separators single-villas.php has always used — deliberately NOT
+		// splitting on spaces, since a filename may contain a literal one.
+		$urls = array();
+		foreach ( array_filter( array_map( 'trim', preg_split( '/[\r\n,]+/', $value ) ) ) as $url ) {
+			if ( preg_match( '#^https?://#i', $url ) ) {
+				$urls[] = $url;
+			}
+		}
+		return array_values( array_unique( $urls ) );
+	}
+}
+
 if ( ! function_exists( 'lvc_property_image' ) ) {
 	function lvc_property_image( $post_id, $size = 'large', $context = 'card' ) {
 		$width_ok = static function ( $url, $min ) {
@@ -75,9 +100,10 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 				return esc_url( $img );
 			}
 			foreach ( array( 'gallery_slider', 'gallery_squares', 'gallery' ) as $field ) {
-				$gallery = (string) get_post_meta( $post_id, $field, true );
-				if ( $gallery && preg_match( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) && $width_ok( $m[0], 1000 ) ) {
-					return esc_url( $m[0] );
+				foreach ( lvc_image_list( get_post_meta( $post_id, $field, true ) ) as $candidate ) {
+					if ( $width_ok( $candidate, 1000 ) ) {
+						return esc_url( $candidate );
+					}
 				}
 			}
 			return '';
@@ -111,12 +137,8 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 		$img = get_the_post_thumbnail_url( $post_id, $size );
 		if ( ! $img ) {
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
-				$gallery = (string) get_post_meta( $post_id, $field, true );
-				if ( ! $gallery || ! preg_match_all( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) ) {
-					continue;
-				}
 				// First LIVE gallery URL, not merely the first one.
-				foreach ( $m[0] as $candidate ) {
+				foreach ( lvc_image_list( get_post_meta( $post_id, $field, true ) ) as $candidate ) {
 					if ( $alive( $candidate ) ) {
 						$img = $candidate;
 						break 2;
@@ -147,10 +169,7 @@ if ( ! function_exists( 'lvc_property_image_candidates' ) ) {
 		// Only the first few gallery URLs: the resolver stops at the first live
 		// one, and priming entire galleries would cost more than it saves.
 		foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
-			$gallery = (string) get_post_meta( $post_id, $field, true );
-			if ( $gallery && preg_match_all( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) ) {
-				$urls = array_merge( $urls, array_slice( $m[0], 0, 3 ) );
-			}
+			$urls = array_merge( $urls, array_slice( lvc_image_list( get_post_meta( $post_id, $field, true ) ), 0, 3 ) );
 		}
 		return array_slice( array_values( array_unique( $urls ) ), 0, 5 );
 	}
