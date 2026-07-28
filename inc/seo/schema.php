@@ -12,10 +12,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Decode HTML entities throughout a schema array, recursively.
+ *
+ * JSON-LD carries text, not markup, so an entity in a value is published
+ * literally: "Chef &amp; Staffed" rather than "Chef & Staffed". Nearly every
+ * value here comes from WordPress and arrives encoded one way or another —
+ * get_the_title() is wptexturized so "&" becomes "&#038;", wp_strip_all_tags()
+ * removes tags but leaves entities untouched, and term names can be stored
+ * pre-encoded at rest, so the entity survives every hop to the page.
+ *
+ * Decoding once here rather than at each call site means every emitter is
+ * covered, including ones added later. Safe on already-plain text, and correct
+ * for URLs too — a query string belongs in JSON as "&", not "&amp;".
+ *
+ * @param mixed $value Array, string or scalar.
+ * @return mixed Same shape, strings decoded.
+ */
+if ( ! function_exists( 'lvc_schema_decode' ) ) {
+	function lvc_schema_decode( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( 'lvc_schema_decode', $value );
+		}
+		if ( is_string( $value ) ) {
+			return html_entity_decode( $value, ENT_QUOTES, 'UTF-8' );
+		}
+
+		return $value;
+	}
+}
+
 /** Echo a JSON-LD <script> block. */
 if ( ! function_exists( 'lvc_jsonld' ) ) {
 	function lvc_jsonld( array $data ) {
-		echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+		echo '<script type="application/ld+json">' . wp_json_encode( lvc_schema_decode( $data ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
 	}
 }
 
