@@ -88,10 +88,23 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 		 * whichever URL happened to be first in the gallery — true for 99 of
 		 * 150 villas — so cards swapped whenever a gallery was re-ordered or
 		 * re-synced. The gallery fallback is kept last so nothing renders blank.
+		 *
+		 * Every candidate is checked against the CONFIRMED-DEAD cache (404/410,
+		 * measured by lvc_remote_image_width). The hero path already rejected
+		 * dead URLs via $width_ok, but cards did not, so ~30% of the grid
+		 * rendered broken <img> tags pointing at gone files. Skipping a dead
+		 * candidate lets the chain continue — a villa whose curated image is
+		 * gone now falls through to a live gallery photo instead of nothing.
+		 * Unknown/unmeasured URLs still pass, so a network hiccup never blanks
+		 * a working card.
 		 */
+		$alive = static function ( $url ) {
+			return ! ( function_exists( 'lvc_image_url_is_dead' ) && lvc_image_url_is_dead( $url ) );
+		};
+
 		foreach ( array( 'feature_image', 'hero_image' ) as $field ) {
 			$curated = trim( (string) get_post_meta( $post_id, $field, true ) );
-			if ( $curated ) {
+			if ( $curated && $alive( $curated ) ) {
 				return esc_url( $curated );
 			}
 		}
@@ -99,15 +112,93 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 		if ( ! $img ) {
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
 				$gallery = (string) get_post_meta( $post_id, $field, true );
-				if ( $gallery && preg_match( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) ) {
-					$img = $m[0];
-					break;
+				if ( ! $gallery || ! preg_match_all( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) ) {
+					continue;
+				}
+				// First LIVE gallery URL, not merely the first one.
+				foreach ( $m[0] as $candidate ) {
+					if ( $alive( $candidate ) ) {
+						$img = $candidate;
+						break 2;
+					}
 				}
 			}
 		}
 		return $img ? esc_url( $img ) : '';
 	}
 }
+
+/*
+ * Liveness verdicts are non-autoloaded options, so resolving a 30-card grid
+ * one card at a time would add ~30 single-row queries per render. These two
+ * helpers collect the candidate URLs a loop is about to ask about and prime
+ * them in ONE query. Candidates come from post meta, which WP_Query has
+ * already cached, so priming itself costs no extra queries.
+ */
+if ( ! function_exists( 'lvc_property_image_candidates' ) ) {
+	function lvc_property_image_candidates( $post_id ) {
+		$urls = array();
+		foreach ( array( 'feature_image', 'hero_image' ) as $field ) {
+			$u = trim( (string) get_post_meta( $post_id, $field, true ) );
+			if ( '' !== $u ) {
+				$urls[] = $u;
+			}
+		}
+		// Only the first few gallery URLs: the resolver stops at the first live
+		// one, and priming entire galleries would cost more than it saves.
+		foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
+			$gallery = (string) get_post_meta( $post_id, $field, true );
+			if ( $gallery && preg_match_all( '/https?:\/\/[^\s"\'<>]+/i', $gallery, $m ) ) {
+				$urls = array_merge( $urls, array_slice( $m[0], 0, 3 ) );
+			}
+		}
+		return array_slice( array_values( array_unique( $urls ) ), 0, 5 );
+	}
+}
+
+if ( ! function_exists( 'lvc_prime_image_liveness' ) ) {
+	function lvc_prime_image_liveness( $post_ids ) {
+		if ( ! function_exists( 'wp_prime_option_caches' ) ) {
+			return;
+		}
+		$names = array();
+		foreach ( (array) $post_ids as $pid ) {
+			foreach ( lvc_property_image_candidates( (int) $pid ) as $url ) {
+				$names[ 'lvc_imgw_' . md5( trim( $url ) ) ] = true;
+			}
+		}
+		if ( $names ) {
+			wp_prime_option_caches( array_keys( $names ) );
+		}
+	}
+}
+
+/*
+ * Prime once per property loop, wherever it runs — the main archive query,
+ * taxonomy pages, and the secondary WP_Querys behind the signature band,
+ * related villas, and the homepage grid all pass through here.
+ */
+add_filter(
+	'the_posts',
+	function ( $posts, $query ) {
+		if ( empty( $posts ) || count( $posts ) > 100 ) {
+			return $posts;
+		}
+		// ID-only queries (villa index, counts) never render a card.
+		if ( 'ids' === $query->get( 'fields' ) ) {
+			return $posts;
+		}
+		$cpt   = (string) lvc_config( 'cpt', 'villas' );
+		$types = (array) $query->get( 'post_type' );
+		if ( ! in_array( $cpt, $types, true ) && ! $query->is_post_type_archive( $cpt ) && ! $query->is_tax() ) {
+			return $posts;
+		}
+		lvc_prime_image_liveness( wp_list_pluck( $posts, 'ID' ) );
+		return $posts;
+	},
+	10,
+	2
+);
 
 /* ── Image CDN helpers — right-sized variants via Photon (i0.wp.com) ─────
  * Same pattern as THV/RMOF/Republic: free, no account, and Photon never
