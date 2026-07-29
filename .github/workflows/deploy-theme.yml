@@ -206,10 +206,40 @@ jobs:
             echo "::error::Cloudflare purge REQUIRED — a deploy that cannot purge the edge leaves stale HTML public. Add CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN repo secrets."
             exit 1
           fi
-          RESP=$(curl -sf -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
-            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
-            --data "{\"purge_everything\":true}")
-          echo "$RESP" | grep -q "\"success\":true" && echo "✅ Cloudflare cache purged" || { echo "::error::Cloudflare purge failed: $RESP"; exit 1; }
+          # Trim stray whitespace/newlines. A value pasted with a trailing
+          # newline builds a malformed URL, and `curl -sf` under `bash -e`
+          # then aborts the step BEFORE any handler below runs — surfacing as
+          # an unexplained "exit code 3". Neither value is ever echoed.
+          CF_ZONE="$(printf '%s' "$CF_ZONE" | tr -d '[:space:]')"
+          CF_TOKEN="$(printf '%s' "$CF_TOKEN" | tr -d '[:space:]')"
+
+          # A zone id is 32 hex characters. Checking the shape here names the
+          # wrong secret instead of failing opaquely inside curl.
+          if ! printf '%s' "$CF_ZONE" | grep -Eq '^[0-9a-f]{32}$'; then
+            echo "::error::CLOUDFLARE_ZONE_ID is not a valid zone id (expected 32 hex characters, got ${#CF_ZONE}). It is the 'Zone ID' on the Cloudflare overview page for residencias-reef-cozumel.com - not the account id, not a URL, not the API token."
+            exit 1
+          fi
+
+          # No -f: we want Cloudflare's JSON error body, which distinguishes
+          # "token lacks Cache Purge" from "zone does not match this token".
+          HTTP=$(curl -s -o /tmp/cf.json -w '%{http_code}' -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data '{"purge_everything":true}') || true
+          if grep -q '"success":true' /tmp/cf.json 2>/dev/null; then
+            echo "Cloudflare cache purged"
+          else
+            echo "::error::Cloudflare purge failed (HTTP $HTTP): $(head -c 400 /tmp/cf.json 2>/dev/null)"
+            # Separate "stored token value is wrong" from "token cannot see this
+            # zone" — both surface as 401/10000 and need opposite fixes. The
+            # verify endpoint returns status and token id, never the value.
+            if [ "$HTTP" = "401" ] || [ "$HTTP" = "403" ]; then
+              curl -s -o /tmp/cf_verify.json -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_TOKEN" || true
+              if grep -q '"status":"active"' /tmp/cf_verify.json 2>/dev/null; then
+                echo "::error::CLOUDFLARE_API_TOKEN is a VALID token, so the value is fine — it cannot purge this zone. Give it Zone > Cache Purge > Purge and include residencias-reef-cozumel.com in its Zone Resources."
+              else
+                echo "::error::CLOUDFLARE_API_TOKEN is NOT a valid token — the secret value itself is wrong (verify said: $(head -c 200 /tmp/cf_verify.json 2>/dev/null)). Cloudflare shows a token value only once at creation, so mint a new one."
+              fi
+            fi
+            exit 1
+          fi
 
       - name: Smoke test key pages
         id: smoke_step
@@ -310,7 +340,11 @@ jobs:
             echo "::warning::No Cloudflare secrets — cannot purge after rollback."
             exit 0
           fi
-          RESP=$(curl -sf -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
-            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
-            --data "{\"purge_everything\":true}" || true)
-          echo "$RESP" | grep -q "\"success\":true" && echo "✅ Edge purged after rollback" || echo "::warning::Post-rollback purge failed: $RESP"
+          CF_ZONE="$(printf '%s' "$CF_ZONE" | tr -d '[:space:]')"
+          CF_TOKEN="$(printf '%s' "$CF_TOKEN" | tr -d '[:space:]')"
+          curl -s -o /tmp/cf_rb.json -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data '{"purge_everything":true}' || true
+          if grep -q '"success":true' /tmp/cf_rb.json 2>/dev/null; then
+            echo "Edge purged after rollback"
+          else
+            echo "::warning::Post-rollback purge failed: $(head -c 300 /tmp/cf_rb.json 2>/dev/null)"
+          fi
