@@ -20,13 +20,13 @@ if ( ! function_exists( 'lvc_site_content_fields' ) ) {
 	function lvc_site_content_fields() {
 		return array(
 			'homepage_hero' => array(
-				'label'       => 'Homepage â€” Hero',
+				'label'       => 'Homepage — Hero',
 				'description' => 'The hero configured here is the primary homepage image and copy.',
 				'fields'      => array(
 					'home_hero_image'       => array( 'label' => 'Hero Image', 'type' => 'image', 'help' => 'Recommended: WebP or JPG, at least 2000px wide.' ),
 					'home_hero_kicker'      => array( 'label' => 'Eyebrow', 'type' => 'text' ),
-					'home_hero_title'       => array( 'label' => 'Heading â€” Main Line', 'type' => 'text' ),
-					'home_hero_accent'      => array( 'label' => 'Heading â€” Accent Line', 'type' => 'text' ),
+					'home_hero_title'       => array( 'label' => 'Heading — Main Line', 'type' => 'text' ),
+					'home_hero_accent'      => array( 'label' => 'Heading — Accent Line', 'type' => 'text' ),
 					'home_hero_intro'       => array( 'label' => 'Introduction', 'type' => 'textarea' ),
 					'home_primary_label'    => array( 'label' => 'Primary Button', 'type' => 'text' ),
 					'home_secondary_label'  => array( 'label' => 'Secondary Button', 'type' => 'text' ),
@@ -37,7 +37,7 @@ if ( ! function_exists( 'lvc_site_content_fields' ) ) {
 				),
 			),
 			'homepage_sections' => array(
-				'label'       => 'Homepage â€” Main Sections',
+				'label'       => 'Homepage — Main Sections',
 				'description' => 'Major homepage editorial copy. Area and collection card copy comes from the corresponding taxonomy term.',
 				'fields'      => array(
 					'home_featured_title'    => array( 'label' => 'Featured Stays Heading', 'type' => 'text' ),
@@ -202,16 +202,16 @@ function lvc_render_site_content_page() {
 						<strong><?php echo esc_html( $label ); ?></strong>
 						<?php if ( ! empty( $page['slug'] ) ) :
 							$link = lvc_content_edit_link( $page['slug'] ); ?>
-							<span>Title = H1 Â· Excerpt = hero text Â· Featured Image = hero Â· Page Content = body</span>
-							<?php if ( $link ) : ?><a href="<?php echo esc_url( $link ); ?>">Edit page â†’</a><?php else : ?><em>Page not found</em><?php endif; ?>
+							<span>Title = H1 · Excerpt = hero text · Featured Image = hero · Page Content = body</span>
+							<?php if ( $link ) : ?><a href="<?php echo esc_url( $link ); ?>">Edit page →</a><?php else : ?><em>Page not found</em><?php endif; ?>
 						<?php else : ?>
 							<span><?php echo esc_html( $page['note'] ); ?></span>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
-				<div class="lvc-editor-map__item"><strong>Area pages</strong><span>Areas â†’ Edit term: name, hero, introduction, highlights and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=area&post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit areas â†’</a></div>
-				<div class="lvc-editor-map__item"><strong>Collection pages</strong><span>Collections â†’ Edit term: name, hero, introduction, highlights and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=collection&post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit collections â†’</a></div>
-				<div class="lvc-editor-map__item"><strong>Property pages</strong><span>Villas â†’ Edit Villa: hero, card image, galleries, facts, descriptions and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit villas â†’</a></div>
+				<div class="lvc-editor-map__item"><strong>Area pages</strong><span>Areas → Edit term: name, hero, introduction, highlights and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=area&post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit areas →</a></div>
+				<div class="lvc-editor-map__item"><strong>Collection pages</strong><span>Collections → Edit term: name, hero, introduction, highlights and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=collection&post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit collections →</a></div>
+				<div class="lvc-editor-map__item"><strong>Property pages</strong><span>Villas → Edit Villa: hero, card image, galleries, facts, descriptions and FAQs.</span><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . lvc_config( 'cpt', 'villas' ) ) ); ?>">Edit villas →</a></div>
 			</div>
 		</details>
 
@@ -231,7 +231,7 @@ function lvc_render_site_content_page() {
 										<textarea class="large-text" rows="4" id="<?php echo esc_attr( $key ); ?>" name="lvc_site_content[<?php echo esc_attr( $key ); ?>]"><?php echo esc_textarea( $value ); ?></textarea>
 									<?php elseif ( 'image' === $field['type'] ) : ?>
 										<div class="lvc-image-control">
-											<input class="large-text" type="url" id="<?php echo esc_attr( $key ); ?>" name="lvc_site_content[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $value ); ?>" placeholder="https://â€¦">
+											<input class="large-text" type="url" id="<?php echo esc_attr( $key ); ?>" name="lvc_site_content[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $value ); ?>" placeholder="https://…">
 											<button type="button" class="button lvc-pick-image">Choose from Media Library</button>
 											<img src="<?php echo esc_url( $value ); ?>" alt="" <?php echo $value ? '' : 'hidden'; ?>>
 										</div>
