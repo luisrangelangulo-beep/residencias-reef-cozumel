@@ -9,15 +9,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Top areas for the link column (by property count). No `destination` taxonomy on this site — `area` plays that role.
 $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'number' => 8, 'orderby' => 'count', 'order' => 'DESC' ) );
+$lvc_req  = lvc_page_url( 'request' );
+$lvc_wa   = lvc_whatsapp_url();
 ?>
 <footer class="lvc-footer">
+	<div class="lvc-footer__cta">
+		<div class="lvc-footer__cta-copy">
+			<span class="lvc-footer__eyebrow">Private stays across the Riviera Maya</span>
+			<h2>Start with the right location. <em>Finish with the right villa.</em></h2>
+			<p>Share your dates, group size, and priorities. We will help compare realistic options across Cozumel, Tulum, Playa del Carmen, Akumal, and beyond.</p>
+		</div>
+		<div class="lvc-footer__cta-actions">
+			<a class="lvc-footer__btn" href="<?php echo esc_url( $lvc_req ); ?>">Plan Your Stay <span aria-hidden="true">&rarr;</span></a>
+			<?php if ( $lvc_wa ) : ?>
+				<a class="lvc-footer__btn lvc-footer__btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">WhatsApp</a>
+			<?php endif; ?>
+		</div>
+	</div>
+
 	<div class="lvc-footer__inner">
 
 		<div class="lvc-footer__brand">
+			<span class="lvc-footer__brand-kicker">Cozumel · Tulum · Riviera Maya</span>
 			<span class="lvc-footer__name"><?php echo esc_html( lvc_brand() ); ?></span>
 			<?php if ( lvc_config( 'brand_tagline' ) ) : ?>
 				<p class="lvc-footer__tagline"><?php echo esc_html( lvc_config( 'brand_tagline' ) ); ?></p>
 			<?php endif; ?>
+			<p class="lvc-footer__brand-note">Direct booking guidance, thoughtful villa matching, and local stay planning.</p>
 		</div>
 
 		<?php if ( ! is_wp_error( $lvc_area ) && $lvc_area ) : ?>
@@ -79,13 +97,13 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 			<h3 class="lvc-footer__heading">Contact</h3>
 			<ul>
 				<?php if ( lvc_config( 'support_email' ) ) : ?>
-					<li><a href="mailto:<?php echo esc_attr( lvc_config( 'support_email' ) ); ?>"><?php echo esc_html( lvc_config( 'support_email' ) ); ?></a></li>
+					<li><span class="lvc-footer__contact-label">Email</span><a href="mailto:<?php echo esc_attr( lvc_config( 'support_email' ) ); ?>"><?php echo esc_html( lvc_config( 'support_email' ) ); ?></a></li>
 				<?php endif; ?>
 				<?php if ( lvc_config( 'phone' ) ) : ?>
-					<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', lvc_config( 'phone' ) ) ); ?>"><?php echo esc_html( lvc_config( 'phone' ) ); ?></a></li>
+					<li><span class="lvc-footer__contact-label">Call</span><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', lvc_config( 'phone' ) ) ); ?>"><?php echo esc_html( lvc_config( 'phone' ) ); ?></a></li>
 				<?php endif; ?>
-				<?php if ( lvc_whatsapp_url() ) : ?>
-					<li><a href="<?php echo esc_url( lvc_whatsapp_url() ); ?>" target="_blank" rel="noopener">WhatsApp</a></li>
+				<?php if ( $lvc_wa ) : ?>
+					<li><span class="lvc-footer__contact-label">Message</span><a href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">WhatsApp</a></li>
 				<?php endif; ?>
 			</ul>
 		</div>
@@ -103,3 +121,4 @@ $lvc_area = get_terms( array( 'taxonomy' => 'area', 'hide_empty' => true, 'numbe
 <?php wp_footer(); ?>
 </body>
 </html>
+
