@@ -46,13 +46,7 @@ $lvc_page_id    = get_queried_object_id();
 $lvc_page_intro = $lvc_page_id ? lvc_field( 'hero_intro', $lvc_page_id, '' ) : '';
 $lvc_hero_intro = $lvc_page_intro ?: $lvc_intro;
 
-$lvc_hero = $lvc_page_id ? lvc_field( 'hero_image_url', $lvc_page_id, '' ) : '';
-if ( ! $lvc_hero && $lvc_page_id ) {
-	$lvc_hero = get_the_post_thumbnail_url( $lvc_page_id, 'full' );
-}
-if ( ! $lvc_hero && $lvc_page_id ) {
-	$lvc_hero = lvc_field( 'feature_image_url', $lvc_page_id, '' );
-}
+$lvc_hero = $lvc_page_id ? lvc_page_hero_image( $lvc_page_id ) : '';
 if ( ! $lvc_hero ) {
 	$lvc_hero = $lvc_tid ? lvc_field( 'hero_image_url', $lvc_tid ) : '';
 }
@@ -72,11 +66,16 @@ if ( ! $lvc_hero && $lvc_term ) {
 $lvc_paged = isset( $_GET['vp'] ) ? max( 1, (int) $_GET['vp'] ) : 1;
 $lvc_tax_q = array( array( 'taxonomy' => 'area', 'field' => 'slug', 'terms' => $lvc_aslug ) );
 
-if ( ! empty( $_GET['bedrooms'] ) ) {
+$lvc_bedroom_param = lvc_filter_param_for_taxonomy( 'bedrooms' );
+$lvc_bedroom_value = get_query_var( $lvc_bedroom_param );
+if ( ! $lvc_bedroom_value && ! empty( $_GET[ $lvc_bedroom_param ] ) ) {
+	$lvc_bedroom_value = wp_unslash( $_GET[ $lvc_bedroom_param ] );
+}
+if ( $lvc_bedroom_value ) {
 	$lvc_tax_q[] = array(
 		'taxonomy' => 'bedrooms',
 		'field'    => 'slug',
-		'terms'    => sanitize_title( wp_unslash( $_GET['bedrooms'] ) ),
+		'terms'    => sanitize_title( $lvc_bedroom_value ),
 	);
 	$lvc_tax_q['relation'] = 'AND';
 }
@@ -255,10 +254,10 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 				$lvc_bedroom_terms = lvc_sort_bedroom_terms( $lvc_bedroom_terms );
 
 				if ( ! is_wp_error( $lvc_bedroom_terms ) && $lvc_bedroom_terms ) :
-					$lvc_current_bedrooms = isset( $_GET['bedrooms'] ) ? sanitize_title( wp_unslash( $_GET['bedrooms'] ) ) : '';
+					$lvc_current_bedrooms = $lvc_bedroom_value ? sanitize_title( $lvc_bedroom_value ) : '';
 					?>
 					<label><span>Bedrooms</span>
-						<select name="bedrooms">
+						<select name="<?php echo esc_attr( $lvc_bedroom_param ); ?>">
 							<option value="">Any</option>
 							<?php foreach ( $lvc_bedroom_terms as $term ) : ?><option value="<?php echo esc_attr( $term->slug ); ?>" <?php selected( $lvc_current_bedrooms, $term->slug ); ?>><?php echo esc_html( $term->name ); ?></option><?php endforeach; ?>
 						</select>
@@ -279,7 +278,7 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 				<?php endif; ?>
 				<?php wp_reset_postdata(); ?>
 			<?php else : ?>
-				<p class="lvc-empty">No villas match this filter yet. <a href="<?php echo esc_url( remove_query_arg( array( 'bedrooms', 'vp' ) ) ); ?>#villas">Clear filters</a> or <a href="<?php echo esc_url( lvc_archive_url() ); ?>">browse all villas</a>.</p>
+				<p class="lvc-empty">No villas match this filter yet. <a href="<?php echo esc_url( remove_query_arg( array( $lvc_bedroom_param, 'bedrooms', 'vp' ) ) ); ?>#villas">Clear filters</a> or <a href="<?php echo esc_url( lvc_archive_url() ); ?>">browse all villas</a>.</p>
 			<?php endif; ?>
 		</div>
 	</section>
@@ -403,4 +402,3 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 
 </main>
 <?php get_footer(); ?>
-
