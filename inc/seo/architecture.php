@@ -14,6 +14,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Keep the theme-owned Villas CPT visible to AIOSEO's public post-type
+ * discovery. The live plugin configuration previously omitted all 153
+ * indexable villa singles from its sitemap index.
+ */
+add_filter(
+	'aioseo_public_post_types',
+	function ( $post_types, $names_only = false, $has_archives_only = false ) {
+		$cpt = (string) lvc_config( 'cpt', 'villas' );
+		if ( $names_only ) {
+			if ( ! in_array( $cpt, (array) $post_types, true ) ) {
+				$post_types[] = $cpt;
+			}
+			return $post_types;
+		}
+
+		foreach ( (array) $post_types as $post_type ) {
+			$name = is_array( $post_type ) ? ( $post_type['name'] ?? '' ) : ( is_object( $post_type ) ? ( $post_type->name ?? '' ) : $post_type );
+			if ( $cpt === $name ) {
+				return $post_types;
+			}
+		}
+
+		$object = get_post_type_object( $cpt );
+		if ( $object ) {
+			$post_types[] = (array) $object;
+		}
+		return $post_types;
+	},
+	20,
+	3
+);
+
+/**
  * Native /area/{term}/ archives duplicate the curated flat commercial pages.
  * Redirect mapped terms in one hop; unmapped terms remain native archives.
  */
