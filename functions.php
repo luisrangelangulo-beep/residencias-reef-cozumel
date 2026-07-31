@@ -93,6 +93,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( file_exists( LVC_DIR . '/assets/motion-effects.css' ) ) {
 		wp_enqueue_style( 'lvc-motion-effects', LVC_URI . '/assets/motion-effects.css', array( 'lvc-brand', 'lvc-hero-overrides' ), (string) filemtime( LVC_DIR . '/assets/motion-effects.css' ) );
 	}
+
+	if ( file_exists( LVC_DIR . '/assets/footer.css' ) ) {
+		wp_enqueue_style( 'lvc-footer', LVC_URI . '/assets/footer.css', array( 'lvc-brand' ), (string) filemtime( LVC_DIR . '/assets/footer.css' ) );
+	}
 }, 20 );
 
 /**
