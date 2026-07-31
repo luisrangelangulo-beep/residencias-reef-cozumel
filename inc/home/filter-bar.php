@@ -82,8 +82,13 @@ if ( ! function_exists( 'lvc_render_filter_bar' ) ) {
 			)
 		);
 		$areas  = is_wp_error( $areas ) ? array() : $areas;
-		$beds   = lvc_filter_buckets( lvc_filter_meta_values( 'bed_count' ) );
-		$guests = lvc_filter_buckets( lvc_filter_meta_values( 'guests_max' ) );
+		/*
+		 * Use planning-friendly minimums instead of only the distinct imported
+		 * values. The legacy roster is sparse (for example 13/16/20 guests),
+		 * but visitors reasonably begin a search at two people.
+		 */
+		$beds   = array( 1, 2, 3, 4, 5, 6, 8, 10 );
+		$guests = array( 2, 4, 6, 8, 10, 12, 14, 16, 20 );
 		$today  = current_time( 'Y-m-d' );
 		?>
 		<form class="lvc-fbar" method="get" action="<?php echo esc_url( lvc_archive_url() ); ?>" role="search" aria-label="Find matching villas">
