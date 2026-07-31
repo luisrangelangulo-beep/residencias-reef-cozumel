@@ -112,13 +112,7 @@ if ( ! function_exists( 'lvc_home_rows' ) ) {
 $lvc_home_page_id  = (int) get_option( 'page_on_front' );
 $lvc_home_hero_img = lvc_site_content( 'home_hero_image' );
 if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
-	$lvc_home_hero_img = lvc_field( 'hero_image_url', $lvc_home_page_id, '' );
-}
-if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
-	$lvc_home_hero_img = get_the_post_thumbnail_url( $lvc_home_page_id, 'full' );
-}
-if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
-	$lvc_home_hero_img = lvc_field( 'feature_image_url', $lvc_home_page_id, '' );
+	$lvc_home_hero_img = lvc_page_hero_image( $lvc_home_page_id );
 }
 if ( ! $lvc_home_hero_img ) {
 	$lvc_home_hero_img = lvc_field( 'home_hero_image_url', 'option' );
@@ -220,10 +214,9 @@ $lvc_area_cards = array(
 $lvc_tulum_areas = array(
 	array( 'Soliman Bay', 'soliman-bay', '/soliman-bay/', 'Quiet beachfront villas north of Tulum, often chosen for family trips, calm water, chef service, and more privacy than the main beach zone.' ),
 	array( 'Tulum Beach Zone', 'tulum-beach-zone', '/tulum-beach-zone-villas/', 'For guests who want the restaurants, beach clubs, wellness scene, and boutique-hotel atmosphere close by.' ),
-	array( 'Tulum Town', 'town-jungle', '/tulum-town-jungle-villas/', 'Better value, easier logistics, restaurants, nightlife access, and more practical options for longer stays or flexible groups.' ),
+	array( 'Tulum Town & Jungle', 'town-jungle', '/tulum-town-jungle-villas/', 'Tulum Town, Aldea Zama, La Veleta, and jungle settings with easier logistics, restaurant access, and flexible options for groups.' ),
 	array( 'Tankah Bay', 'tankah-bay-riviera-maya', '/tankah-bay/', 'Beachfront and bayfront villas between Tulum and Akumal, with a quieter residential feel and good access to snorkeling and cenotes.' ),
-	array( 'Aldea Zama', 'aldea-zama', '/tulum-villa-rentals/', 'Modern private villas between Tulum Town and the beach road, often a good fit for groups that want style and convenience.' ),
-	array( 'La Veleta', 'la-veleta', '/tulum-villa-rentals/', 'Contemporary villas and private homes with strong value for groups that prefer restaurants, nightlife, and town access.' ),
+	array( 'Sian Ka’an', 'sian-kaan', '/sian-kaan/', 'Remote beachfront and nature-focused stays for groups prioritizing privacy, seclusion, and the Sian Ka’an setting.' ),
 );
 
 $lvc_collection_filters = array(
