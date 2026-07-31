@@ -108,7 +108,13 @@ if ( ! function_exists( 'lvc_home_rows' ) ) {
 $lvc_home_page_id  = (int) get_option( 'page_on_front' );
 $lvc_home_hero_img = lvc_site_content( 'home_hero_image' );
 if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
+	$lvc_home_hero_img = lvc_field( 'hero_image_url', $lvc_home_page_id, '' );
+}
+if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
 	$lvc_home_hero_img = get_the_post_thumbnail_url( $lvc_home_page_id, 'full' );
+}
+if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
+	$lvc_home_hero_img = lvc_field( 'feature_image_url', $lvc_home_page_id, '' );
 }
 if ( ! $lvc_home_hero_img ) {
 	$lvc_home_hero_img = lvc_field( 'home_hero_image_url', 'option' );
