@@ -6,7 +6,7 @@ remains the fallback, so empty controls never blank an existing page.
 ## Control center
 
 Use the top-level **Site Content** menu. The same screen is also available at
-**Appearance â†’ Site Content**.
+**Appearance → Site Content**.
 
 - The "Where to edit every page" map links directly to every core page, area,
   collection, and property editor.
@@ -15,7 +15,7 @@ Use the top-level **Site Content** menu. The same screen is also available at
 
 ## Homepage
 
-Open **Site Content â†’ Homepage â€” Hero** and **Homepage â€” Main Sections**.
+Open **Site Content → Homepage — Hero** and **Homepage — Main Sections**.
 
 - Hero Image is the primary homepage hero control.
 - Hero eyebrow, heading lines, introduction, buttons, and shortlist panel are
@@ -28,7 +28,7 @@ Open **Site Content â†’ Homepage â€” Hero** and **Homepage â€” Ma
 
 ## Villas archive
 
-Open **Site Content â†’ Villas Archive**.
+Open **Site Content → Villas Archive**.
 
 - Edit the `/villas/` hero image, H1, and introduction.
 
