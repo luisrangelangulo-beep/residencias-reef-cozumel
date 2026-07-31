@@ -14,6 +14,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * The theme has always shipped a complete FAQ template, but the live database
+ * never received the Page that exposes it. Provision the missing Page once
+ * when an editor visits wp-admin; never replace or modify an existing slug.
+ */
+add_action(
+	'admin_init',
+	function () {
+		if ( ! current_user_can( 'publish_pages' ) || get_page_by_path( 'faq', OBJECT, 'page' ) ) {
+			return;
+		}
+
+		$page_id = wp_insert_post(
+			array(
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_title'   => 'Frequently Asked Questions',
+				'post_name'    => 'faq',
+				'post_excerpt' => 'Answers about booking private villas, rates, staffing, payments, cancellations, and trip planning across Cozumel and the Riviera Maya.',
+				'meta_input'   => array(
+					'_wp_page_template' => 'page-templates/faq.php',
+				),
+			),
+			true
+		);
+
+		if ( ! is_wp_error( $page_id ) ) {
+			clean_post_cache( $page_id );
+		}
+	},
+	20
+);
+
+/**
  * Keep the theme-owned Villas CPT visible to AIOSEO's public post-type
  * discovery. The live plugin configuration previously omitted all 153
  * indexable villa singles from its sitemap index.
