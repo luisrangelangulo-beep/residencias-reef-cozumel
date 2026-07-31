@@ -39,6 +39,10 @@ if ( ! function_exists( 'lvc_page_hero_title' ) ) {
 if ( ! function_exists( 'lvc_page_hero_intro' ) ) {
 	function lvc_page_hero_intro( $default = '' ) {
 		$page_id = get_queried_object_id();
+		$intro   = $page_id ? lvc_field( 'hero_intro', $page_id, '' ) : '';
+		if ( trim( (string) $intro ) !== '' ) {
+			return $intro;
+		}
 		$excerpt = $page_id ? get_post_field( 'post_excerpt', $page_id ) : '';
 		return trim( (string) $excerpt ) !== '' ? $excerpt : $default;
 	}
@@ -50,7 +54,27 @@ if ( ! function_exists( 'lvc_page_hero_image' ) ) {
 		if ( ! $page_id ) {
 			return '';
 		}
-		$image = get_the_post_thumbnail_url( $page_id, 'full' );
+		$image = lvc_field( 'hero_image_url', $page_id, '' );
+		if ( ! $image ) {
+			$image = get_the_post_thumbnail_url( $page_id, 'full' );
+		}
+		if ( ! $image ) {
+			$image = lvc_field( 'feature_image_url', $page_id, '' );
+		}
+		return $image;
+	}
+}
+
+if ( ! function_exists( 'lvc_page_feature_image' ) ) {
+	function lvc_page_feature_image( $page_id = 0 ) {
+		$page_id = $page_id ? (int) $page_id : get_queried_object_id();
+		if ( ! $page_id ) {
+			return '';
+		}
+		$image = lvc_field( 'feature_image_url', $page_id, '' );
+		if ( ! $image ) {
+			$image = get_the_post_thumbnail_url( $page_id, 'full' );
+		}
 		if ( ! $image ) {
 			$image = lvc_field( 'hero_image_url', $page_id, '' );
 		}
@@ -414,3 +438,4 @@ if ( ! function_exists( 'lvc_property_area_term' ) ) {
 		return $deepest;
 	}
 }
+
