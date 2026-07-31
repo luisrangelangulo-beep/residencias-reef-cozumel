@@ -264,7 +264,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 			<header class="lvc-tax-head"><span class="lvc-tax-kicker"><?php echo esc_html( $lvc_is_root ? 'Destinations' : 'Neighborhoods' ); ?></span><h2 class="lvc-tax-title">Explore <?php echo esc_html( $lvc_area_label ); ?> <em>villa areas</em></h2><p class="lvc-tax-copy">Use these area links to compare the micro-locations that matter for beach access, restaurants, privacy, service level, and overall trip fit.</p></header>
 			<div class="lvc-tax-card-grid">
 				<?php foreach ( $lvc_children as $lvc_child ) : $lvc_child_img = lvc_term_archive_area_image( $lvc_child->slug ); ?>
-					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_child ) ); ?>" style="<?php echo $lvc_child_img ? '--area-img:url(' . esc_url( $lvc_child_img ) . ')' : ''; ?>"><div class="lvc-tax-area-card__body"><h3><?php echo esc_html( $lvc_child->name ); ?></h3><p><?php echo esc_html( wp_trim_words( wp_strip_all_tags( term_description( $lvc_child->term_id, 'area' ) ), 24, '...' ) ?: 'Compare villas, location style, and group fit in this area.' ); ?></p><span>Explore <?php echo esc_html( $lvc_child->name ); ?> villas &rarr;</span></div></a>
+					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_child ) ); ?>" style="<?php echo $lvc_child_img ? '--area-img:url(\'' . esc_url( $lvc_child_img ) . '\')' : ''; ?>"><div class="lvc-tax-area-card__body"><h3><?php echo esc_html( $lvc_child->name ); ?></h3><p><?php echo esc_html( wp_trim_words( wp_strip_all_tags( term_description( $lvc_child->term_id, 'area' ) ), 24, '...' ) ?: 'Compare villas, location style, and group fit in this area.' ); ?></p><span>Explore <?php echo esc_html( $lvc_child->name ); ?> villas &rarr;</span></div></a>
 				<?php endforeach; ?>
 			</div>
 		</div>
@@ -368,7 +368,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 					$lvc_sib_img = function_exists( 'lvc_term_archive_area_image' ) ? lvc_term_archive_area_image( $lvc_sibling->slug, $lvc_tax ) : '';
 					$lvc_sib_n   = function_exists( 'lvc_active_villa_count_for_term' ) ? lvc_active_villa_count_for_term( $lvc_sibling ) : (int) $lvc_sibling->count;
 				?>
-					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_sibling ) ); ?>" style="<?php echo $lvc_sib_img ? '--area-img:url(' . esc_url( $lvc_sib_img ) . ')' : ''; ?>">
+					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_sibling ) ); ?>" style="<?php echo $lvc_sib_img ? '--area-img:url(\'' . esc_url( $lvc_sib_img ) . '\')' : ''; ?>">
 						<div class="lvc-tax-area-card__body">
 							<h3><?php echo esc_html( $lvc_sibling->name ); ?></h3>
 							<?php if ( $lvc_sib_n ) : ?><p><?php echo esc_html( sprintf( '%d %s', $lvc_sib_n, strtolower( lvc_config( 'cpt_plural', 'Villas' ) ) ) ); ?></p><?php endif; ?>
