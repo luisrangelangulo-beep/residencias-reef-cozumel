@@ -24,6 +24,7 @@ foreach ( array(
 	'inc/cpt/register-property.php',
 	'inc/property/data.php',
 	'inc/property/fields.php',
+	'inc/property/page-fields.php',
 	'inc/property/term-fields.php',
 	'inc/property/homepage-fields.php',
 	'inc/property/area-lander-map.php',
