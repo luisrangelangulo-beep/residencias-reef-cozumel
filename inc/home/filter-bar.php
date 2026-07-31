@@ -23,19 +23,24 @@ if ( ! function_exists( 'lvc_filter_meta_values' ) ) {
 			return $cached;
 		}
 
+		$aliases   = function_exists( 'lvc_field_aliases' ) ? lvc_field_aliases() : array();
+		$meta_keys = array_values( array_unique( array_filter( array( $key, $aliases[ $key ] ?? '' ) ) ) );
 		global $wpdb;
+		$key_placeholders = implode( ',', array_fill( 0, count( $meta_keys ), '%s' ) );
 		$rows = $wpdb->get_col(
 			$wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				"SELECT DISTINCT pm.meta_value
 				FROM {$wpdb->postmeta} pm
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				WHERE pm.meta_key = %s
+				WHERE pm.meta_key IN ({$key_placeholders})
 					AND p.post_type = %s
 					AND p.post_status = 'publish'
 					AND pm.meta_value REGEXP '^[0-9]+$'
 					AND CAST(pm.meta_value AS UNSIGNED) > 0",
-				$key,
-				lvc_config( 'cpt', 'villas' )
+				array_merge(
+					$meta_keys,
+					array( lvc_config( 'cpt', 'villas' ) )
+				)
 			)
 		);
 
