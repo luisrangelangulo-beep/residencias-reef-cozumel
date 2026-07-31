@@ -80,11 +80,16 @@ function lvc_archive_filters( $q ) {
 		if ( $on_tax && $q->get( $tax ) ) {
 			continue; // The page's own term comes from the URL, not the filter bar.
 		}
-		if ( ! empty( $_GET[ $tax ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_param = function_exists( 'lvc_filter_param_for_taxonomy' ) ? lvc_filter_param_for_taxonomy( $tax ) : 'filter_' . $tax;
+		$filter_value = get_query_var( $filter_param );
+		if ( ! $filter_value && ! empty( $_GET[ $filter_param ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filter_value = wp_unslash( $_GET[ $filter_param ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		if ( $filter_value ) {
 			$tax_query[] = array(
 				'taxonomy' => $tax,
 				'field'    => 'slug',
-				'terms'    => sanitize_title( wp_unslash( $_GET[ $tax ] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				'terms'    => sanitize_title( $filter_value ),
 			);
 		}
 	}
