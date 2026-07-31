@@ -40,7 +40,7 @@ while ( have_posts() ) :
 		continue;
 	}
 
-	$lvc_page_image = get_the_post_thumbnail_url( get_the_ID(), 'full' );
+	$lvc_page_image = lvc_page_hero_image( get_the_ID() );
 	$lvc_excerpt    = has_excerpt() ? get_the_excerpt() : wp_trim_words( wp_strip_all_tags( get_the_content() ), 34 );
 	?>
 	<main class="lvc-page-modern">
