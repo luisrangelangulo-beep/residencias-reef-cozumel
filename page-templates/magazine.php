@@ -88,7 +88,7 @@ $lvc_area_links = array(
 
 	<?php // Page 1 only — the feature card repeated on every paginated page. ?>
 	<?php if ( 1 === $lvc_paged && $lvc_featured->have_posts() ) : $lvc_featured->the_post(); $lvc_feat_img = get_the_post_thumbnail_url( get_the_ID(), 'large' ); ?>
-	<section class="lvc-maghub-section lvc-maghub-section--alt"><div class="lvc-maghub-wrap"><article class="lvc-maghub-feature"><a class="lvc-maghub-feature__img" href="<?php the_permalink(); ?>" style="<?php echo $lvc_feat_img ? '--feature-img:url(' . esc_url( $lvc_feat_img ) . ')' : ''; ?>" aria-label="<?php echo esc_attr( get_the_title() ); ?>"></a><div class="lvc-maghub-feature__body"><span class="lvc-maghub-feature__date"><?php echo esc_html( get_the_date() ); ?></span><h2><?php the_title(); ?></h2><p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 34 ) ); ?></p><div class="lvc-maghub-btns"><a class="lvc-maghub-btn" href="<?php the_permalink(); ?>">Read Guide</a><a class="lvc-maghub-btn lvc-maghub-btn--ghost" href="<?php echo esc_url( $lvc_req ); ?>">Ask for Villa Help</a></div></div></article></div></section>
+	<section class="lvc-maghub-section lvc-maghub-section--alt"><div class="lvc-maghub-wrap"><article class="lvc-maghub-feature"><a class="lvc-maghub-feature__img" href="<?php the_permalink(); ?>" style="<?php echo $lvc_feat_img ? '--feature-img:url(\'' . esc_url( $lvc_feat_img ) . '\')' : ''; ?>" aria-label="<?php echo esc_attr( get_the_title() ); ?>"></a><div class="lvc-maghub-feature__body"><span class="lvc-maghub-feature__date"><?php echo esc_html( get_the_date() ); ?></span><h2><?php the_title(); ?></h2><p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 34 ) ); ?></p><div class="lvc-maghub-btns"><a class="lvc-maghub-btn" href="<?php the_permalink(); ?>">Read Guide</a><a class="lvc-maghub-btn lvc-maghub-btn--ghost" href="<?php echo esc_url( $lvc_req ); ?>">Ask for Villa Help</a></div></div></article></div></section>
 	<?php wp_reset_postdata(); endif; ?>
 
 	<section class="lvc-maghub-section"><div class="lvc-maghub-wrap"><header class="lvc-maghub-head"><span class="lvc-maghub-kicker">Browse by Area</span><h2 class="lvc-maghub-title">Connect each guide to the <em>right villa area</em></h2><p class="lvc-maghub-copy">Use the magazine for research, but keep the booking path clear: area first, villa second, dates and service level before final choice.</p></header><nav class="lvc-maghub-area-links" aria-label="Magazine area links"><?php foreach ( $lvc_area_links as $label => $url ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a><?php endforeach; ?></nav></div></section>
@@ -99,4 +99,3 @@ $lvc_area_links = array(
 </main>
 
 <?php get_footer(); ?>
-
