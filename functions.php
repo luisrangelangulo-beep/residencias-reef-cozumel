@@ -29,6 +29,7 @@ foreach ( array(
 	'inc/property/homepage-fields.php',
 	'inc/property/area-lander-map.php',
 	'inc/property/off-market.php',
+	'inc/home/filter-bar.php',
 	'inc/inquiry/cpt-inquiry.php',
 	'inc/inquiry/ajax-handler.php',
 	'inc/conversion/float-actions.php',
@@ -298,4 +299,3 @@ add_action( 'after_rocket_clean_post', function ( $post ) {
 		'body'     => wp_json_encode( array( 'files' => $urls ) ),
 	) );
 } );
-
