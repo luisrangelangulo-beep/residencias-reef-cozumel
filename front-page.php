@@ -85,6 +85,26 @@ if ( ! function_exists( 'lvc_home_term_description' ) ) {
 	}
 }
 
+if ( ! function_exists( 'lvc_home_rows' ) ) {
+	function lvc_home_rows( $key, $defaults, $columns = 1 ) {
+		$value = trim( lvc_site_content( $key, '' ) );
+		if ( '' === $value ) {
+			return $defaults;
+		}
+		$rows = array();
+		foreach ( preg_split( '/\r\n|\r|\n/', $value ) as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			$row = array_map( 'trim', explode( '|', $line, $columns ) );
+			$row = array_pad( $row, $columns, '' );
+			$rows[] = $row;
+		}
+		return $rows ? $rows : $defaults;
+	}
+}
+
 $lvc_home_page_id  = (int) get_option( 'page_on_front' );
 $lvc_home_hero_img = lvc_site_content( 'home_hero_image' );
 if ( ! $lvc_home_hero_img && $lvc_home_page_id ) {
@@ -114,12 +134,32 @@ $lvc_home_featured_intro  = lvc_site_content( 'home_featured_intro', 'Start with
 $lvc_home_match_title     = lvc_site_content( 'home_match_title', 'Tell us your dates. We will shortlist the right stay.' );
 $lvc_home_match_intro     = lvc_site_content( 'home_match_intro', 'Share your group size, dates, preferred area, and service needs. We will help decide whether a simple Cozumel condo or a higher-service private villa makes more sense.' );
 $lvc_home_match_label     = lvc_site_content( 'home_match_label', 'Get Villa Matches' );
+$lvc_home_proof_points    = lvc_home_rows( 'home_proof_points', array(
+	array( 'Cozumel condos', 'for simple beachfront stays' ),
+	array( 'Private villas', 'for families & groups' ),
+	array( 'Tulum areas', 'matched by trip style' ),
+	array( 'Chef, transfers & tours', 'on request' ),
+), 2 );
 $lvc_home_position_title  = lvc_site_content( 'home_position_title', 'Start with Cozumel. Upgrade into the right Riviera Maya villa.' );
 $lvc_home_position_intro  = lvc_site_content( 'home_position_intro', 'Residencias Reef Cozumel is a useful entry point for couples, divers, and smaller groups who want a relaxed beachfront condo. But many travelers need more space, service, privacy, or a better location for a family trip, celebration, retreat, or luxury stay.' );
+$lvc_home_position_points = lvc_home_rows( 'home_position_points', array(
+	array( 'Condos for simpler Cozumel stays with beach access and practical nightly rates.' ),
+	array( 'Private villas for larger groups, chef service, private pools, events, and higher-service trips.' ),
+	array( 'Clear guidance across Cozumel, Tulum, Soliman Bay, Tulum Town, Playa del Carmen, Akumal, and Puerto Aventuras.' ),
+) );
 $lvc_home_paths_title     = lvc_site_content( 'home_paths_title', 'Choose the stay that fits the real trip' );
 $lvc_home_paths_intro     = lvc_site_content( 'home_paths_intro', 'A beachfront condo can be perfect for a low-friction Cozumel stay. A private villa is usually the better fit when the group, budget, and service expectations are higher.' );
+$lvc_home_paths_cards     = lvc_home_rows( 'home_paths_cards', array(
+	array( 'Cozumel Hook', 'Residencias Reef condos', 'Best for couples, small families, divers, and guests who want beach access, a kitchen, pool access, and a quieter island base without paying for a full private villa.', 'View Cozumel Stays' ),
+	array( 'Money Path', 'Private Riviera Maya villas', 'Better for families, larger groups, celebrations, retreats, and guests who want private pools, more bedrooms, chef service, staff, and a more exclusive setting.', 'Request Villa Matches' ),
+), 4 );
 $lvc_home_upgrade_title   = lvc_site_content( 'home_upgrade_title', 'When a private villa is the better fit' );
 $lvc_home_upgrade_intro   = lvc_site_content( 'home_upgrade_intro', 'Condos are easy and affordable. Villas are where space, privacy, service, and trip value become much stronger.' );
+$lvc_home_upgrade_cards   = lvc_home_rows( 'home_upgrade_cards', array(
+	array( '8+ Guests', 'More bedrooms and privacy', 'Groups usually need larger layouts, multiple living areas, private pools, and fewer shared spaces.' ),
+	array( 'Chef Service', 'Meals become part of the stay', 'Private villas work better for breakfast service, celebrations, dinners, groceries, and custom dining.' ),
+	array( 'Special Occasions', 'Better for celebrations', 'Birthdays, family reunions, retreats, and milestone trips need a property that supports the full experience.' ),
+), 3 );
 $lvc_home_area_title      = lvc_site_content( 'home_area_title', 'Choose the right Riviera Maya area' );
 $lvc_home_area_intro      = lvc_site_content( 'home_area_intro', 'The right villa starts with the right location. These are the areas most guests compare first.' );
 $lvc_home_collection_title = lvc_site_content( 'home_collection_title', 'High-intent villa collections' );
@@ -128,11 +168,37 @@ $lvc_home_tulum_title      = lvc_site_content( 'home_tulum_title', 'Tulum is not
 $lvc_home_tulum_intro      = lvc_site_content( 'home_tulum_intro', 'For higher-value villa inquiries, the most important question is often whether the group should stay beachfront, close to restaurants, in a quieter bay, or in town.' );
 $lvc_home_compare_title    = lvc_site_content( 'home_compare_title', 'Cozumel condo or private villa?' );
 $lvc_home_compare_intro    = lvc_site_content( 'home_compare_intro', 'This comparison helps guests self-select, which protects the low-cost condo traffic while pushing qualified groups toward better villa inquiries.' );
+$lvc_home_compare_condo_title = lvc_site_content( 'home_compare_condo_title', 'Choose a Cozumel condo if...' );
+$lvc_home_compare_condo_points = lvc_home_rows( 'home_compare_condo_points', array(
+	array( 'You are a couple, small family, or diving-focused group.' ),
+	array( 'You want a simple beachfront base at a lower nightly rate.' ),
+	array( 'You do not need chef service, a large private pool, or full villa staff.' ),
+) );
+$lvc_home_compare_villa_title = lvc_site_content( 'home_compare_villa_title', 'Choose a private villa if...' );
+$lvc_home_compare_villa_points = lvc_home_rows( 'home_compare_villa_points', array(
+	array( 'You need more bedrooms, privacy, and living space.' ),
+	array( 'You want chef service, staff, groceries, transfers, or celebration planning.' ),
+	array( 'Your group is comparing Tulum, Soliman Bay, Akumal, Playa del Carmen, or Puerto Aventuras.' ),
+) );
 $lvc_home_steps_title      = lvc_site_content( 'home_steps_title', 'A simpler way to book a private villa' );
+$lvc_home_steps            = lvc_home_rows( 'home_steps', array(
+	array( 'Share your trip details', 'Tell us your dates, group size, bedroom needs, preferred area, and service needs.' ),
+	array( 'Review matched villas', 'We help compare realistic options based on location, layout, service level, privacy, and fit.' ),
+	array( 'Plan the stay', 'Concierge planning can include airport transfers, private chef, groceries, tours, spa, diving, and activities.' ),
+), 2 );
 $lvc_home_concierge_title  = lvc_site_content( 'home_concierge_title', 'Beyond the villa: complete stay planning' );
 $lvc_home_concierge_intro  = lvc_site_content( 'home_concierge_intro', 'Luxury villa trips work best when the details are handled before arrival.' );
+$lvc_home_concierge_cards  = lvc_home_rows( 'home_concierge_cards', array(
+	array( 'Airport Transfers', 'Private transportation from CancÃºn International Airport and Cozumel arrival points.' ),
+	array( 'Private Chef', 'In-villa dining, celebrations, breakfast service, and group meals.' ),
+	array( 'Diving & Snorkeling', 'Cozumel reefs, cenotes, Riviera Maya snorkeling, and Caribbean boat days.' ),
+	array( 'Tours & Activities', 'Mayan ruins, beach clubs, fishing, cenotes, ATVs, and family activities.' ),
+	array( 'Spa & Wellness', 'In-villa massage, wellness sessions, yoga, and relaxation services.' ),
+), 2 );
 $lvc_home_final_title      = lvc_site_content( 'home_final_title', 'Tell us what your group needs. We will help narrow the search.' );
 $lvc_home_final_intro      = lvc_site_content( 'home_final_intro', 'Share your dates, preferred area, group size, and villa priorities. We will help identify whether a Cozumel condo or a stronger Riviera Maya villa option makes the most sense.' );
+$lvc_home_final_primary_label = lvc_site_content( 'home_final_primary_label', 'Request Villa Matches' );
+$lvc_home_final_secondary_label = lvc_site_content( 'home_final_secondary_label', 'Chat on WhatsApp' );
 
 $lvc_area_cards = array(
 	array( 'Cozumel', 'cozumel', '/cozumel/', 'Residencias Reef condos and island stays for divers, couples, and guests who want a relaxed beachfront base.' ),
@@ -184,15 +250,15 @@ $lvc_collections = array(
 <main class="lvc-home-modern">
 	<section class="lcv-home-hero" <?php echo $lvc_home_hero_img ? 'style="--home-hero-img:url(\'' . esc_url( $lvc_home_hero_img ) . '\')"' : ''; ?> aria-label="Residencias Reef Cozumel and private Riviera Maya villa rentals"><div class="lcv-home-wrap lcv-home-hero__grid"><div><span class="lcv-home-kicker"><?php echo esc_html( $lvc_home_hero_kicker ); ?></span><h1><?php echo esc_html( $lvc_home_hero_title ); ?> <em><?php echo esc_html( $lvc_home_hero_accent ); ?></em></h1><p class="lcv-home-hero__sub"><?php echo esc_html( $lvc_home_hero_intro ); ?></p><div class="lcv-home-btns lcv-home-hero__actions"><a class="lcv-home-btn" href="<?php echo esc_url( $lvc_req ); ?>"><?php echo esc_html( $lvc_home_primary_label ); ?></a><a class="lcv-home-btn lcv-home-btn--ghost" href="<?php echo esc_url( $lvc_arch ); ?>"><?php echo esc_html( $lvc_home_secondary_label ); ?></a></div></div><aside class="lcv-home-match"><h2><?php echo esc_html( $lvc_home_match_title ); ?></h2><p><?php echo esc_html( $lvc_home_match_intro ); ?></p><div class="lcv-home-match__facts"><div class="lcv-home-match__fact"><strong>Direct</strong><span>No OTA markup</span></div><div class="lcv-home-match__fact"><strong>Local</strong><span>Villa guidance</span></div></div><a class="lcv-home-btn" href="<?php echo esc_url( $lvc_req ); ?>"><?php echo esc_html( $lvc_home_match_label ); ?></a></aside></div></section>
 
-	<section class="lcv-proof"><div class="lcv-home-wrap lvc-proof__inner"><div class="lvc-proof__item"><strong>Cozumel condos</strong> for simple beachfront stays</div><div class="lvc-proof__item"><strong>Private villas</strong> for families &amp; groups</div><div class="lvc-proof__item"><strong>Tulum areas</strong> matched by trip style</div><div class="lvc-proof__item"><strong>Chef, transfers &amp; tours</strong> on request</div></div></section>
+	<section class="lcv-proof"><div class="lcv-home-wrap lvc-proof__inner"><?php foreach ( $lvc_home_proof_points as $point ) : ?><div class="lvc-proof__item"><strong><?php echo esc_html( $point[0] ); ?></strong> <?php echo esc_html( $point[1] ); ?></div><?php endforeach; ?></div></section>
 
 	<section class="lcv-home-section" id="feat"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Featured Stays</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_featured_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_featured_intro ); ?></p></header><nav class="lcv-filter-pills" aria-label="Villa collection filters"><?php foreach ( $lvc_collection_filters as $filter ) : ?><a class="lcv-filter-pill" href="<?php echo esc_url( $filter[1] ); ?>"><?php echo esc_html( $filter[0] ); ?></a><?php endforeach; ?></nav><?php $lvc_cozumel = new WP_Query( array( 'post_type' => $lvc_cpt, 'posts_per_page' => 3, 'post_status' => 'publish', 'fields' => 'ids', 'no_found_rows' => true, 'orderby' => 'date', 'order' => 'DESC', 'tax_query' => array( array( 'taxonomy' => 'area', 'field' => 'slug', 'terms' => 'cozumel', 'include_children' => true ) ) ) ); $lvc_featured_ids = array_map( 'intval', $lvc_cozumel->posts ); $lvc_more = new WP_Query( array( 'post_type' => $lvc_cpt, 'posts_per_page' => 6, 'post_status' => 'publish', 'fields' => 'ids', 'no_found_rows' => true, 'post__not_in' => $lvc_featured_ids, 'orderby' => 'date', 'order' => 'DESC' ) ); $lvc_featured_ids = array_merge( $lvc_featured_ids, array_map( 'intval', $lvc_more->posts ) ); $lvc_villas = new WP_Query( array( 'post_type' => $lvc_cpt, 'posts_per_page' => 9, 'post_status' => 'publish', 'post__in' => $lvc_featured_ids, 'orderby' => 'post__in', 'no_found_rows' => true ) ); if ( $lvc_villas->have_posts() ) : ?><div class="lcv-villa-grid"><?php while ( $lvc_villas->have_posts() ) : $lvc_villas->the_post(); get_template_part( 'template-parts/card-property', null, array( 'id' => get_the_ID() ) ); endwhile; ?></div><div class="lcv-home-btns" style="justify-content:center;margin-top:2rem"><a class="lcv-home-btn lcv-home-btn--ghost" href="<?php echo esc_url( $lvc_arch ); ?>">View All Villas &amp; Condos</a></div><?php wp_reset_postdata(); endif; ?></div></section>
 
-	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap lcv-intro-grid"><div><span class="lcv-home-kicker">Direct Booking Collection</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_position_title ); ?></h2></div><div class="lcv-home-panel lcv-home-copy"><p><?php echo esc_html( $lvc_home_position_intro ); ?></p><ul><li>Condos for simpler Cozumel stays with beach access and practical nightly rates.</li><li>Private villas for larger groups, chef service, private pools, events, and higher-service trips.</li><li>Clear guidance across Cozumel, Tulum, Soliman Bay, Tulum Town, Playa del Carmen, Akumal, and Puerto Aventuras.</li></ul></div></div></section>
+	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap lcv-intro-grid"><div><span class="lcv-home-kicker">Direct Booking Collection</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_position_title ); ?></h2></div><div class="lcv-home-panel lcv-home-copy"><p><?php echo esc_html( $lvc_home_position_intro ); ?></p><ul><?php foreach ( $lvc_home_position_points as $point ) : ?><li><?php echo esc_html( $point[0] ); ?></li><?php endforeach; ?></ul></div></div></section>
 
-	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Two Booking Paths</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_paths_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_paths_intro ); ?></p></header><div class="lcv-path-grid"><article class="lcv-path-card"><span class="lcv-home-kicker">Cozumel Hook</span><h3>Residencias Reef condos</h3><p>Best for couples, small families, divers, and guests who want beach access, a kitchen, pool access, and a quieter island base without paying for a full private villa.</p><a class="lcv-home-btn lcv-home-btn--ghost" href="<?php echo esc_url( home_url( '/cozumel/' ) ); ?>">View Cozumel Stays</a></article><article class="lcv-path-card"><span class="lcv-home-kicker">Money Path</span><h3>Private Riviera Maya villas</h3><p>Better for families, larger groups, celebrations, retreats, and guests who want private pools, more bedrooms, chef service, staff, and a more exclusive setting.</p><a class="lcv-home-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a></article></div></div></section>
+	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Two Booking Paths</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_paths_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_paths_intro ); ?></p></header><div class="lcv-path-grid"><?php foreach ( $lvc_home_paths_cards as $index => $card ) : ?><article class="lcv-path-card"><span class="lcv-home-kicker"><?php echo esc_html( $card[0] ); ?></span><h3><?php echo esc_html( $card[1] ); ?></h3><p><?php echo esc_html( $card[2] ); ?></p><a class="lcv-home-btn<?php echo 0 === $index ? ' lcv-home-btn--ghost' : ''; ?>" href="<?php echo esc_url( 0 === $index ? home_url( '/cozumel/' ) : $lvc_req ); ?>"><?php echo esc_html( $card[3] ); ?></a></article><?php endforeach; ?></div></div></section>
 
-	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">When to Upgrade</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_upgrade_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_upgrade_intro ); ?></p></header><div class="lcv-upgrade-grid"><article class="lcv-upgrade-card"><span>8+ Guests</span><h3>More bedrooms and privacy</h3><p>Groups usually need larger layouts, multiple living areas, private pools, and fewer shared spaces.</p></article><article class="lcv-upgrade-card"><span>Chef Service</span><h3>Meals become part of the stay</h3><p>Private villas work better for breakfast service, celebrations, dinners, groceries, and custom dining.</p></article><article class="lcv-upgrade-card"><span>Special Occasions</span><h3>Better for celebrations</h3><p>Birthdays, family reunions, retreats, and milestone trips need a property that supports the full experience.</p></article></div></div></section>
+	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">When to Upgrade</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_upgrade_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_upgrade_intro ); ?></p></header><div class="lcv-upgrade-grid"><?php foreach ( $lvc_home_upgrade_cards as $card ) : ?><article class="lcv-upgrade-card"><span><?php echo esc_html( $card[0] ); ?></span><h3><?php echo esc_html( $card[1] ); ?></h3><p><?php echo esc_html( $card[2] ); ?></p></article><?php endforeach; ?></div></div></section>
 
 	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Where to Stay</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_area_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_area_intro ); ?></p></header><div class="lcv-area-grid"><?php foreach ( $lvc_area_cards as $area ) : $area_img = lvc_area_image( $area[1] ); $area_desc = lvc_home_term_description( 'area', $area[1], $area[3] ); ?><a class="lcv-area-tile" href="<?php echo esc_url( home_url( $area[2] ) ); ?>" style="<?php echo $area_img ? '--area-img:url(' . esc_url( $area_img ) . ')' : ''; ?>"><div class="lcv-area-tile__body"><h3><?php echo esc_html( $area[0] ); ?></h3><p><?php echo esc_html( $area_desc ); ?></p><span>Explore <?php echo esc_html( $area[0] ); ?> &rarr;</span></div></a><?php endforeach; ?></div><p class="lcv-home-compare">Not sure which to choose? Compare <a href="<?php echo esc_url( home_url( '/cozumel-vs-tulum-vs-playa-del-carmen-villa-rentals/' ) ); ?>">Cozumel vs Tulum vs Playa del Carmen</a> or <a href="<?php echo esc_url( home_url( '/tulum-vs-playa-del-carmen-comparison-guide/' ) ); ?>">Tulum vs Playa del Carmen</a>.</p></div></section>
 
@@ -200,13 +266,13 @@ $lvc_collections = array(
 
 	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Tulum Villa Areas</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_tulum_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_tulum_intro ); ?></p></header><div class="lcv-tulum-grid"><?php foreach ( $lvc_tulum_areas as $area ) : $area_img = lvc_area_image( $area[1] ); $area_desc = lvc_home_term_description( 'area', $area[1], $area[3] ); ?><a class="lcv-area-tile" href="<?php echo esc_url( home_url( $area[2] ) ); ?>" style="<?php echo $area_img ? '--area-img:url(' . esc_url( $area_img ) . ')' : ''; ?>"><div class="lcv-area-tile__body"><h3><?php echo esc_html( $area[0] ); ?></h3><p><?php echo esc_html( $area_desc ); ?></p><span>Explore <?php echo esc_html( $area[0] ); ?> villas &rarr;</span></div></a><?php endforeach; ?></div></div></section>
 
-	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Cozumel or Villa Upgrade</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_compare_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_compare_intro ); ?></p></header><div class="lcv-compare"><article class="lcv-compare-card"><h3>Choose a Cozumel condo if...</h3><ul><li>You are a couple, small family, or diving-focused group.</li><li>You want a simple beachfront base at a lower nightly rate.</li><li>You do not need chef service, a large private pool, or full villa staff.</li></ul></article><article class="lcv-compare-card"><h3>Choose a private villa if...</h3><ul><li>You need more bedrooms, privacy, and living space.</li><li>You want chef service, staff, groceries, transfers, or celebration planning.</li><li>Your group is comparing Tulum, Soliman Bay, Akumal, Playa del Carmen, or Puerto Aventuras.</li></ul></article></div></div></section>
+	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Cozumel or Villa Upgrade</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_compare_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_compare_intro ); ?></p></header><div class="lcv-compare"><article class="lcv-compare-card"><h3><?php echo esc_html( $lvc_home_compare_condo_title ); ?></h3><ul><?php foreach ( $lvc_home_compare_condo_points as $point ) : ?><li><?php echo esc_html( $point[0] ); ?></li><?php endforeach; ?></ul></article><article class="lcv-compare-card"><h3><?php echo esc_html( $lvc_home_compare_villa_title ); ?></h3><ul><?php foreach ( $lvc_home_compare_villa_points as $point ) : ?><li><?php echo esc_html( $point[0] ); ?></li><?php endforeach; ?></ul></article></div></div></section>
 
-	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">How It Works</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_steps_title ); ?></h2></header><div class="lcv-steps"><div class="lcv-step"><span class="lcv-step__num">01</span><h3>Share your trip details</h3><p>Tell us your dates, group size, bedroom needs, preferred area, and service needs.</p></div><div class="lcv-step"><span class="lcv-step__num">02</span><h3>Review matched villas</h3><p>We help compare realistic options based on location, layout, service level, privacy, and fit.</p></div><div class="lcv-step"><span class="lcv-step__num">03</span><h3>Plan the stay</h3><p>Concierge planning can include airport transfers, private chef, groceries, tours, spa, diving, and activities.</p></div></div></div></section>
+	<section class="lcv-home-section lcv-home-section--alt"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">How It Works</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_steps_title ); ?></h2></header><div class="lcv-steps"><?php foreach ( $lvc_home_steps as $index => $step ) : ?><div class="lcv-step"><span class="lcv-step__num"><?php echo esc_html( str_pad( (string) ( $index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><h3><?php echo esc_html( $step[0] ); ?></h3><p><?php echo esc_html( $step[1] ); ?></p></div><?php endforeach; ?></div></div></section>
 
-	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Concierge Services</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_concierge_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_concierge_intro ); ?></p></header><div class="lcv-concierge-grid"><div class="lcv-concierge-card"><h3>Airport Transfers</h3><p>Private transportation from CancÃºn International Airport and Cozumel arrival points.</p></div><div class="lcv-concierge-card"><h3>Private Chef</h3><p>In-villa dining, celebrations, breakfast service, and group meals.</p></div><div class="lcv-concierge-card"><h3>Diving &amp; Snorkeling</h3><p>Cozumel reefs, cenotes, Riviera Maya snorkeling, and Caribbean boat days.</p></div><div class="lcv-concierge-card"><h3>Tours &amp; Activities</h3><p>Mayan ruins, beach clubs, fishing, cenotes, ATVs, and family activities.</p></div><div class="lcv-concierge-card"><h3>Spa &amp; Wellness</h3><p>In-villa massage, wellness sessions, yoga, and relaxation services.</p></div></div></div></section>
+	<section class="lcv-home-section"><div class="lcv-home-wrap"><header class="lcv-home-head"><span class="lcv-home-kicker">Concierge Services</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_concierge_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_concierge_intro ); ?></p></header><div class="lcv-concierge-grid"><?php foreach ( $lvc_home_concierge_cards as $card ) : ?><div class="lcv-concierge-card"><h3><?php echo esc_html( $card[0] ); ?></h3><p><?php echo esc_html( $card[1] ); ?></p></div><?php endforeach; ?></div></div></section>
 
-	<section class="lcv-home-section lcv-final-cta"><div class="lcv-home-narrow"><span class="lcv-home-kicker">Start Planning</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_final_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_final_intro ); ?></p><div class="lcv-home-btns"><a class="lcv-home-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><?php if ( $lvc_wa ) : ?><a class="lcv-home-btn lcv-home-btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">Chat on WhatsApp</a><?php endif; ?></div></div></section>
+	<section class="lcv-home-section lcv-final-cta"><div class="lcv-home-narrow"><span class="lcv-home-kicker">Start Planning</span><h2 class="lcv-home-title"><?php echo esc_html( $lvc_home_final_title ); ?></h2><p class="lcv-home-copy"><?php echo esc_html( $lvc_home_final_intro ); ?></p><div class="lcv-home-btns"><a class="lcv-home-btn" href="<?php echo esc_url( $lvc_req ); ?>"><?php echo esc_html( $lvc_home_final_primary_label ); ?></a><?php if ( $lvc_wa ) : ?><a class="lcv-home-btn lcv-home-btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $lvc_home_final_secondary_label ); ?></a><?php endif; ?></div></div></section>
 </main>
 <?php get_footer(); ?>
 
