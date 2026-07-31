@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 ?>
 <main class="lvc-page lvc-legal">
-	<section class="lvc-hero lvc-hero--page">
+	<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">Legal</p>
 			<h1 class="lvc-hero__title"><?php the_title(); ?></h1>
@@ -35,3 +35,4 @@ get_header();
 </main>
 <?php
 get_footer();
+
