@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( lvc_whatsapp_url() ) : ?>
 				<a class="lvc-btn lvc-btn--ghost" href="<?php echo esc_url( lvc_whatsapp_url() ); ?>" target="_blank" rel="noopener">Speak With a Specialist</a>
 			<?php endif; ?>
-			<a class="lvc-btn" href="<?php echo esc_url( lvc_archive_url() ); ?>">Request Availability &rarr;</a>
+			<a class="lvc-btn" href="<?php echo esc_url( lvc_page_url( 'request' ) ); ?>">Request Availability &rarr;</a>
 		</div>
 
 		<button class="lvc-header__toggle" type="button" aria-label="Open menu" aria-expanded="false" data-lvc-drawer-toggle>

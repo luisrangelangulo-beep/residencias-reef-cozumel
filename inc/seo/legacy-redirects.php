@@ -32,6 +32,32 @@ if ( ! function_exists( 'lvc_legacy_unit_redirect' ) ) {
 		$ran = true;
 
 		$path = strtolower( trim( (string) parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' ) );
+
+		/*
+		 * Confirmed one-to-one routes from the July 2026 GSC 404 export.
+		 * Keep this explicit: guessing between similarly named historical
+		 * villas risks sending guests and search equity to the wrong property.
+		 */
+		$legacy_routes = array(
+			'about-us-2'                                                  => '/about-us/',
+			'terms-and-conditions'                                        => '/rental-policies/',
+			'casa-la-playa-cozumel-beachfront-luxury-rental'              => '/villas/casa-la-playa-cozumel/',
+			'playa-del-carmen/casa-gigi'                                  => '/villas/villa-gigi-playacar-phase-1/',
+			'playa-del-carmen/casa-los-charcos-playacar-luxury-home'      => '/villas/casa-los-charcos-playacar-phase-1/',
+			'playa-del-carmen/casa-martini-playacar-rental'               => '/villas/casa-martini-playacar-phase-1/',
+			'playa-del-carmen/villa-brianna-playacar-luxury-private-home-rental' => '/villas/villa-brianna-playacar/',
+			'playa-del-carmen/casa-nikki-rental'                          => '/villas/casa-nikki-playacar-phase-1/',
+			'playa-del-carmen/casa-clara-playacar-rental'                 => '/villas/casa-clara-playacar-phase-1/',
+			'playa-del-carmen/villa-turquesa-playacar-luxury-rental'      => '/villas/villa-turquesa-playacar-phase-1/',
+			'riviera-maya-villa-rentals/villa-tulumar-tankah-rental'      => '/villas/villa-tulumar-tankah-bay-tulum/',
+			'riviera-maya-villa-rentals/casa-tira-tulum-veleta'          => '/villas/casa-tira-tulum-la-veleta/',
+			'riviera-maya-villa-rentals/villa-88-tulum-veleta'           => '/villas/villa-88-tulum-la-veleta/',
+		);
+		if ( isset( $legacy_routes[ $path ] ) ) {
+			wp_safe_redirect( home_url( $legacy_routes[ $path ] ), 301 );
+			exit;
+		}
+
 		// The historical routes were nested (/cozumel-vacation-rentals/residencias-
 		// reef-condo-6100/), so match the LAST segment regardless of nesting —
 		// core's redirect_guess_404_permalink otherwise sends near-miss variants

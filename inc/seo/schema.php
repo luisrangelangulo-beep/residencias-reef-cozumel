@@ -304,6 +304,7 @@ if ( lvc_config( 'noindex_thin_terms', true ) ) {
 	add_filter( 'aioseo_robots_meta', function ( $attributes ) use ( $lvc_should_noindex ) {
 		if ( $lvc_should_noindex() ) {
 			$attributes['noindex'] = 'noindex';
+			$attributes['nofollow'] = '';
 		}
 		return (array) $attributes;
 	} );

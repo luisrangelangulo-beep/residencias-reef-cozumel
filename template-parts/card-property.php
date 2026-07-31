@@ -43,6 +43,7 @@ $lvc_specs = array_filter( array(
 		<?php if ( $lvc_area ) : ?><span class="lvc-card__loc"><?php echo esc_html( $lvc_area ); ?></span><?php endif; ?>
 		<span class="lvc-card__name"><?php echo esc_html( $lvc_name ); ?></span>
 		<?php if ( $lvc_specs ) : ?><span class="lvc-card__meta"><?php echo esc_html( implode( ' · ', $lvc_specs ) ); ?></span><?php endif; ?>
+		<span class="lvc-card__price">Rates on Request</span>
 		<span class="lvc-card__cta">View <?php echo esc_html( lvc_config( 'cpt_singular', 'Villa' ) ); ?> &rarr;</span>
 	</span>
 </a>

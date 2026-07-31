@@ -24,16 +24,17 @@ $lvc_arch = lvc_archive_url();
 $lvc_wa   = lvc_whatsapp_url();
 
 $lvc_is_area = ( 'area' === $lvc_tax );
+$lvc_is_collection = ( 'collection' === $lvc_tax );
 $lvc_tid     = $lvc_term instanceof WP_Term ? $lvc_tax . '_' . $lvc_term->term_id : '';
 
 if ( ! function_exists( 'lvc_term_archive_area_image' ) ) {
-	function lvc_term_archive_area_image( $slug ) {
+	function lvc_term_archive_area_image( $slug, $taxonomy = 'area' ) {
 		$q = new WP_Query( array(
 			'post_type'      => lvc_config( 'cpt', 'villas' ),
 			'post_status'    => 'publish',
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
-			'tax_query'      => array( array( 'taxonomy' => 'area', 'field' => 'slug', 'terms' => $slug ) ),
+			'tax_query'      => array( array( 'taxonomy' => $taxonomy, 'field' => 'slug', 'terms' => $slug ) ),
 		) );
 		$img = $q->have_posts() ? lvc_property_image( $q->posts[0], 'large' ) : '';
 		wp_reset_postdata();
@@ -43,6 +44,9 @@ if ( ! function_exists( 'lvc_term_archive_area_image' ) ) {
 
 if ( ! function_exists( 'lvc_term_archive_term_url' ) ) {
 	function lvc_term_archive_term_url( $term ) {
+		if ( $term instanceof WP_Term && 'area' === $term->taxonomy && function_exists( 'lvc_area_lander_url' ) ) {
+			return lvc_area_lander_url( $term->slug );
+		}
 		$link = get_term_link( $term );
 		return is_wp_error( $link ) ? lvc_archive_url() : $link;
 	}
@@ -61,8 +65,8 @@ $lvc_hero = $lvc_tid ? lvc_field( $lvc_tax . '_hero_image_url', $lvc_tid, '' ) :
 if ( ! $lvc_hero && $lvc_tid ) {
 	$lvc_hero = lvc_field( 'hero_image_url', $lvc_tid, '' );
 }
-if ( ! $lvc_hero && $lvc_is_area && $lvc_term instanceof WP_Term ) {
-	$lvc_hero = lvc_term_archive_area_image( $lvc_term->slug );
+if ( ! $lvc_hero && $lvc_term instanceof WP_Term ) {
+	$lvc_hero = lvc_term_archive_area_image( $lvc_term->slug, $lvc_tax );
 }
 
 $lvc_h1 = $lvc_term instanceof WP_Term ? $lvc_term->name : get_the_archive_title();
@@ -113,12 +117,21 @@ if ( $lvc_term instanceof WP_Term ) {
 	}
 }
 
-$lvc_faqs = array(
-	array( 'q' => 'Is ' . $lvc_area_label . ' a good area for a private villa stay?', 'a' => $lvc_area_label . ' can be a strong fit depending on your group size, preferred beach access, service expectations, and budget. We help compare the area against nearby options before you book.' ),
-	array( 'q' => 'Can you help choose between Cozumel condos and Riviera Maya villas?', 'a' => 'Yes. Cozumel condos work well for simple beachfront stays, couples, divers, and smaller groups. Private villas are usually better for larger families, chef service, private pools, celebrations, and higher-service trips.' ),
-	array( 'q' => 'Do villas in ' . $lvc_area_label . ' include chef or staff?', 'a' => 'It depends on the villa. Some include housekeeping or staff, while chef service may be included or arranged separately. We confirm inclusions, staffing, and extra costs before you commit.' ),
-	array( 'q' => 'How do I request villa options in ' . $lvc_area_label . '?', 'a' => 'Send your travel dates, group size, bedroom needs, preferred location, and service priorities. We will shortlist realistic villas and alternatives based on availability and fit.' ),
-);
+if ( $lvc_is_collection ) {
+	$lvc_faqs = array(
+		array( 'q' => 'What qualifies a villa for the ' . $lvc_area_label . ' collection?', 'a' => 'Villas are grouped by documented property features and trip fit. Exact inclusions, access, staffing, and services still vary by villa and are confirmed before booking.' ),
+		array( 'q' => 'Are all features in this collection included in the nightly rate?', 'a' => 'Not always. Some services or amenities may be included, while others are arranged separately or carry an additional charge. We confirm the details for each shortlisted villa.' ),
+		array( 'q' => 'Can you compare villas in this collection across different destinations?', 'a' => 'Yes. Share your dates, group size, preferred area, and priorities, and we will compare realistic options across Cozumel and the Riviera Maya.' ),
+		array( 'q' => 'How do I request availability for a villa in this collection?', 'a' => 'Send your travel dates and group details through the inquiry form. We will confirm availability, fit, and suitable alternatives.' ),
+	);
+} else {
+	$lvc_faqs = array(
+		array( 'q' => 'Is ' . $lvc_area_label . ' a good area for a private villa stay?', 'a' => $lvc_area_label . ' can be a strong fit depending on your group size, preferred beach access, service expectations, and budget. We help compare the area against nearby options before you book.' ),
+		array( 'q' => 'Can you help choose between Cozumel condos and Riviera Maya villas?', 'a' => 'Yes. Cozumel condos work well for simple beachfront stays, couples, divers, and smaller groups. Private villas are usually better for larger families, chef service, private pools, celebrations, and higher-service trips.' ),
+		array( 'q' => 'Do villas in ' . $lvc_area_label . ' include chef or staff?', 'a' => 'It depends on the villa. Some include housekeeping or staff, while chef service may be included or arranged separately. We confirm inclusions, staffing, and extra costs before you commit.' ),
+		array( 'q' => 'How do I request villa options in ' . $lvc_area_label . '?', 'a' => 'Send your travel dates, group size, bedroom needs, preferred location, and service priorities. We will shortlist realistic villas and alternatives based on availability and fit.' ),
+	);
+}
 
 if ( function_exists( 'lvc_jsonld' ) ) {
 	$lvc_faq_qas = array();
@@ -212,11 +225,11 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 
 	<section class="lvc-tax-hero" <?php echo $lvc_hero ? 'style="--tax-hero-img:url(\'' . esc_url( $lvc_hero ) . '\')"' : ''; ?>>
 		<div class="lvc-tax-wrap lvc-tax-hero__inner">
-			<span class="lvc-tax-kicker"><?php echo esc_html( $lvc_is_area ? 'Riviera Maya Area Guide' : ( $lvc_obj ? $lvc_obj->labels->singular_name : 'Collection' ) ); ?></span>
+			<span class="lvc-tax-kicker"><?php echo esc_html( $lvc_is_area ? 'Riviera Maya Area Guide' : ( $lvc_is_collection ? 'Villa Collection' : ( $lvc_obj ? $lvc_obj->labels->singular_name : 'Collection' ) ) ); ?></span>
 			<h1 class="lvc-tax-title"><?php echo wp_kses_post( $lvc_h1 ); ?></h1>
 			<?php if ( $lvc_intro ) : ?><div class="lvc-tax-copy"><?php echo wp_kses_post( wpautop( wp_trim_words( wp_strip_all_tags( $lvc_intro ), 48 ) ) ); ?></div><?php endif; ?>
 			<div class="lvc-tax-btns">
-				<a class="lvc-tax-btn" href="#villas">View Villas in <?php echo esc_html( $lvc_area_label ); ?></a>
+				<a class="lvc-tax-btn" href="#villas"><?php echo esc_html( $lvc_is_collection ? 'View ' . $lvc_area_label . ' Villas' : 'View Villas in ' . $lvc_area_label ); ?></a>
 				<a class="lvc-tax-btn lvc-tax-btn--ghost" href="<?php echo esc_url( $lvc_req ); ?>">Request a Match</a>
 			</div>
 			<div class="lvc-tax-chips" aria-label="Area highlights">
@@ -229,10 +242,14 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 
 	<section class="lvc-tax-section lvc-tax-section--alt">
 		<div class="lvc-tax-wrap lvc-tax-intro">
-			<div><span class="lvc-tax-kicker">Area Strategy</span><h2 class="lvc-tax-title">Is <em><?php echo esc_html( $lvc_area_label ); ?></em> the right fit?</h2></div>
+			<div><span class="lvc-tax-kicker"><?php echo esc_html( $lvc_is_collection ? 'Collection Guide' : 'Area Strategy' ); ?></span><h2 class="lvc-tax-title">Is <em><?php echo esc_html( $lvc_area_label ); ?></em> the right fit?</h2></div>
 			<div class="lvc-tax-panel lvc-tax-copy">
 				<?php if ( $lvc_intro ) : ?><?php echo wp_kses_post( wpautop( $lvc_intro ) ); ?><?php else : ?><p>Every Riviera Maya area works differently. The right choice depends on group size, beach access, service level, arrival logistics, privacy, and whether your stay is a simple vacation or a higher-value private villa trip.</p><?php endif; ?>
-				<ul><li>Compare the area against Cozumel, Tulum, Playa del Carmen, Akumal, and Puerto Aventuras.</li><li>Shortlist villas by bedrooms, location, pool, beach access, chef service, staff, and group priorities.</li><li>Use the inquiry form when dates and exact fit matter more than endless browsing.</li></ul>
+				<?php if ( $lvc_is_collection ) : ?>
+					<ul><li>Confirm the defining feature or service on the individual villa page.</li><li>Compare bedrooms, location, privacy, staffing, and total trip fit.</li><li>Send your dates when availability matters more than browsing the full grid.</li></ul>
+				<?php else : ?>
+					<ul><li>Compare the area against Cozumel, Tulum, Playa del Carmen, Akumal, and Puerto Aventuras.</li><li>Shortlist villas by bedrooms, location, pool, beach access, chef service, staff, and group priorities.</li><li>Use the inquiry form when dates and exact fit matter more than endless browsing.</li></ul>
+				<?php endif; ?>
 			</div>
 		</div>
 	</section>
@@ -265,7 +282,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 
 	<section class="lvc-tax-section lvc-tax-section--alt" id="villas">
 		<div class="lvc-tax-wrap">
-			<header class="lvc-tax-head"><span class="lvc-tax-kicker">Villa Collection</span><h2 class="lvc-tax-title">Luxury villas in <em><?php echo esc_html( $lvc_area_label ); ?></em></h2><p class="lvc-tax-copy">Browse the current collection, then send your dates if you want help confirming availability, service level, and realistic alternatives.</p></header>
+			<header class="lvc-tax-head"><span class="lvc-tax-kicker">Villa Collection</span><h2 class="lvc-tax-title"><?php echo esc_html( $lvc_is_collection ? 'Explore' : 'Luxury villas in' ); ?> <em><?php echo esc_html( $lvc_area_label ); ?></em></h2><p class="lvc-tax-copy">Browse the current collection, then send your dates if you want help confirming availability, service level, and realistic alternatives.</p></header>
 			<?php
 			/*
 			 * Filter bar (portfolio pattern — Republic/PMVR): selects for the
@@ -344,7 +361,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 			?>
 			<div class="lvc-tax-card-grid">
 				<?php foreach ( $lvc_siblings as $lvc_sibling ) :
-					$lvc_sib_img = function_exists( 'lvc_term_archive_area_image' ) ? lvc_term_archive_area_image( $lvc_sibling->slug ) : '';
+					$lvc_sib_img = function_exists( 'lvc_term_archive_area_image' ) ? lvc_term_archive_area_image( $lvc_sibling->slug, $lvc_tax ) : '';
 					$lvc_sib_n   = function_exists( 'lvc_active_villa_count_for_term' ) ? lvc_active_villa_count_for_term( $lvc_sibling ) : (int) $lvc_sibling->count;
 				?>
 					<a class="lvc-tax-area-card" href="<?php echo esc_url( lvc_term_archive_term_url( $lvc_sibling ) ); ?>" style="<?php echo $lvc_sib_img ? '--area-img:url(' . esc_url( $lvc_sib_img ) . ')' : ''; ?>">
@@ -363,8 +380,8 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	<section class="lvc-tax-section lvc-tax-cta">
 		<div class="lvc-tax-narrow">
 			<span class="lvc-tax-kicker">Plan Your Stay</span>
-			<h2 class="lvc-tax-title">Need help choosing a villa in <em><?php echo esc_html( $lvc_area_label ); ?></em>?</h2>
-			<p class="lvc-tax-copy">Tell us your dates, group size, bedroom needs, preferred area, and service priorities. We will help identify whether this area, a nearby Riviera Maya villa, or a Cozumel condo makes the most sense.</p>
+			<h2 class="lvc-tax-title">Need help choosing <?php echo esc_html( $lvc_is_collection ? 'from' : 'a villa in' ); ?> <em><?php echo esc_html( $lvc_area_label ); ?></em>?</h2>
+			<p class="lvc-tax-copy"><?php echo esc_html( $lvc_is_collection ? 'Tell us your dates, group size, preferred area, and must-haves. We will confirm which villas genuinely match this collection and your trip.' : 'Tell us your dates, group size, bedroom needs, preferred area, and service priorities. We will help identify whether this area, a nearby Riviera Maya villa, or a Cozumel condo makes the most sense.' ); ?></p>
 			<div class="lvc-tax-btns lvc-tax-btns--center"><a class="lvc-tax-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><?php if ( $lvc_wa ) : ?><a class="lvc-tax-btn lvc-tax-btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">Chat on WhatsApp</a><?php endif; ?></div>
 		</div>
 	</section>

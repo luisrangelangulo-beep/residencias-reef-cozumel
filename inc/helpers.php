@@ -237,6 +237,13 @@ if ( ! function_exists( 'lvc_cdn_img' ) ) {
 		if ( preg_match( '/^i[0-3]\.wp\.com$/', $host ) ) {
 			return add_query_arg( 'w', (int) $width, $url );
 		}
+		// Do not proxy remote R2/custom-CDN assets through Photon. Several
+		// valid origin images return 404 after that rewrite, and CSS hero
+		// backgrounds have no onerror fallback.
+		$site_host = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
+		if ( ! $site_host || strtolower( $host ) !== strtolower( $site_host ) ) {
+			return $url;
+		}
 		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
 		return 'https://i0.wp.com/' . $host . $path . '?w=' . (int) $width . '&ssl=1';
 	}

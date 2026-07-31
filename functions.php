@@ -33,6 +33,7 @@ foreach ( array(
 	'inc/conversion/inquiry-frontend.php',
 	'inc/seo/schema.php',
 	'inc/seo/filter-params.php',
+	'inc/seo/architecture.php',
 	'inc/seo/legacy-redirects.php',
 	'inc/template-router.php',
 ) as $lvc_relative ) {

@@ -27,7 +27,8 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	<section class="lvc-archive-hero" <?php echo $lvc_archive_hero_img ? 'style="--archive-hero-img:url(\'' . esc_url( $lvc_archive_hero_img ) . '\')"' : ''; ?>>
 		<div class="lvc-archive-hero__inner">
 			<p class="lvc-eyebrow"><?php echo esc_html( lvc_brand() ); ?></p>
-			<h1 class="lvc-hero__title"><?php echo esc_html( $lvc_plural ); ?></h1>
+			<h1 class="lvc-hero__title">Cozumel Vacation Rentals &amp; Riviera Maya Villas</h1>
+			<p class="lvc-hero__sub">Compare beachfront Cozumel condos with private villas across Tulum, Playa del Carmen, Akumal, Soliman Bay, and Puerto Aventuras.</p>
 		</div>
 	</section>
 

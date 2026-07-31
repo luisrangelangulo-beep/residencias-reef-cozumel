@@ -231,7 +231,31 @@ h1, h2, h3, h4, h5 {
 .lvc-card__loc { font-size: .72rem; text-transform: uppercase; letter-spacing: .16em; color: var(--lvc-accent); }
 .lvc-card__name { font-family: var(--lvc-font-display); font-size: 1.2rem; font-weight: 300; color: var(--lvc-text); }
 .lvc-card__meta { font-size: .85rem; color: var(--lvc-muted); }
+.lvc-card__price { font-size: .82rem; font-weight: 500; color: var(--lvc-accent); }
 .lvc-card__cta { font-size: .85rem; color: var(--lvc-accent); margin-top: .4rem; }
+
+/* Coral is a light accent: dark ink passes contrast where white does not.
+   These page-specific button classes otherwise override the base .lvc-btn. */
+.lcv-home-btn,
+.lvc-mag-btn,
+.lvc-maghub-btn,
+.lvc-area-btn,
+.lvc-rm-btn {
+  color: #070c11 !important;
+}
+.lcv-home-btn--ghost,
+.lvc-mag-btn--ghost,
+.lvc-maghub-btn--ghost,
+.lvc-area-btn--ghost,
+.lvc-rm-btn--ghost {
+  color: var(--lvc-text) !important;
+}
+.lcv-home-pagination .page-numbers.current,
+.lvc-mag-pagination .current,
+.lvc-maghub-pagination .current,
+.lvc-area-pagination .page-numbers.current {
+  color: #070c11 !important;
+}
 
 /* ── Trust strip ───────────────────────────────────────────────────── */
 .lvc-trust { background: var(--lvc-bg-alt); border-top: 1px solid var(--lvc-border); border-bottom: 1px solid var(--lvc-border); }
