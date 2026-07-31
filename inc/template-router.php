@@ -112,12 +112,26 @@ function lvc_archive_filters( $q ) {
 		}
 		$value = absint( $value );
 		if ( $value ) {
-			$meta_query[] = array(
-				'key'     => $meta_key,
-				'value'   => $value,
-				'compare' => '>=',
-				'type'    => 'NUMERIC',
+			$aliases    = function_exists( 'lvc_field_aliases' ) ? lvc_field_aliases() : array();
+			$legacy_key = $aliases[ $meta_key ] ?? '';
+			$clause     = array(
+				'relation' => 'OR',
+				array(
+					'key'     => $meta_key,
+					'value'   => $value,
+					'compare' => '>=',
+					'type'    => 'NUMERIC',
+				),
 			);
+			if ( $legacy_key && $legacy_key !== $meta_key ) {
+				$clause[] = array(
+					'key'     => $legacy_key,
+					'value'   => $value,
+					'compare' => '>=',
+					'type'    => 'NUMERIC',
+				);
+			}
+			$meta_query[] = $clause;
 		}
 	}
 	if ( count( $meta_query ) > 1 && ! isset( $meta_query['relation'] ) ) {
