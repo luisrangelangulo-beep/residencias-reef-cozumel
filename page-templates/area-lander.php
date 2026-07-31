@@ -42,7 +42,20 @@ $lvc_why    = $lvc_tid ? lvc_field( 'why_stay_info', $lvc_tid ) : '';
 $lvc_high_t = $lvc_tid ? lvc_field( 'key_highlights', $lvc_tid ) : '';
 $lvc_high   = $lvc_tid ? lvc_field( 'key_highlights_text', $lvc_tid ) : '';
 
-$lvc_hero = $lvc_tid ? lvc_field( 'hero_image_url', $lvc_tid ) : '';
+$lvc_page_id    = get_queried_object_id();
+$lvc_page_intro = $lvc_page_id ? lvc_field( 'hero_intro', $lvc_page_id, '' ) : '';
+$lvc_hero_intro = $lvc_page_intro ?: $lvc_intro;
+
+$lvc_hero = $lvc_page_id ? lvc_field( 'hero_image_url', $lvc_page_id, '' ) : '';
+if ( ! $lvc_hero && $lvc_page_id ) {
+	$lvc_hero = get_the_post_thumbnail_url( $lvc_page_id, 'full' );
+}
+if ( ! $lvc_hero && $lvc_page_id ) {
+	$lvc_hero = lvc_field( 'feature_image_url', $lvc_page_id, '' );
+}
+if ( ! $lvc_hero ) {
+	$lvc_hero = $lvc_tid ? lvc_field( 'hero_image_url', $lvc_tid ) : '';
+}
 if ( ! $lvc_hero && $lvc_term ) {
 	$hero_query = new WP_Query( array(
 		'post_type'      => $lvc_cpt,
@@ -186,7 +199,7 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 		<div class="lvc-area-wrap lvc-area-hero__inner">
 			<span class="lvc-area-kicker">Riviera Maya Area Guide</span>
 			<h1 class="lvc-area-title"><?php echo wp_kses_post( $lvc_h1 ); ?></h1>
-			<?php if ( $lvc_intro ) : ?><div class="lvc-area-copy"><?php echo wp_kses_post( wpautop( wp_trim_words( wp_strip_all_tags( $lvc_intro ), 46 ) ) ); ?></div><?php endif; ?>
+			<?php if ( $lvc_hero_intro ) : ?><div class="lvc-area-copy"><?php echo wp_kses_post( wpautop( wp_trim_words( wp_strip_all_tags( $lvc_hero_intro ), 46 ) ) ); ?></div><?php endif; ?>
 			<div class="lvc-area-btns">
 				<a class="lvc-area-btn" href="#villas">View Villas in <?php echo esc_html( $lvc_term ? $lvc_term->name : 'This Area' ); ?></a>
 				<a class="lvc-area-btn lvc-area-btn--ghost" href="<?php echo esc_url( lvc_page_url( 'request' ) ); ?>">Request a Match</a>
@@ -390,3 +403,4 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 
 </main>
 <?php get_footer(); ?>
+
