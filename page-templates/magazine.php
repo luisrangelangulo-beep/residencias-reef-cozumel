@@ -16,7 +16,7 @@ $lvc_req  = lvc_page_url( 'request' );
 $lvc_arch = lvc_archive_url();
 $lvc_wa   = lvc_whatsapp_url();
 
-$lvc_hero_img = get_the_post_thumbnail_url( get_the_ID(), 'full' );
+$lvc_hero_img = lvc_page_hero_image();
 if ( ! $lvc_hero_img ) {
 	$hero_q = new WP_Query( array(
 		'post_type'      => lvc_config( 'cpt', 'villas' ),
