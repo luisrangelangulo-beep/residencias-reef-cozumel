@@ -99,4 +99,31 @@ function lvc_archive_filters( $q ) {
 	if ( $tax_query ) {
 		$q->set( 'tax_query', $tax_query );
 	}
+
+	$meta_query = (array) $q->get( 'meta_query' );
+	$minimums   = array(
+		'guests' => 'guests_max',
+		'beds'   => 'bed_count',
+	);
+	foreach ( $minimums as $param => $meta_key ) {
+		$value = get_query_var( $param );
+		if ( ! $value && isset( $_GET[ $param ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$value = wp_unslash( $_GET[ $param ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		$value = absint( $value );
+		if ( $value ) {
+			$meta_query[] = array(
+				'key'     => $meta_key,
+				'value'   => $value,
+				'compare' => '>=',
+				'type'    => 'NUMERIC',
+			);
+		}
+	}
+	if ( count( $meta_query ) > 1 && ! isset( $meta_query['relation'] ) ) {
+		$meta_query['relation'] = 'AND';
+	}
+	if ( $meta_query ) {
+		$q->set( 'meta_query', $meta_query );
+	}
 }
