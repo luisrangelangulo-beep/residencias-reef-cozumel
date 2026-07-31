@@ -54,12 +54,14 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 			if ( 'bedrooms' === $tax ) {
 				$terms = lvc_sort_bedroom_terms( $terms );
 			}
-			$current = isset( $_GET[ $tax ] ) ? sanitize_title( wp_unslash( $_GET[ $tax ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filter_param = lvc_filter_param_for_taxonomy( $tax );
+			$current      = get_query_var( $filter_param );
+			$current      = $current ? sanitize_title( $current ) : ( isset( $_GET[ $filter_param ] ) ? sanitize_title( wp_unslash( $_GET[ $filter_param ] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$obj = get_taxonomy( $tax );
 			?>
 			<label class="lvc-filter__group">
 				<span><?php echo esc_html( $obj ? $obj->labels->singular_name : ucfirst( $tax ) ); ?></span>
-				<select class="lvc-filter__select" name="<?php echo esc_attr( $tax ); ?>">
+				<select class="lvc-filter__select" name="<?php echo esc_attr( $filter_param ); ?>">
 					<option value="">Any</option>
 					<?php foreach ( $terms as $t ) : ?>
 						<option value="<?php echo esc_attr( $t->slug ); ?>" <?php selected( $current, $t->slug ); ?>><?php echo esc_html( $t->name ); ?></option>
@@ -90,4 +92,3 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 </main>
 <?php
 get_footer();
-
