@@ -56,10 +56,16 @@ if ( ! function_exists( 'lvc_page_hero_image' ) ) {
 		}
 		$image = lvc_field( 'hero_image_url', $page_id, '' );
 		if ( ! $image ) {
+			$image = get_post_meta( $page_id, 'hero_image_url', true );
+		}
+		if ( ! $image ) {
 			$image = get_the_post_thumbnail_url( $page_id, 'full' );
 		}
 		if ( ! $image ) {
 			$image = lvc_field( 'feature_image_url', $page_id, '' );
+		}
+		if ( ! $image ) {
+			$image = get_post_meta( $page_id, 'feature_image_url', true );
 		}
 		return $image;
 	}
@@ -73,10 +79,16 @@ if ( ! function_exists( 'lvc_page_feature_image' ) ) {
 		}
 		$image = lvc_field( 'feature_image_url', $page_id, '' );
 		if ( ! $image ) {
+			$image = get_post_meta( $page_id, 'feature_image_url', true );
+		}
+		if ( ! $image ) {
 			$image = get_the_post_thumbnail_url( $page_id, 'full' );
 		}
 		if ( ! $image ) {
 			$image = lvc_field( 'hero_image_url', $page_id, '' );
+		}
+		if ( ! $image ) {
+			$image = get_post_meta( $page_id, 'hero_image_url', true );
 		}
 		return $image;
 	}
@@ -438,4 +450,3 @@ if ( ! function_exists( 'lvc_property_area_term' ) ) {
 		return $deepest;
 	}
 }
-
