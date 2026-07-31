@@ -70,7 +70,7 @@ add_filter( 'request', function ( $query_vars ) {
 add_filter( 'query_vars', function ( $vars ) {
 	return array_values(
 		array_unique(
-			array_merge( $vars, array_values( lvc_filter_taxonomy_param_map() ), array( 'vp' ) )
+			array_merge( $vars, array_values( lvc_filter_taxonomy_param_map() ), array( 'guests', 'beds', 'arrival', 'departure', 'vp' ) )
 		)
 	);
 } );
