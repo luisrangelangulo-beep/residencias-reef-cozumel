@@ -48,6 +48,11 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 	</nav>
 
 	<form class="lvc-filter lvc-wide-wrap" method="get" data-lvc-filter>
+		<?php foreach ( array( 'arrival', 'departure', 'guests', 'beds' ) as $lvc_passthrough ) : ?>
+			<?php if ( isset( $_GET[ $lvc_passthrough ] ) && '' !== $_GET[ $lvc_passthrough ] ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<input type="hidden" name="<?php echo esc_attr( $lvc_passthrough ); ?>" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET[ $lvc_passthrough ] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>">
+			<?php endif; ?>
+		<?php endforeach; ?>
 		<?php foreach ( $lvc_filter_taxes as $tax ) :
 			$terms = get_terms( array( 'taxonomy' => $tax, 'hide_empty' => true ) );
 			if ( is_wp_error( $terms ) || ! $terms ) { continue; }
@@ -71,6 +76,40 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 		<?php endforeach; ?>
 		<button type="submit" class="lvc-btn lvc-filter__submit">Filter</button>
 	</form>
+
+	<?php
+	$lvc_arrival   = isset( $_GET['arrival'] ) ? sanitize_text_field( wp_unslash( $_GET['arrival'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$lvc_departure = isset( $_GET['departure'] ) ? sanitize_text_field( wp_unslash( $_GET['departure'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$lvc_guests    = isset( $_GET['guests'] ) ? absint( $_GET['guests'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$lvc_beds      = isset( $_GET['beds'] ) ? absint( $_GET['beds'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$lvc_date_ok   = static function ( $date ) {
+		$parsed = DateTime::createFromFormat( 'Y-m-d', $date );
+		return $parsed && $parsed->format( 'Y-m-d' ) === $date ? $date : '';
+	};
+	$lvc_arrival   = $lvc_date_ok( $lvc_arrival );
+	$lvc_departure = $lvc_date_ok( $lvc_departure );
+	if ( $lvc_arrival || $lvc_departure || $lvc_guests || $lvc_beds ) :
+		$lvc_request_url = add_query_arg(
+			array_filter(
+				array(
+					'arrival'   => $lvc_arrival,
+					'departure' => $lvc_departure,
+					'guests'    => $lvc_guests,
+					'bedrooms'  => $lvc_beds,
+				)
+			),
+			lvc_page_url( 'request' )
+		);
+		?>
+		<div class="lvc-fchip lvc-wide-wrap" aria-label="Your villa search">
+			<?php if ( $lvc_arrival ) : ?><span class="lvc-fchip__item">Arrival <?php echo esc_html( date_i18n( 'j M Y', strtotime( $lvc_arrival ) ) ); ?></span><?php endif; ?>
+			<?php if ( $lvc_departure ) : ?><span class="lvc-fchip__item">Departure <?php echo esc_html( date_i18n( 'j M Y', strtotime( $lvc_departure ) ) ); ?></span><?php endif; ?>
+			<?php if ( $lvc_guests ) : ?><span class="lvc-fchip__item"><?php echo esc_html( $lvc_guests ); ?>+ guests</span><?php endif; ?>
+			<?php if ( $lvc_beds ) : ?><span class="lvc-fchip__item"><?php echo esc_html( $lvc_beds ); ?>+ bedrooms</span><?php endif; ?>
+			<?php if ( $lvc_arrival || $lvc_departure ) : ?><span class="lvc-fchip__note">Dates are advisory; availability is confirmed personally.</span><?php endif; ?>
+			<a class="lvc-btn lvc-btn--ghost" href="<?php echo esc_url( $lvc_request_url ); ?>">Request This Match</a>
+		</div>
+	<?php endif; ?>
 
 	<section class="lvc-wide-section">
 		<div class="lvc-wide-wrap">
