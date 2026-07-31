@@ -37,9 +37,13 @@ Open **Site Content → Villas Archive**.
 For About, Contact, FAQ, How It Works, List Your Villa, Villa Request,
 Magazine, and Riviera Maya Villa Rentals:
 
+- **Page Hero & Media → Hero Image URL** is the primary page hero.
+- **Page Hero & Media → Feature / Card Image URL** is the page-card image and
+  final hero fallback.
+- **Page Hero & Media → Hero Introduction** is the primary hero summary.
 - **Page title** controls the hero H1.
-- **Excerpt** controls the hero introduction.
-- **Featured Image** controls the hero image.
+- **Excerpt** remains the hero-introduction fallback.
+- **Featured Image** remains the shared WordPress image fallback.
 - **Page content** supplies the editable editorial section. Designed template
   sections and forms remain intact around it.
 
