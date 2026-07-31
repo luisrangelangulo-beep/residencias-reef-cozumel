@@ -95,9 +95,6 @@
 
 /* Cards: elegant lift, border glow, image zoom. */
 .lvc-card,
-.lcv-area-tile,
-.lvc-tax-area-card,
-.lvc-rm-area,
 .lvc-maghub-card,
 .lvc-mag-card,
 .lvc-magcard,
@@ -122,9 +119,6 @@
 }
 
 .lvc-card:hover,
-.lcv-area-tile:hover,
-.lvc-tax-area-card:hover,
-.lvc-rm-area:hover,
 .lvc-maghub-card:hover,
 .lvc-mag-card:hover,
 .lvc-magcard:hover,
@@ -161,40 +155,6 @@
 .lvc-single-gallery figure:hover img {
   transform: scale(1.065);
   filter: saturate(1.05) contrast(1.03);
-}
-
-/* Background-image tiles cannot zoom their image directly, so create a sheen. */
-.lcv-area-tile:after,
-.lvc-tax-area-card:after,
-.lvc-rm-area:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,.08) 42%, transparent 68%);
-  opacity: 0;
-  transform: translateX(-40%);
-  transition: opacity 500ms ease, transform 720ms var(--lvc-motion-ease);
-}
-
-.lcv-area-tile:hover:after,
-.lvc-tax-area-card:hover:after,
-.lvc-rm-area:hover:after {
-  opacity: 1;
-  transform: translateX(38%);
-}
-
-.lcv-area-tile__body,
-.lvc-tax-area-card__body,
-.lvc-rm-area__body {
-  transition: transform var(--lvc-motion-med) var(--lvc-motion-ease);
-}
-
-.lcv-area-tile:hover .lcv-area-tile__body,
-.lvc-tax-area-card:hover .lvc-tax-area-card__body,
-.lvc-rm-area:hover .lvc-rm-area__body {
-  transform: translateY(-4px);
 }
 
 /* Buttons: more tactile, less flat. */
@@ -359,3 +319,4 @@
     transition-duration: 0.001ms !important;
   }
 }
+
