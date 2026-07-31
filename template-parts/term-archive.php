@@ -25,6 +25,7 @@ $lvc_wa   = lvc_whatsapp_url();
 
 $lvc_is_area = ( 'area' === $lvc_tax );
 $lvc_is_collection = ( 'collection' === $lvc_tax );
+$lvc_is_bedrooms = ( 'bedrooms' === $lvc_tax );
 $lvc_tid     = $lvc_term instanceof WP_Term ? $lvc_tax . '_' . $lvc_term->term_id : '';
 
 if ( ! function_exists( 'lvc_term_archive_area_image' ) ) {
@@ -128,6 +129,15 @@ if ( $lvc_is_collection ) {
 		array( 'q' => 'Can you compare villas in this collection across different destinations?', 'a' => 'Yes. Share your dates, group size, preferred area, and priorities, and we will compare realistic options across Cozumel and the Riviera Maya.' ),
 		array( 'q' => 'How do I request availability for a villa in this collection?', 'a' => 'Send your travel dates and group details through the inquiry form. We will confirm availability, fit, and suitable alternatives.' ),
 	);
+} elseif ( $lvc_is_bedrooms ) {
+	$lvc_bedroom_count = (int) preg_replace( '/\D+/', '', $lvc_area_label );
+	$lvc_bedroom_label = $lvc_bedroom_count ? $lvc_bedroom_count . '-bedroom' : strtolower( $lvc_area_label );
+	$lvc_faqs = array(
+		array( 'q' => 'How many guests can a ' . $lvc_bedroom_label . ' villa accommodate?', 'a' => 'Capacity depends on the bed configuration and the property’s approved occupancy, not bedroom count alone. Check each villa page or send your group details so we can confirm the right fit.' ),
+		array( 'q' => 'Are all bedrooms equally private?', 'a' => 'No. Some villas mix primary suites, guest rooms, bunk rooms, or bedrooms with exterior access. We confirm the room-by-room configuration before booking.' ),
+		array( 'q' => 'Can you compare ' . $lvc_bedroom_label . ' villas across different Riviera Maya areas?', 'a' => 'Yes. Share your dates, guest mix, preferred location, and service priorities, and we will compare suitable villas across Cozumel, Tulum, Akumal, Playa del Carmen, and nearby areas.' ),
+		array( 'q' => 'Do ' . $lvc_bedroom_label . ' villas include a chef or staff?', 'a' => 'Staffing varies by property. Housekeeping may be included, while chef service can be included or arranged separately. We confirm inclusions and additional costs for every shortlist.' ),
+	);
 } else {
 	$lvc_faqs = array(
 		array( 'q' => 'Is ' . $lvc_area_label . ' a good area for a private villa stay?', 'a' => $lvc_area_label . ' can be a strong fit depending on your group size, preferred beach access, service expectations, and budget. We help compare the area against nearby options before you book.' ),
@@ -135,6 +145,24 @@ if ( $lvc_is_collection ) {
 		array( 'q' => 'Do villas in ' . $lvc_area_label . ' include chef or staff?', 'a' => 'It depends on the villa. Some include housekeeping or staff, while chef service may be included or arranged separately. We confirm inclusions, staffing, and extra costs before you commit.' ),
 		array( 'q' => 'How do I request villa options in ' . $lvc_area_label . '?', 'a' => 'Send your travel dates, group size, bedroom needs, preferred location, and service priorities. We will shortlist realistic villas and alternatives based on availability and fit.' ),
 	);
+}
+
+// Editorial FAQ fields override the safe generated defaults when completed.
+if ( $lvc_tid ) {
+	$lvc_editor_faqs = array();
+	for ( $lvc_faq_index = 1; $lvc_faq_index <= 4; $lvc_faq_index++ ) {
+		$lvc_editor_question = trim( (string) lvc_field( 'faq_q' . $lvc_faq_index, $lvc_tid, '' ) );
+		$lvc_editor_answer   = trim( (string) lvc_field( 'faq_a' . $lvc_faq_index, $lvc_tid, '' ) );
+		if ( $lvc_editor_question && $lvc_editor_answer ) {
+			$lvc_editor_faqs[] = array(
+				'q' => $lvc_editor_question,
+				'a' => $lvc_editor_answer,
+			);
+		}
+	}
+	if ( $lvc_editor_faqs ) {
+		$lvc_faqs = $lvc_editor_faqs;
+	}
 }
 
 if ( function_exists( 'lvc_jsonld' ) ) {
@@ -305,11 +333,13 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 					if ( 'bedrooms' === $lvc_ftax ) {
 						$lvc_fterms = lvc_sort_bedroom_terms( $lvc_fterms );
 					}
-					$lvc_fcur = isset( $_GET[ $lvc_ftax ] ) ? sanitize_title( wp_unslash( $_GET[ $lvc_ftax ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$lvc_fparam = lvc_filter_param_for_taxonomy( $lvc_ftax );
+					$lvc_fcur   = get_query_var( $lvc_fparam );
+					$lvc_fcur   = $lvc_fcur ? sanitize_title( $lvc_fcur ) : ( isset( $_GET[ $lvc_fparam ] ) ? sanitize_title( wp_unslash( $_GET[ $lvc_fparam ] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				?>
 					<label class="lvc-tax-filter__group">
 						<span><?php echo esc_html( $lvc_flabel ); ?></span>
-						<select name="<?php echo esc_attr( $lvc_ftax ); ?>">
+						<select name="<?php echo esc_attr( $lvc_fparam ); ?>">
 							<option value="">Any</option>
 							<?php foreach ( $lvc_fterms as $lvc_ft ) : ?>
 								<option value="<?php echo esc_attr( $lvc_ft->slug ); ?>" <?php selected( $lvc_fcur, $lvc_ft->slug ); ?>><?php echo esc_html( $lvc_ft->name ); ?></option>
@@ -318,7 +348,7 @@ if ( function_exists( 'lvc_schema_collection' ) ) {
 					</label>
 				<?php endforeach; ?>
 				<button type="submit" class="lvc-tax-btn">Filter</button>
-				<?php if ( array_intersect_key( $_GET, array_flip( array( 'area', 'bedrooms', 'collection', 'catering', 'guests', 'beds' ) ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<?php if ( lvc_request_is_filtered_view() ) : ?>
 					<a class="lvc-tax-filter__clear" href="<?php echo esc_url( $lvc_term instanceof WP_Term ? lvc_term_archive_term_url( $lvc_term ) : $lvc_arch ); ?>">Clear</a>
 				<?php endif; ?>
 			</form>
