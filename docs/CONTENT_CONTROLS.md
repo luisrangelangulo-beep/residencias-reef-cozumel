@@ -1,22 +1,34 @@
 # Site content controls
 
 The theme separates structured layout from editorial content. Current copy
-remains the fallback, so enabling these controls does not blank existing pages.
+remains the fallback, so empty controls never blank an existing page.
+
+## Control center
+
+Use the top-level **Site Content** menu. The same screen is also available at
+**Appearance â†’ Site Content**.
+
+- The "Where to edit every page" map links directly to every core page, area,
+  collection, and property editor.
+- The retired ACF "Homepage" screen is migrated automatically into this screen.
+- Image fields include both a URL input and a Media Library picker/preview.
 
 ## Homepage
 
-Go to **Appearance → Site Content → Homepage**.
+Open **Site Content â†’ Homepage â€” Hero** and **Homepage â€” Main Sections**.
 
-- Hero Image URL changes the homepage hero when the static Home page has no
-  Featured Image.
-- Hero eyebrow, heading lines, introduction, and button labels are editable.
-- Featured-stays, collection, and final-CTA headings/intros are editable.
-- If WordPress uses a static Home page, its Featured Image has first priority
-  for the homepage hero.
+- Hero Image is the primary homepage hero control.
+- Hero eyebrow, heading lines, introduction, buttons, and shortlist panel are
+  editable.
+- Major homepage section headings and introductions are editable.
+- Area and collection card images/copy come from their taxonomy terms, with
+  property imagery and theme copy retained as safe fallbacks.
+- The static Home page Featured Image remains a fallback when the central Hero
+  Image is empty.
 
 ## Villas archive
 
-Go to **Appearance → Site Content → Villas Archive**.
+Open **Site Content â†’ Villas Archive**.
 
 - Edit the `/villas/` hero image, H1, and introduction.
 
@@ -40,6 +52,9 @@ Edit the relevant **Area** or **Collection** taxonomy term:
 - positioning copy
 - highlights
 - FAQ questions and answers
+
+The same term image and description also feed the corresponding homepage card
+when that term is featured there.
 
 ## Property pages
 
