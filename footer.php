@@ -55,6 +55,7 @@ $lvc_wa   = lvc_whatsapp_url();
 				<li><a href="<?php echo esc_url( lvc_archive_url() ); ?>">All <?php echo esc_html( lvc_config( 'cpt_plural', 'Villas' ) ); ?></a></li>
 				<li><a href="<?php echo esc_url( lvc_page_url( 'magazine' ) ); ?>">Magazine</a></li>
 				<li><a href="<?php echo esc_url( lvc_page_url( 'about' ) ); ?>">About</a></li>
+				<li><a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a></li>
 			</ul>
 		</nav>
 
@@ -121,4 +122,3 @@ $lvc_wa   = lvc_whatsapp_url();
 <?php wp_footer(); ?>
 </body>
 </html>
-
