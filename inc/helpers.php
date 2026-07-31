@@ -49,8 +49,8 @@ if ( ! function_exists( 'lvc_page_hero_intro' ) ) {
 }
 
 if ( ! function_exists( 'lvc_page_hero_image' ) ) {
-	function lvc_page_hero_image() {
-		$page_id = get_queried_object_id();
+	function lvc_page_hero_image( $page_id = 0 ) {
+		$page_id = $page_id ? (int) $page_id : get_queried_object_id();
 		if ( ! $page_id ) {
 			return '';
 		}
@@ -95,9 +95,10 @@ if ( ! function_exists( 'lvc_page_feature_image' ) ) {
 }
 
 if ( ! function_exists( 'lvc_page_hero_style' ) ) {
-	function lvc_page_hero_style() {
-		$image = lvc_page_hero_image();
-		return $image ? '--lvc-hero-img:url(\'' . esc_url( $image ) . '\')' : '';
+	function lvc_page_hero_style( $css_variable = '--lvc-hero-img', $page_id = 0 ) {
+		$image        = lvc_page_hero_image( $page_id );
+		$css_variable = preg_match( '/^--[a-z0-9_-]+$/i', (string) $css_variable ) ? $css_variable : '--lvc-hero-img';
+		return $image ? $css_variable . ':url(\'' . esc_url( $image ) . '\')' : '';
 	}
 }
 
