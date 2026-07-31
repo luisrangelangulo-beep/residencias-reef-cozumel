@@ -43,7 +43,10 @@ if ( ! function_exists( 'lvc_rm_area_url' ) ) {
 	}
 }
 
-$lvc_hero_img = lvc_rm_area_image( 'riviera-maya' );
+$lvc_hero_img = lvc_page_hero_image();
+if ( ! $lvc_hero_img ) {
+	$lvc_hero_img = lvc_rm_area_image( 'riviera-maya' );
+}
 if ( ! $lvc_hero_img ) {
 	$lvc_hero_img = lvc_rm_area_image( 'tulum' );
 }
@@ -104,8 +107,10 @@ $lvc_villas = new WP_Query( array( 'post_type' => $lvc_cpt, 'post_status' => 'pu
 
 <main class="lvc-rm">
 	<section class="lvc-rm-hero" <?php echo $lvc_hero_img ? 'style="--rm-hero-img:url(\'' . esc_url( $lvc_hero_img ) . '\')"' : ''; ?> aria-label="Riviera Maya villa rentals">
-		<div class="lvc-rm-wrap lvc-rm-hero__grid"><div><span class="lvc-rm-kicker">Residencias Reef Cozumel</span><h1>Riviera Maya Villa Rentals <em>matched to your group</em></h1><p class="lvc-rm-hero__sub">Private villas, beachfront estates, and selected Cozumel condo stays across Tulum, Soliman Bay, Akumal, Playa del Carmen, Puerto Aventuras, and Cozumel. Compare areas first, then request the villas that fit your dates, group size, and service needs.</p><div class="lvc-rm-btns" style="margin-top:1.8rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><a class="lvc-rm-btn lvc-rm-btn--ghost" href="#villas">Browse Villas</a></div></div><aside class="lvc-rm-panel"><h2>Start with the area, not only the grid.</h2><p>The best villa choice depends on location, bedroom layout, beach access, service level, arrival logistics, and group priorities.</p><div class="lvc-rm-btns" style="margin-top:1rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Tell Us Your Trip</a></div></aside></div>
+		<div class="lvc-rm-wrap lvc-rm-hero__grid"><div><span class="lvc-rm-kicker">Residencias Reef Cozumel</span><h1><?php echo esc_html( lvc_page_hero_title( 'Riviera Maya Villa Rentals matched to your group' ) ); ?></h1><p class="lvc-rm-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Private villas, beachfront estates, and selected Cozumel condo stays across Tulum, Soliman Bay, Akumal, Playa del Carmen, Puerto Aventuras, and Cozumel. Compare areas first, then request the villas that fit your dates, group size, and service needs.' ) ); ?></p><div class="lvc-rm-btns" style="margin-top:1.8rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><a class="lvc-rm-btn lvc-rm-btn--ghost" href="#villas">Browse Villas</a></div></div><aside class="lvc-rm-panel"><h2>Start with the area, not only the grid.</h2><p>The best villa choice depends on location, bedroom layout, beach access, service level, arrival logistics, and group priorities.</p><div class="lvc-rm-btns" style="margin-top:1rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Tell Us Your Trip</a></div></aside></div>
 	</section>
+
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-rm-section"><div class="lvc-rm-narrow lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<?php
 	get_template_part( 'template-parts/signature-collection', null, array(
@@ -134,3 +139,4 @@ $lvc_villas = new WP_Query( array( 'post_type' => $lvc_cpt, 'post_status' => 'pu
 </main>
 
 <?php get_footer(); ?>
+

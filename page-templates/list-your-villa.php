@@ -31,11 +31,11 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 }
 ?>
 <main class="lvc-page lvc-owner">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">For Villa Owners</p>
-			<h1 class="lvc-hero__title">List Your Villa <em>With Us</em></h1>
-			<p class="lvc-hero__sub">If you own a luxury villa, we help present it, get it found, and turn searches into qualified direct-booking inquiries.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'List Your Villa With Us' ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'If you own a luxury villa, we help present it, get it found, and turn searches into qualified direct-booking inquiries.' ) ); ?></p>
 			<div class="lvc-hero__cta"><a class="lvc-btn" href="#owner-inquiry">Speak With Us</a></div>
 		</div>
 	</section>
@@ -66,3 +66,4 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 </main>
 <?php
 get_footer();
+

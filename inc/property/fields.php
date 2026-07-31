@@ -1,89 +1,44 @@
 <?php
 /**
  * Luxury Villa Theme Core — core property ACF fields.
- * ─────────────────────────────────────────────────────────────────────────
- * Field NAMES are aligned 1:1 with the single-destination generator's sheet
- * columns (property_descr, indoor_living, …, faq_q1..faq_a4) so the sheet-sync
- * receiver maps straight in with no conversion. Brands extend this group via the
- * 'lvc_property_fields' filter rather than editing the core. No-op without ACF.
- *
- * Taxonomy-backed values (amenity, collection, catering, bedrooms, beach_access,
- * property_type, ideal_for) are assigned as TERMS by the sync — not stored here.
- * seo_title / meta_description are written to Rank Math post meta by the sync.
- */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+ * ────────────�t�~-�G����ƭy�lamp(2.55rem,5vw,5.15rem);font-weight:200;line-height:1.08;color:var(--lvc-text)}.lvc-rm-hero h1 em{display:block;margin-top:.25rem;font-style:italic;color:var(--lvc-accent)}.lvc-rm-hero__sub{max-width:790px;margin:1.35rem 0 0;color:rgba(243,243,241,.84);font-size:clamp(1rem,1.3vw,1.13rem);line-height:1.78}.lvc-rm-panel{background:linear-gradient(180deg,rgba(16,21,28,.95),rgba(10,12,15,.88));border:1px solid rgba(255,255,255,.14);padding:1.5rem;box-shadow:0 24px 70px rgba(0,0,0,.36)}.lvc-rm-panel h2{margin:0 0 .6rem;font-family:var(--lvc-font-display);font-weight:300;font-size:1.25rem;color:var(--lvc-text)}.lvc-rm-panel p{margin:0;color:var(--lvc-soft);font-size:.9rem;line-height:1.7}
+	.lvc-rm-intro{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(2rem,5vw,5rem);align-items:center}.lvc-rm-panelcopy{border-left:1px solid var(--lvc-border);padding-left:clamp(1.5rem,3vw,3rem)}.lvc-rm-panelcopy ul{list-style:none;margin:1.35rem 0 0;padding:0;display:grid;gap:.8rem}.lvc-rm-panelcopy li{position:relative;padding-left:1.25rem;color:var(--lvc-soft);line-height:1.65}.lvc-rm-panelcopy li:before{content:'✓';position:absolute;left:0;color:var(--lvc-accent)}.lvc-rm-paths,.lvc-rm-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.lvc-rm-path,.lvc-rm-compare-card{background:var(--lvc-card);border:1px solid var(--lvc-border);padding:1.6rem}.lvc-rm-path h3,.lvc-rm-compare-card h3{margin:0 0 .7rem;font-family:var(--lvc-font-display);font-size:1.45rem;font-weight:300;color:var(--lvc-text)}.lvc-rm-path p{margin:0 0 1.2rem;color:var(--lvc-soft);line-height:1.72}.lvc-rm-compare-card ul{margin:0;padding:0;list-style:none;display:grid;gap:.7rem}.lvc-rm-compare-card li{position:relative;padding-left:1.1rem;color:var(--lvc-soft);line-height:1.55}.lvc-rm-compare-card li:before{content:'•';position:absolute;left:0;color:var(--lvc-accent)}
+	.lvc-rm-cardgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem}.lvc-rm-area{position:relative;min-height:285px;display:flex;align-items:flex-end;padding:1.25rem;border:1px solid var(--lvc-border);background:var(--lvc-card) var(--area-img,none) center/cover no-repeat;overflow:hidden}.lvc-rm-area:before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,15,.12),rgba(10,12,15,.92))}.lvc-rm-area__body{position:relative;z-index:1}.lvc-rm-area h3{margin:0;font-family:var(--lvc-font-display);font-size:1.25rem;font-weight:300;color:var(--lvc-text)}.lvc-rm-area p{margin:.55rem 0 0;color:var(--lvc-soft);font-size:.84rem;line-height:1.55}.lvc-rm-area span{display:block;margin-top:.85rem;color:var(--lvc-accent);font-size:.82rem}
+	.lvc-rm-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:.65rem;margin:0 auto 2.2rem;max-width:1120px}.lvc-rm-filter{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--lvc-border);background:rgba(255,255,255,.025);color:var(--lvc-soft)!important;padding:.62rem .9rem;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}.lvc-rm-filter:hover{border-color:var(--lvc-accent);color:var(--lvc-accent)!important;background:var(--lvc-accent-soft)}.lvc-rm-villas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.35rem}.lvc-rm-faq{display:grid;gap:.75rem}.lvc-rm-faq details{background:var(--lvc-card);border:1px solid var(--lvc-border);padding:1rem 1.15rem}.lvc-rm-faq summary{cursor:pointer;color:var(--lvc-text);font-family:var(--lvc-font-display);font-weight:300}.lvc-rm-faq p{margin:.75rem 0 0;color:var(--lvc-soft);line-height:1.7}.lvc-rm-final{background:var(--lvc-bg-deep);border-top:1px solid rgba(255,255,255,.12);text-align:center}.lvc-rm-final .lvc-rm-copy{max-width:700px;margin:1rem auto 1.6rem}.lvc-rm-final .lvc-rm-btns{justify-content:center}
+	@media(max-width:1200px){.lvc-rm-cardgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:900px){.lvc-rm-hero__grid,.lvc-rm-intro,.lvc-rm-paths,.lvc-rm-compare{grid-template-columns:1fr}.lvc-rm-villas{grid-template-columns:repeat(2,minmax(0,1fr))}.lvc-rm-panelcopy{border-left:0;padding-left:0}}@media(max-width:720px){.lvc-rm-wrap,.lvc-rm-narrow{width:calc(100% - 2rem)}.lvc-rm-hero{min-height:auto;padding:6rem 0 4rem}.lvc-rm-hero h1{font-size:clamp(2.3rem,12vw,3.5rem)}.lvc-rm-btns{display:grid;grid-template-columns:1fr}.lvc-rm-villas,.lvc-rm-cardgrid{grid-template-columns:1fr}.lvc-rm-filters{justify-content:flex-start}}
+</style>
 
-add_action( 'acf/init', 'lvc_register_property_fields' );
+<main class="lvc-rm">
+	<section class="lvc-rm-hero" <?php echo $lvc_hero_img ? 'style="--rm-hero-img:url(\'' . esc_url( $lvc_hero_img ) . '\')"' : ''; ?> aria-label="Riviera Maya villa rentals">
+		<div class="lvc-rm-wrap lvc-rm-hero__grid"><div><span class="lvc-rm-kicker">Residencias Reef Cozumel</span><h1><?php echo esc_html( lvc_page_hero_title( 'Riviera Maya Villa Rentals matched to your group' ) ); ?></h1><p class="lvc-rm-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Private villas, beachfront estates, and selected Cozumel condo stays across Tulum, Soliman Bay, Akumal, Playa del Carmen, Puerto Aventuras, and Cozumel. Compare areas first, then request the villas that fit your dates, group size, and service needs.' ) ); ?></p><div class="lvc-rm-btns" style="margin-top:1.8rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><a class="lvc-rm-btn lvc-rm-btn--ghost" href="#villas">Browse Villas</a></div></div><aside class="lvc-rm-panel"><h2>Start with the area, not only the grid.</h2><p>The best villa choice depends on location, bedroom layout, beach access, service level, arrival logistics, and group priorities.</p><div class="lvc-rm-btns" style="margin-top:1rem"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Tell Us Your Trip</a></div></aside></div>
+	</section>
 
-function lvc_register_property_fields() {
-	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
-		return;
-	}
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-rm-section"><div class="lvc-rm-narrow lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
-	$cpt = lvc_config( 'cpt', 'villa' );
-
-	$fields = apply_filters( 'lvc_property_fields', array(
-
-		/* ── Identity ─────────────────────────────────────────────── */
-		array( 'key' => 'field_lvc_tab_identity', 'label' => 'Identity', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_community', 'label' => 'Community', 'name' => 'community', 'type' => 'text', 'instructions' => 'Stable community / development name (e.g. Las Palmas). community + lot = the permanent URL slug — survives marketing renames.' ),
-		array( 'key' => 'field_lvc_lot', 'label' => 'Lot / Unit', 'name' => 'lot', 'type' => 'text', 'instructions' => 'Lot or unit number (e.g. 27).' ),
-		array( 'key' => 'field_lvc_card_title', 'label' => 'Card / Display Title', 'name' => 'card_title', 'type' => 'text', 'instructions' => 'Marketing name shown on cards. Falls back to the post title.' ),
-		array( 'key' => 'field_lvc_h1_title', 'label' => 'H1 (on-page heading)', 'name' => 'h1_title', 'type' => 'text', 'instructions' => 'SEO H1. Falls back to the post title.' ),
-		array( 'key' => 'field_lvc_villa_aliases', 'label' => 'Aliases', 'name' => 'villa_aliases', 'type' => 'text', 'instructions' => 'Comma-separated former / marketing names → schema alternateName (catches searches for the old name).' ),
-
-		/* ── Key Facts ────────────────────────────────────────────── */
-		array( 'key' => 'field_lvc_tab_facts', 'label' => 'Key Facts', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_bed_count', 'label' => 'Bedrooms', 'name' => 'bed_count', 'type' => 'number', 'min' => 0, 'max' => 50 ),
-		array( 'key' => 'field_lvc_bath_count', 'label' => 'Bathrooms', 'name' => 'bath_count', 'type' => 'number', 'min' => 0, 'max' => 50, 'step' => '0.5' ),
-		array( 'key' => 'field_lvc_guests_max', 'label' => 'Max Guests', 'name' => 'guests_max', 'type' => 'number', 'min' => 1, 'max' => 100 ),
-		array(
-			'key' => 'field_lvc_from_rate_tier', 'label' => 'From Rate Tier', 'name' => 'from_rate_tier', 'type' => 'select',
-			'choices' => array( 'under-5k' => 'Under 5k', '5k-10k' => '5k-10k', '10k-20k' => '10k-20k', '20k-plus' => '20k-plus' ),
-			'allow_null' => 1, 'return_format' => 'value',
-		),
-		array( 'key' => 'field_lvc_featured', 'label' => 'Featured', 'name' => 'featured', 'type' => 'true_false', 'ui' => 1, 'default_value' => 0 ),
-
-		/* ── Content (generated) ──────────────────────────────────── */
-		array( 'key' => 'field_lvc_tab_content', 'label' => 'Content', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_property_descr', 'label' => 'Overview', 'name' => 'property_descr', 'type' => 'wysiwyg', 'tabs' => 'visual', 'media_upload' => 0 ),
-		array( 'key' => 'field_lvc_indoor_living', 'label' => 'Indoor Living', 'name' => 'indoor_living', 'type' => 'textarea', 'rows' => 4 ),
-		array( 'key' => 'field_lvc_outdoor_living', 'label' => 'Outdoor Living', 'name' => 'outdoor_living', 'type' => 'textarea', 'rows' => 4 ),
-		array( 'key' => 'field_lvc_bedroom_desc', 'label' => 'Bedrooms', 'name' => 'bedroom_desc', 'type' => 'textarea', 'rows' => 4 ),
-
-		/* ── Experience & Service (generated) ─────────────────────── */
-		array( 'key' => 'field_lvc_tab_service', 'label' => 'Experience & Service', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_travel_experience', 'label' => 'Travel Experience', 'name' => 'travel_experience', 'type' => 'text', 'instructions' => 'One of: beachfront, oceanfront, coastal-hillside, beach-town, island, golf-resort, marina-front. The sync derives the Collection term from this.' ),
-		array( 'key' => 'field_lvc_catering_level', 'label' => 'Catering Level', 'name' => 'catering_level', 'type' => 'text', 'instructions' => 'e.g. self-catering, staffed, full-staff.' ),
-		array( 'key' => 'field_lvc_catering_detail', 'label' => 'Catering Detail', 'name' => 'catering_detail', 'type' => 'textarea', 'rows' => 2 ),
-		array( 'key' => 'field_lvc_tags', 'label' => 'Tags', 'name' => 'tags', 'type' => 'text', 'instructions' => 'Comma-separated SEO tags.' ),
-
-		/* ── Media ────────────────────────────────────────────────── */
-		array( 'key' => 'field_lvc_tab_media', 'label' => 'Media', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_hero_image', 'label' => 'Hero Image', 'name' => 'hero_image', 'type' => 'url', 'instructions' => 'Full-bleed image for the villa page hero. Falls back to the featured image, then the first gallery URL, when empty.' ),
-		array( 'key' => 'field_lvc_feature_image', 'label' => 'Feature Image (Cards/Grid)', 'name' => 'feature_image', 'type' => 'url', 'instructions' => 'Image shown on villa cards across the site (homepage, area grids, related villas). Set this so the card image is stable — without it the card falls back to whichever URL happens to be first in the gallery, which changes whenever the gallery is re-ordered or re-synced.' ),
-		array( 'key' => 'field_lvc_gallery', 'label' => 'Gallery URLs', 'name' => 'gallery_squares', 'type' => 'textarea', 'instructions' => 'One Cloudflare R2 image URL per line. The first is the hero fallback when no FIFU / featured image is set.' ),
-
-		/* ── FAQ (flat — 1:1 with the generator) ──────────────────── */
-		array( 'key' => 'field_lvc_tab_faq', 'label' => 'FAQ', 'type' => 'tab' ),
-		array( 'key' => 'field_lvc_faq_q1', 'label' => 'Q1', 'name' => 'faq_q1', 'type' => 'text' ),
-		array( 'key' => 'field_lvc_faq_a1', 'label' => 'A1', 'name' => 'faq_a1', 'type' => 'textarea', 'rows' => 2 ),
-		array( 'key' => 'field_lvc_faq_q2', 'label' => 'Q2', 'name' => 'faq_q2', 'type' => 'text' ),
-		array( 'key' => 'field_lvc_faq_a2', 'label' => 'A2', 'name' => 'faq_a2', 'type' => 'textarea', 'rows' => 2 ),
-		array( 'key' => 'field_lvc_faq_q3', 'label' => 'Q3', 'name' => 'faq_q3', 'type' => 'text' ),
-		array( 'key' => 'field_lvc_faq_a3', 'label' => 'A3', 'name' => 'faq_a3', 'type' => 'textarea', 'rows' => 2 ),
-		array( 'key' => 'field_lvc_faq_q4', 'label' => 'Q4', 'name' => 'faq_q4', 'type' => 'text' ),
-		array( 'key' => 'field_lvc_faq_a4', 'label' => 'A4', 'name' => 'faq_a4', 'type' => 'textarea', 'rows' => 2 ),
+	<?php
+	get_template_part( 'template-parts/signature-collection', null, array(
+		'area_term'  => null,
+		'title'      => 'Villas we would <em>book first</em>',
+		'view_all'   => '#villas',
+		'view_label' => 'Browse all villas',
 	) );
+	?>
 
-	acf_add_local_field_group( array(
-		'key'      => 'group_lvc_property_core',
-		'title'    => lvc_config( 'cpt_singular', 'Villa' ) . ' — Core Fields',
-		'fields'   => $fields,
-		'location' => array( array( array( 'param' => 'post_type', 'operator' => '==', 'value' => $cpt ) ) ),
-		'position' => 'normal',
-		'active'   => true,
-	) );
-}
+	<section class="lvc-rm-section" id="villas"><div class="lvc-rm-wrap"><header class="lvc-rm-head"><span class="lvc-rm-kicker">Villa Collection</span><h2 class="lvc-rm-title">Browse Riviera Maya <em>villas and condos</em></h2><p class="lvc-rm-copy">Browse the current collection, then request help if you want the realistic shortlist for your dates.</p></header><nav class="lvc-rm-filters" aria-label="Riviera Maya villa filters"><?php foreach ( $lvc_filters as $filter ) : ?><a class="lvc-rm-filter" href="<?php echo esc_url( $filter[1] ); ?>"><?php echo esc_html( $filter[0] ); ?></a><?php endforeach; ?></nav><?php if ( $lvc_villas->have_posts() ) : ?><div class="lvc-rm-villas"><?php while ( $lvc_villas->have_posts() ) : $lvc_villas->the_post(); get_template_part( 'template-parts/card-property', null, array( 'id' => get_the_ID() ) ); endwhile; wp_reset_postdata(); ?></div><div style="text-align:center;margin-top:2rem"><a class="lvc-rm-btn lvc-rm-btn--ghost" href="<?php echo esc_url( $lvc_arch ); ?>">View All Villas</a></div><?php endif; ?></div></section>
+
+	<section class="lvc-rm-section lvc-rm-section--alt"><div class="lvc-rm-wrap lvc-rm-intro"><div><span class="lvc-rm-kicker">Villa Strategy</span><h2 class="lvc-rm-title">Cozumel is the start. <em>The right villa is the goal.</em></h2></div><div class="lvc-rm-panelcopy lvc-rm-copy"><p>Residencias Reef and Cozumel attract travelers looking for a relaxed Caribbean stay, especially divers, couples, and smaller groups. Many travelers, however, need a private Riviera Maya villa with more bedrooms, chef service, staff, private pool, beachfront access, or better space for a family trip or celebration.</p><ul><li>Use Cozumel condos for simple beachfront stays and lower nightly rates.</li><li>Use Tulum, Soliman Bay, Akumal, Playa del Carmen, and Puerto Aventuras for larger private villa trips.</li><li>Match the area before the villa: privacy, restaurants, beach access, service level, and logistics matter.</li></ul></div></div></section>
+
+	<section class="lvc-rm-section"><div class="lvc-rm-wrap"><header class="lvc-rm-head"><span class="lvc-rm-kicker">Two Booking Paths</span><h2 class="lvc-rm-title">Choose the path that fits <em>your real trip</em></h2></header><div class="lvc-rm-paths"><article class="lvc-rm-path"><h3>Cozumel condos for simple stays</h3><p>Best for couples, divers, small families, and guests who want beachfront access without paying for a full villa experience.</p><a class="lvc-rm-btn lvc-rm-btn--ghost" href="<?php echo esc_url( lvc_rm_area_url( 'cozumel', '/cozumel/' ) ); ?>">View Cozumel Stays</a></article><article class="lvc-rm-path"><h3>Private villas for larger trips</h3><p>Best for families, group trips, chef service, private pools, celebrations, retreats, and guests who want more privacy and support.</p><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a></article></div></div></section>
+
+	<section class="lvc-rm-section lvc-rm-section--alt"><div class="lvc-rm-wrap"><header class="lvc-rm-head"><span class="lvc-rm-kicker">Where to Stay</span><h2 class="lvc-rm-title">Compare Riviera Maya <em>villa destinations</em></h2><p class="lvc-rm-copy">The right destination filters the wrong villas out quickly. Start here before comparing individual properties.</p></header><div class="lvc-rm-cardgrid"><?php foreach ( $lvc_destinations as $area ) : $img = lvc_rm_area_image( $area[1] ); ?><a class="lvc-rm-area" href="<?php echo esc_url( lvc_rm_area_url( $area[1] ) ); ?>" style="<?php echo $img ? '--area-img:url(' . esc_url( $img ) . ')' : ''; ?>"><div class="lvc-rm-area__body"><h3><?php echo esc_html( $area[0] ); ?></h3><p><?php echo esc_html( $area[2] ); ?></p><span>Explore <?php echo esc_html( $area[0] ); ?> &rarr;</span></div></a><?php endforeach; ?></div></div></section>
+
+	<section class="lvc-rm-section"><div class="lvc-rm-wrap"><header class="lvc-rm-head"><span class="lvc-rm-kicker">Tulum Villa Areas</span><h2 class="lvc-rm-title">Tulum is not one market: <em>choose carefully</em></h2><p class="lvc-rm-copy">For villa inquiries, Tulum area selection matters as much as the property itself.</p></header><div class="lvc-rm-cardgrid"><?php foreach ( $lvc_tulum_areas as $area ) : $img = lvc_rm_area_image( $area[1] ); ?><a class="lvc-rm-area" href="<?php echo esc_url( lvc_rm_area_url( $area[1] ) ); ?>" style="<?php echo $img ? '--area-img:url(' . esc_url( $img ) . ')' : ''; ?>"><div class="lvc-rm-area__body"><h3><?php echo esc_html( $area[0] ); ?></h3><p><?php echo esc_html( $area[2] ); ?></p><span>Explore <?php echo esc_html( $area[0] ); ?> villas &rarr;</span></div></a><?php endforeach; ?></div></div></section>
+
+	<section class="lvc-rm-section lvc-rm-section--alt"><div class="lvc-rm-wrap"><header class="lvc-rm-head"><span class="lvc-rm-kicker">Decision Help</span><h2 class="lvc-rm-title">Cozumel condo or <em>Riviera Maya villa?</em></h2></header><div class="lvc-rm-compare"><article class="lvc-rm-compare-card"><h3>Choose a Cozumel condo if...</h3><ul><li>You are a couple, small family, or diving-focused group.</li><li>You want a lower nightly rate and simple beachfront base.</li><li>You do not need chef service, staff, or a large private villa layout.</li></ul></article><article class="lvc-rm-compare-card"><h3>Choose a private villa if...</h3><ul><li>You need more bedrooms, privacy, and shared spaces.</li><li>You want chef service, staff, private pool, or concierge planning.</li><li>You are planning a family trip, celebration, group retreat, or longer luxury stay.</li></ul></article></div></div></section>
+
+	<section class="lvc-rm-section lvc-rm-section--alt"><div class="lvc-rm-narrow"><header class="lvc-rm-head"><span class="lvc-rm-kicker">FAQ</span><h2 class="lvc-rm-title">Riviera Maya villa rental <em>questions</em></h2></header><div class="lvc-rm-faq"><?php foreach ( $lvc_faqs as $faq ) : ?><details><summary><?php echo esc_html( $faq['q'] ); ?></summary><p><?php echo esc_html( $faq['a'] ); ?></p></details><?php endforeach; ?></div></div></section>
+
+	<section class="lvc-rm-section lvc-rm-final"><div class="lvc-rm-narrow"><span class="lvc-rm-kicker">Start Planning</span><h2 class="lvc-rm-title">Tell us what your group needs. <em>We will narrow the search.</em></h2><p class="lvc-rm-copy">Share your dates, group size, preferred area, budget range, and must-haves. We will help identify whether a Cozumel condo, Tulum villa, or another Riviera Maya area is the stronger fit.</p><div class="lvc-rm-btns"><a class="lvc-rm-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><?php if ( $lvc_wa ) : ?><a class="lvc-rm-btn lvc-rm-btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">Chat on WhatsApp</a><?php endif; ?></div></div></section>
+</main>
+
+<?php get_footer(); ?>

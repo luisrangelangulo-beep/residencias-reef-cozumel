@@ -27,6 +27,53 @@ if ( ! function_exists( 'lvc_page_url' ) ) {
 	}
 }
 
+/** Editable page hero values: standard WP fields first, hardcoded copy last. */
+if ( ! function_exists( 'lvc_page_hero_title' ) ) {
+	function lvc_page_hero_title( $default = '' ) {
+		$page_id = get_queried_object_id();
+		$title   = $page_id ? get_the_title( $page_id ) : '';
+		return trim( (string) $title ) !== '' ? $title : $default;
+	}
+}
+
+if ( ! function_exists( 'lvc_page_hero_intro' ) ) {
+	function lvc_page_hero_intro( $default = '' ) {
+		$page_id = get_queried_object_id();
+		$excerpt = $page_id ? get_post_field( 'post_excerpt', $page_id ) : '';
+		return trim( (string) $excerpt ) !== '' ? $excerpt : $default;
+	}
+}
+
+if ( ! function_exists( 'lvc_page_hero_image' ) ) {
+	function lvc_page_hero_image() {
+		$page_id = get_queried_object_id();
+		if ( ! $page_id ) {
+			return '';
+		}
+		$image = get_the_post_thumbnail_url( $page_id, 'full' );
+		if ( ! $image ) {
+			$image = lvc_field( 'hero_image_url', $page_id, '' );
+		}
+		return $image;
+	}
+}
+
+if ( ! function_exists( 'lvc_page_hero_style' ) ) {
+	function lvc_page_hero_style() {
+		$image = lvc_page_hero_image();
+		return $image ? '--lvc-hero-img:url(\'' . esc_url( $image ) . '\')' : '';
+	}
+}
+
+/** Renderable body copy from the current WordPress Page editor. */
+if ( ! function_exists( 'lvc_page_body' ) ) {
+	function lvc_page_body() {
+		$page_id = get_queried_object_id();
+		$content = $page_id ? get_post_field( 'post_content', $page_id ) : '';
+		return trim( (string) $content ) !== '' ? apply_filters( 'the_content', $content ) : '';
+	}
+}
+
 /** Filterable WhatsApp URL (empty if not configured). */
 if ( ! function_exists( 'lvc_whatsapp_url' ) ) {
 	function lvc_whatsapp_url() {
@@ -38,7 +85,7 @@ if ( ! function_exists( 'lvc_whatsapp_url' ) ) {
  * Best-available image URL for a property — one pipeline for cards AND
  * heroes (portfolio pattern, per PMVR/Tulum/Republic).
  *
- * card (default): feature_image → hero_image → featured image → gallery.
+ * card (default): feature_image → featured image → hero_image → gallery.
  * hero: two-tier size guard over [hero_image, feature_image] — ≥1600px
  *       preferred (a hero-grade card image IS the hero), ≥1000px accepted,
  *       unknown width (0 = measurement failed) passes so a network hiccup
@@ -128,13 +175,17 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 			return ! ( function_exists( 'lvc_image_url_is_dead' ) && lvc_image_url_is_dead( $url ) );
 		};
 
-		foreach ( array( 'feature_image', 'hero_image' ) as $field ) {
-			$curated = trim( (string) get_post_meta( $post_id, $field, true ) );
-			if ( $curated && $alive( $curated ) ) {
-				return esc_url( $curated );
-			}
+		$curated = trim( (string) get_post_meta( $post_id, 'feature_image', true ) );
+		if ( $curated && $alive( $curated ) ) {
+			return esc_url( $curated );
 		}
 		$img = get_the_post_thumbnail_url( $post_id, $size );
+		if ( ! $img ) {
+			$hero_fallback = trim( (string) get_post_meta( $post_id, 'hero_image', true ) );
+			if ( $hero_fallback && $alive( $hero_fallback ) ) {
+				$img = $hero_fallback;
+			}
+		}
 		if ( ! $img ) {
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
 				// First LIVE gallery URL, not merely the first one.
@@ -278,6 +329,7 @@ if ( ! function_exists( 'lvc_field_aliases' ) ) {
 			'bath_count'     => 'bathrooms',
 			'guests_max'     => 'max_guests',
 			'property_descr' => 'property_description',
+			'bedroom_desc'   => 'bedroom_description',
 		) );
 	}
 }

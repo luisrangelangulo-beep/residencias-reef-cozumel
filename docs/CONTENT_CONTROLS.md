@@ -54,3 +54,4 @@ Edit the Villa:
 
 Legacy gallery values are merged and deduplicated at render time, so older
 properties retain every image while they are gradually normalized.
+

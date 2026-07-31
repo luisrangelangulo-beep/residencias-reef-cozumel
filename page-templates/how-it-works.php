@@ -24,11 +24,11 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 }
 ?>
 <main class="lvc-page lvc-how">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">How It Works</p>
-			<h1 class="lvc-hero__title">How Booking <em>With Us</em> Works</h1>
-			<p class="lvc-hero__sub">Booking a private villa isn&rsquo;t like booking a hotel — availability, rates, staff, chef service, and access all need confirming. Here&rsquo;s how we make it simple.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'How Booking With Us Works' ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Booking a private villa isn’t like booking a hotel — availability, rates, staff, chef service, and access all need confirming. Here’s how we make it simple.' ) ); ?></p>
 			<div class="lvc-hero__cta"><a class="lvc-btn" href="<?php echo esc_url( lvc_page_url( 'request' ) ); ?>">Start an Inquiry</a><a class="lvc-btn lvc-btn--ghost" href="<?php echo esc_url( lvc_archive_url() ); ?>">Browse <?php echo esc_html( lvc_config( 'cpt_plural', 'Villas' ) ); ?></a></div>
 		</div>
 	</section>
@@ -50,3 +50,4 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 </main>
 <?php
 get_footer();
+

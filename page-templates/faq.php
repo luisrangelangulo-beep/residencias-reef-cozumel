@@ -29,13 +29,15 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 }
 ?>
 <main class="lvc-page lvc-faq-page">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">FAQ</p>
-			<h1 class="lvc-hero__title">Frequently asked <em>questions</em></h1>
-			<p class="lvc-hero__sub">Everything you need to know about booking a private villa with <?php echo esc_html( lvc_brand() ); ?>.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'Frequently asked questions' ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Everything you need to know about booking a private villa with ' . lvc_brand() . '.' ) ); ?></p>
 		</div>
 	</section>
+
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section lvc-section--alt"><div class="lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<section class="lvc-section">
 		<div class="lvc-faq">
@@ -55,3 +57,4 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 </main>
 <?php
 get_footer();
+

@@ -24,13 +24,15 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 }
 ?>
 <main class="lvc-page lvc-request">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">Villa Request &amp; Concierge</p>
-			<h1 class="lvc-hero__title">Request a <em>villa match</em></h1>
-			<p class="lvc-hero__sub">Tell us your dates, group size, and priorities. We compare villas across our destinations, verify availability, and guide you to the right fit — booked direct.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'Request a villa match' ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Tell us your dates, group size, and priorities. We compare villas across our destinations, verify availability, and guide you to the right fit — booked direct.' ) ); ?></p>
 		</div>
 	</section>
+
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section"><div class="lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<section class="lvc-section lvc-section--alt lvc-help">
 		<div class="lvc-sec-header"><p class="lvc-eyebrow">How it works</p><h2 class="lvc-sec-title">From first inquiry to <em>confirmed fit</em></h2></div>
@@ -62,3 +64,4 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 </main>
 <?php
 get_footer();
+

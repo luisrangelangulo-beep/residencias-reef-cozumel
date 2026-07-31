@@ -31,13 +31,15 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 }
 ?>
 <main class="lvc-page lvc-contact">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">Contact Us</p>
-			<h1 class="lvc-hero__title">Contact <?php echo esc_html( lvc_brand() ); ?></h1>
-			<p class="lvc-hero__sub">Reach our villa team directly. Send your dates and what you&rsquo;re looking for, or message us on WhatsApp for quick questions.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'Contact ' . lvc_brand() ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Reach our villa team directly. Send your dates and what you’re looking for, or message us on WhatsApp for quick questions.' ) ); ?></p>
 		</div>
 	</section>
+
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section lvc-section--alt"><div class="lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<section class="lvc-section">
 		<div class="lcv-page-content" style="text-align:center;max-width:760px;margin-bottom:2.5rem">
@@ -80,3 +82,4 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 </main>
 <?php
 get_footer();
+

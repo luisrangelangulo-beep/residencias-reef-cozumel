@@ -78,11 +78,13 @@ $lvc_area_links = array(
 	<section class="lvc-maghub-hero" <?php echo $lvc_hero_img ? 'style="--maghub-hero-img:url(\'' . esc_url( $lvc_hero_img ) . '\')"' : ''; ?>>
 		<div class="lvc-maghub-wrap">
 			<span class="lvc-maghub-kicker">Riviera Maya Magazine</span>
-			<h1>Villa planning guides for the Riviera Maya</h1>
-			<p class="lvc-maghub-hero__sub">Area guides, villa planning advice, Cozumel-to-Tulum comparisons, and practical tips for choosing the right private stay across Tulum, Cozumel, Akumal, Playa del Carmen, and beyond.</p>
+				<h1><?php echo esc_html( lvc_page_hero_title( 'Villa planning guides for the Riviera Maya' ) ); ?></h1>
+				<p class="lvc-maghub-hero__sub"><?php echo esc_html( lvc_page_hero_intro( 'Area guides, villa planning advice, Cozumel-to-Tulum comparisons, and practical tips for choosing the right private stay across Tulum, Cozumel, Akumal, Playa del Carmen, and beyond.' ) ); ?></p>
 			<div class="lvc-maghub-btns lvc-maghub-hero__actions"><a class="lvc-maghub-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><a class="lvc-maghub-btn lvc-maghub-btn--ghost" href="<?php echo esc_url( $lvc_arch ); ?>">Browse Villas</a></div>
 		</div>
 	</section>
+
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-maghub-section"><div class="lvc-maghub-narrow lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<?php // Page 1 only — the feature card repeated on every paginated page. ?>
 	<?php if ( 1 === $lvc_paged && $lvc_featured->have_posts() ) : $lvc_featured->the_post(); $lvc_feat_img = get_the_post_thumbnail_url( get_the_ID(), 'large' ); ?>
@@ -97,3 +99,4 @@ $lvc_area_links = array(
 </main>
 
 <?php get_footer(); ?>
+

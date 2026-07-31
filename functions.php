@@ -20,6 +20,7 @@ require_once LVC_DIR . '/theme-config.php';
 // Modular includes (only those that exist load, so partial pulls are safe).
 foreach ( array(
 	'inc/helpers.php',
+	'inc/site-content.php',
 	'inc/cpt/register-property.php',
 	'inc/property/data.php',
 	'inc/property/fields.php',
@@ -292,3 +293,4 @@ add_action( 'after_rocket_clean_post', function ( $post ) {
 		'body'     => wp_json_encode( array( 'files' => $urls ) ),
 	) );
 } );
+

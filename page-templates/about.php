@@ -15,11 +15,11 @@ $lvc_dests  = (int) wp_count_terms( array( 'taxonomy' => 'area', 'hide_empty' =>
 get_header();
 ?>
 <main class="lvc-page lvc-about">
-	<section class="lvc-hero lvc-hero--page">
+<section class="lvc-hero lvc-hero--page" style="<?php echo esc_attr( lvc_page_hero_style() ); ?>">
 		<div class="lvc-hero__inner">
 			<p class="lvc-eyebrow">About Us</p>
-			<h1 class="lvc-hero__title">About <em>Residencias Reef Cozumel</em></h1>
-			<p class="lvc-hero__sub"><?php echo esc_html( lvc_brand() ); ?> helps guests compare luxury villas with clear context on location, service, access, and rates — built for direct inquiries, not anonymous browsing.</p>
+			<h1 class="lvc-hero__title"><?php echo esc_html( lvc_page_hero_title( 'About Residencias Reef Cozumel' ) ); ?></h1>
+			<p class="lvc-hero__sub"><?php echo esc_html( lvc_page_hero_intro( lvc_brand() . ' helps guests compare luxury villas with clear context on location, service, access, and rates — built for direct inquiries, not anonymous browsing.' ) ); ?></p>
 			<div class="lvc-hero__cta">
 				<a class="lvc-btn" href="<?php echo esc_url( lvc_page_url( 'request' ) ); ?>">Request a Villa Match</a>
 				<a class="lvc-btn lvc-btn--ghost" href="<?php echo esc_url( lvc_archive_url() ); ?>">Browse <?php echo esc_html( lvc_config( 'cpt_plural', 'Villas' ) ); ?></a>
@@ -54,3 +54,4 @@ get_header();
 </main>
 <?php
 get_footer();
+
