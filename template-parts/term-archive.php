@@ -29,6 +29,10 @@ $lvc_tid     = $lvc_term instanceof WP_Term ? $lvc_tax . '_' . $lvc_term->term_i
 
 if ( ! function_exists( 'lvc_term_archive_area_image' ) ) {
 	function lvc_term_archive_area_image( $slug, $taxonomy = 'area' ) {
+		if ( 'area' === $taxonomy && function_exists( 'lvc_area_card_image' ) ) {
+			return lvc_area_card_image( $slug );
+		}
+
 		$q = new WP_Query( array(
 			'post_type'      => lvc_config( 'cpt', 'villas' ),
 			'post_status'    => 'publish',

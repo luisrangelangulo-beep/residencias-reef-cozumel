@@ -19,6 +19,10 @@ $lvc_wa   = lvc_whatsapp_url();
 
 if ( ! function_exists( 'lvc_rm_area_image' ) ) {
 	function lvc_rm_area_image( $slug ) {
+		if ( function_exists( 'lvc_area_card_image' ) ) {
+			return lvc_area_card_image( $slug );
+		}
+
 		$q = new WP_Query( array(
 			'post_type'      => lvc_config( 'cpt', 'villas' ),
 			'post_status'    => 'publish',
@@ -139,4 +143,3 @@ $lvc_villas = new WP_Query( array( 'post_type' => $lvc_cpt, 'post_status' => 'pu
 </main>
 
 <?php get_footer(); ?>
-

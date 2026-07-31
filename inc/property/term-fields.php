@@ -49,6 +49,7 @@ function lvc_register_term_fields() {
 		'title'  => 'Landing — Hero & Intro',
 		'fields' => array(
 			array( 'key' => 'field_lvc_lterm_hero', 'label' => 'Hero Image URL', 'name' => 'hero_image_url', 'type' => 'url', 'instructions' => 'Cloudflare R2 image for the landing hero.' ),
+			array( 'key' => 'field_lvc_lterm_feature', 'label' => 'Feature / Card Image URL', 'name' => 'feature_image_url', 'type' => 'url', 'instructions' => 'Optional card crop for homepage and related collection cards. Falls back to the Hero Image URL.' ),
 			array( 'key' => 'field_lvc_lterm_intro', 'label' => 'Intro / Landing Copy', 'name' => 'intro', 'type' => 'wysiwyg', 'tabs' => 'visual', 'media_upload' => 0 ),
 		),
 		'location' => $location,
