@@ -46,13 +46,24 @@ $lvc_featured_id = $lvc_featured->have_posts() ? (int) $lvc_featured->posts[0]->
 
 // Excluding the featured post at the QUERY level, not by skipping it inside
 // the loop: the skip returned 8 cards into a 3-column grid, leaving a hole in
-// the last row. Excluding it here also keeps pagination stable — every page
-// returns a full 9 and no post repeats across pages.
+// the last row.
+//
+// The grid is now UNPAGINATED — see inc/seo/magazine-index.php for the full
+// reasoning. Short version: inc/seo/schema.php noindexes any is_paged()
+// request, so at 9 per page with 32 posts, pages 2-4 were noindex and 21
+// guides had no indexable internal link from the sitewide-linked hub. The
+// noindex rule is right and stays; paginating a small curated index is what
+// turned it into silent link-graph loss.
+//
+// Note this grid is NOT the main query, so pre_get_posts cannot reach it —
+// unlike the sibling sites, the fix has to live on this WP_Query itself.
+//
+// -1 rather than a numeric cap on purpose: a cap large enough to look safe
+// today is exactly what reintroduces this the day the count passes it.
 $lvc_posts = new WP_Query( array(
 	'post_type'           => 'post',
 	'post_status'         => 'publish',
-	'posts_per_page'      => 9,
-	'paged'               => $lvc_paged,
+	'posts_per_page'      => -1,
 	'ignore_sticky_posts' => false,
 	'post__not_in'        => $lvc_featured_id ? array( $lvc_featured_id ) : array(),
 ) );
@@ -93,7 +104,7 @@ $lvc_area_links = array(
 
 	<section class="lvc-maghub-section"><div class="lvc-maghub-wrap"><header class="lvc-maghub-head"><span class="lvc-maghub-kicker">Browse by Area</span><h2 class="lvc-maghub-title">Connect each guide to the <em>right villa area</em></h2><p class="lvc-maghub-copy">Use the magazine for research, but keep the booking path clear: area first, villa second, dates and service level before final choice.</p></header><nav class="lvc-maghub-area-links" aria-label="Magazine area links"><?php foreach ( $lvc_area_links as $label => $url ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a><?php endforeach; ?></nav></div></section>
 
-	<section class="lvc-maghub-section lvc-maghub-section--alt"><div class="lvc-maghub-wrap"><header class="lvc-maghub-head"><span class="lvc-maghub-kicker">Latest Guides</span><h2 class="lvc-maghub-title">Villa planning <em>articles</em></h2></header><?php if ( $lvc_posts->have_posts() ) : ?><div class="lvc-maghub-grid"><?php while ( $lvc_posts->have_posts() ) : $lvc_posts->the_post(); $img = get_the_post_thumbnail_url( get_the_ID(), 'large' ); ?><a class="lvc-maghub-card" href="<?php the_permalink(); ?>"><?php if ( $img ) : ?><span class="lvc-maghub-card__img"><img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" loading="lazy" decoding="async"></span><?php endif; ?><span class="lvc-maghub-card__body"><span class="lvc-maghub-card__date"><?php echo esc_html( get_the_date() ); ?></span><span class="lvc-maghub-card__title"><?php the_title(); ?></span><span class="lvc-maghub-card__excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 24 ) ); ?></span><span class="lvc-maghub-card__cta">Read guide &rarr;</span></span></a><?php endwhile; ?></div><nav class="lvc-maghub-pagination" aria-label="Magazine pagination"><?php echo wp_kses_post( paginate_links( array( 'total' => $lvc_posts->max_num_pages, 'current' => $lvc_paged, 'mid_size' => 1, 'prev_text' => '&larr;', 'next_text' => '&rarr;' ) ) ); ?></nav><?php wp_reset_postdata(); else : ?><p class="lvc-empty">No articles yet.</p><?php endif; ?></div></section>
+	<section class="lvc-maghub-section lvc-maghub-section--alt"><div class="lvc-maghub-wrap"><header class="lvc-maghub-head"><span class="lvc-maghub-kicker">Latest Guides</span><h2 class="lvc-maghub-title">Villa planning <em>articles</em></h2></header><?php if ( $lvc_posts->have_posts() ) : ?><div class="lvc-maghub-grid"><?php while ( $lvc_posts->have_posts() ) : $lvc_posts->the_post(); $img = get_the_post_thumbnail_url( get_the_ID(), 'large' ); ?><a class="lvc-maghub-card" href="<?php the_permalink(); ?>"><?php if ( $img ) : ?><span class="lvc-maghub-card__img"><img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" loading="lazy" decoding="async"></span><?php endif; ?><span class="lvc-maghub-card__body"><span class="lvc-maghub-card__date"><?php echo esc_html( get_the_date() ); ?></span><span class="lvc-maghub-card__title"><?php the_title(); ?></span><span class="lvc-maghub-card__excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 24 ) ); ?></span><span class="lvc-maghub-card__cta">Read guide &rarr;</span></span></a><?php endwhile; ?></div><?php if ( $lvc_posts->max_num_pages > 1 ) : ?><nav class="lvc-maghub-pagination" aria-label="Magazine pagination"><?php echo wp_kses_post( paginate_links( array( 'total' => $lvc_posts->max_num_pages, 'current' => $lvc_paged, 'mid_size' => 1, 'prev_text' => '&larr;', 'next_text' => '&rarr;' ) ) ); ?></nav><?php endif; ?><?php wp_reset_postdata(); else : ?><p class="lvc-empty">No articles yet.</p><?php endif; ?></div></section>
 
 	<section class="lvc-maghub-section lvc-maghub-final"><div class="lvc-maghub-narrow"><span class="lvc-maghub-kicker">Villa Planning</span><h2 class="lvc-maghub-title">Finished researching? <em>Let us narrow the villas.</em></h2><p class="lvc-maghub-copy">Send your dates, group size, preferred area, budget range, and must-haves. We will help identify whether Cozumel, Tulum, Soliman Bay, Akumal, or Playa del Carmen is the stronger fit.</p><div class="lvc-maghub-btns"><a class="lvc-maghub-btn" href="<?php echo esc_url( $lvc_req ); ?>">Request Villa Matches</a><?php if ( $lvc_wa ) : ?><a class="lvc-maghub-btn lvc-maghub-btn--ghost" href="<?php echo esc_url( $lvc_wa ); ?>" target="_blank" rel="noopener">Chat on WhatsApp</a><?php endif; ?></div></div></section>
 </main>
