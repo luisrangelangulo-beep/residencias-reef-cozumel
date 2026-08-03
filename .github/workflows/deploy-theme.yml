@@ -57,6 +57,7 @@ jobs:
             -x '*.git*' \
             -x '.github/*' \
             -x 'docs/*' \
+            -x '*.md' \
             -x 'documents/*' \
             -x 'vendor/*' \
             -x 'node_modules/*' \
@@ -139,6 +140,18 @@ jobs:
             echo "🔍 Sanity-check release contents..."
             test -f "$RELEASE_PATH/style.css"     || { echo "Missing style.css in release";     exit 1; }
             test -f "$RELEASE_PATH/functions.php" || { echo "Missing functions.php in release"; exit 1; }
+            # Documentation must never reach the web root. Theme files are
+            # publicly served - README.md was returning 200 with 3,371 bytes of
+            # internal notes. The zip already excludes markdown; this asserts
+            # it, so the next doc committed at the theme root cannot quietly
+            # start shipping again. An exclusion flag on its own is a rule
+            # nobody sees until it has already been violated.
+            if find "$RELEASE_PATH" -name '*.md' | grep -q .; then
+              echo "Markdown found in release - docs must not ship to the web root:"
+              find "$RELEASE_PATH" -name '*.md'
+              exit 1
+            fi
+
             for forbidden in .github docs documents node_modules vendor build; do
               if [ -e "$RELEASE_PATH/$forbidden" ]; then
                 echo "Forbidden path in release: $forbidden"
