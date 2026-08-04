@@ -229,10 +229,24 @@ if ( ! function_exists( 'lvc_remote_image_width' ) ) {
 	}
 }
 
+/**
+ * Cached measurement verdict for a URL, without any network I/O.
+ *
+ * false = never measured, -1 = confirmed dead (404/410), >0 = pixel width.
+ * Callers that must not block on HTTP (every template) read this instead of
+ * lvc_remote_image_width().
+ */
+if ( ! function_exists( 'lvc_image_url_verdict' ) ) {
+	function lvc_image_url_verdict( $url ) {
+		$known = get_option( 'lvc_imgw_' . md5( trim( (string) $url ) ), false );
+		return false === $known ? false : (int) $known;
+	}
+}
+
 /** True when a URL has been measured and confirmed dead (404/410). */
 if ( ! function_exists( 'lvc_image_url_is_dead' ) ) {
 	function lvc_image_url_is_dead( $url ) {
-		return -1 === (int) get_option( 'lvc_imgw_' . md5( trim( (string) $url ) ), 0 );
+		return -1 === lvc_image_url_verdict( $url );
 	}
 }
 

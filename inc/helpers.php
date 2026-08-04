@@ -224,10 +224,25 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 			}
 		}
 		if ( ! $img ) {
+			$gallery = array();
 			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
-				// First LIVE gallery URL, not merely the first one.
-				foreach ( lvc_image_list( get_post_meta( $post_id, $field, true ) ) as $candidate ) {
-					if ( $alive( $candidate ) ) {
+				$gallery = array_merge( $gallery, lvc_image_list( get_post_meta( $post_id, $field, true ) ) );
+			}
+			$gallery = array_values( array_unique( $gallery ) );
+
+			/*
+			 * Two passes, because galleries routinely list more files than the
+			 * folder actually holds (01-25 declared, ~6 present). Taking the
+			 * first not-known-dead URL would hand the slot to an UNMEASURED
+			 * one and render broken, even when a confirmed-live photo sits
+			 * further down. So: confirmed-live first, unmeasured only as a
+			 * fallback, confirmed-dead never.
+			 */
+			foreach ( array( true, false ) as $require_live ) {
+				foreach ( $gallery as $candidate ) {
+					$verdict = function_exists( 'lvc_image_url_verdict' ) ? lvc_image_url_verdict( $candidate ) : false;
+					$match   = $require_live ? ( false !== $verdict && $verdict > 0 ) : ( false === $verdict );
+					if ( $match ) {
 						$img = $candidate;
 						break 2;
 					}
