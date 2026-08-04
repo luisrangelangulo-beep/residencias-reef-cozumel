@@ -306,7 +306,7 @@ get_header();
 
 <main class="rrc-villa">
 	<section class="rrc-hero" aria-label="<?php echo esc_attr( $h1_title ); ?>">
-		<?php if ( $hero_image ) : ?><img class="rrc-hero__bg skip-lazy" src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $hero_image, 2000 ) : $hero_image ); ?>" alt="<?php echo esc_attr( $h1_title . ( $location_line ? ' in ' . $location_line : '' ) ); ?>" fetchpriority="high" decoding="async" data-no-lazy="1"><?php endif; ?>
+		<?php if ( $hero_image ) : ?><img class="rrc-hero__bg skip-lazy" src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $hero_image, 2000 ) : $hero_image ); ?>"<?php echo function_exists( 'lvc_cdn_fallback_attr' ) ? lvc_cdn_fallback_attr( $hero_image, 2000 ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped attribute ?> alt="<?php echo esc_attr( $h1_title . ( $location_line ? ' in ' . $location_line : '' ) ); ?>" fetchpriority="high" decoding="async" data-no-lazy="1"><?php endif; ?>
 		<?php if ( $photo_count ) : ?><a href="#gallery" class="rrc-photo-link"><?php echo esc_html( $photo_count ); ?> Photos</a><?php endif; ?>
 		<div class="rrc-container rrc-hero__grid">
 			<div class="rrc-hero__copy">

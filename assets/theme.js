@@ -178,4 +178,41 @@
       }
     });
   });
+
+  // ── Image CDN fallback ────────────────────────────────────────────
+  // Photon mirrors the origin's status, so an <img> that fails on a proxied
+  // URL means Photon is unreachable, NOT that the photo is gone. Swap back
+  // to the origin once so a CDN outage degrades to a heavier image instead
+  // of a broken one. Server-side only emits data-lvc-img-fallback when the
+  // URL was actually rewritten, so this never fires for un-proxied images.
+  function lvcImgFallback(img) {
+    if (!img || img.getAttribute('data-lvc-fell-back')) { return; }
+    var origin = img.getAttribute('data-lvc-img-fallback');
+    if (!origin) { return; }
+    img.setAttribute('data-lvc-fell-back', '1'); // once only — no reload loop
+    // srcset wins over src, so it has to go or the browser re-picks a
+    // proxied candidate and fails again.
+    if (img.srcset) { img.srcset = ''; }
+    img.src = origin;
+  }
+
+  // Capture phase: error events on <img> do not bubble.
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && 'IMG' === t.tagName) { lvcImgFallback(t); }
+  }, true);
+
+  // theme.js is a footer script, so images can already have failed before
+  // the listener above existed. Sweep those once the DOM is parsed.
+  function lvcSweepBrokenImages() {
+    var imgs = document.querySelectorAll('img[data-lvc-img-fallback]');
+    for (var i = 0; i < imgs.length; i++) {
+      if (imgs[i].complete && 0 === imgs[i].naturalWidth) { lvcImgFallback(imgs[i]); }
+    }
+  }
+  if ('loading' === document.readyState) {
+    document.addEventListener('DOMContentLoaded', lvcSweepBrokenImages);
+  } else {
+    lvcSweepBrokenImages();
+  }
 })();
