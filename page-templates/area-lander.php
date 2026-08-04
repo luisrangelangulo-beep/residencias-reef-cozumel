@@ -361,25 +361,25 @@ if ( $lvc_root_id && ! $lvc_is_root ) {
 	) ) : null;
 	if ( $lvc_all_area && $lvc_all_area->post_count > 9 ) : ?>
 	<style>
-	.lcv-area-all-villas{padding-top:clamp(2.5rem,4vw,3.5rem);padding-bottom:clamp(2.5rem,4vw,3.5rem);border-top:1px solid var(--lvc-border)}
-	.lcv-villa-index__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1rem;margin:0 0 1.25rem}
-	.lcv-villa-index__head h2{margin:0;font-family:var(--lvc-font-display);font-weight:300;font-size:1.15rem;color:var(--lvc-text)}
-	.lcv-villa-index__head span{color:var(--lvc-muted);font-size:.78rem}
-	.lcv-villa-index{list-style:none;margin:0;padding:0;columns:4;column-gap:2rem}
-	.lcv-villa-index li{break-inside:avoid;margin:0;padding:.3rem 0}
-	.lcv-villa-index a{color:var(--lvc-muted);font-size:.8rem;line-height:1.4;text-decoration:none}
-	.lcv-villa-index a:hover{color:var(--lvc-accent)}
-	@media(max-width:1100px){.lcv-villa-index{columns:3}}
-	@media(max-width:900px){.lcv-villa-index{columns:2}}
-	@media(max-width:560px){.lcv-villa-index{columns:1}}
+	.rrc-area-all-villas{padding-top:clamp(2.5rem,4vw,3.5rem);padding-bottom:clamp(2.5rem,4vw,3.5rem);border-top:1px solid var(--lvc-border)}
+	.rrc-villa-index__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1rem;margin:0 0 1.25rem}
+	.rrc-villa-index__head h2{margin:0;font-family:var(--lvc-font-display);font-weight:300;font-size:1.15rem;color:var(--lvc-text)}
+	.rrc-villa-index__head span{color:var(--lvc-muted);font-size:.78rem}
+	.rrc-villa-index{list-style:none;margin:0;padding:0;columns:4;column-gap:2rem}
+	.rrc-villa-index li{break-inside:avoid;margin:0;padding:.3rem 0}
+	.rrc-villa-index a{color:var(--lvc-muted);font-size:.8rem;line-height:1.4;text-decoration:none}
+	.rrc-villa-index a:hover{color:var(--lvc-accent)}
+	@media(max-width:1100px){.rrc-villa-index{columns:3}}
+	@media(max-width:900px){.rrc-villa-index{columns:2}}
+	@media(max-width:560px){.rrc-villa-index{columns:1}}
 	</style>
-	<section class="lvc-area-section lcv-area-all-villas" aria-label="Full villa index">
+	<section class="lvc-area-section rrc-area-all-villas" aria-label="Full villa index">
 		<div class="lvc-area-wrap">
-			<div class="lcv-villa-index__head">
+			<div class="rrc-villa-index__head">
 				<h2><?php echo esc_html( $lvc_term->name ); ?> villa index</h2>
 				<span><?php echo (int) $lvc_all_area->post_count; ?> properties, A&ndash;Z</span>
 			</div>
-			<ul class="lcv-villa-index">
+			<ul class="rrc-villa-index">
 				<?php while ( $lvc_all_area->have_posts() ) : $lvc_all_area->the_post(); ?>
 					<li><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_field( 'h1_property_title' ) ?: get_the_title() ); ?></a></li>
 				<?php endwhile; ?>
