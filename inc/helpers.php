@@ -356,17 +356,59 @@ if ( ! function_exists( 'lvc_cdn_img' ) ) {
 		if ( preg_match( '/^i[0-3]\.wp\.com$/', $host ) ) {
 			return add_query_arg( 'w', (int) $width, $url );
 		}
-		// Do not proxy remote R2/custom-CDN assets through Photon. Several
-		// valid origin images return 404 after that rewrite, and CSS hero
-		// backgrounds have no onerror fallback.
-		$site_host = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
-		if ( ! $site_host || strtolower( $host ) !== strtolower( $site_host ) ) {
+		/*
+		 * Remote R2 / CDN assets ARE proxied. This was previously blocked on
+		 * the belief that "several valid origin images 404 after the rewrite",
+		 * but that was a misattribution: Photon mirrors the origin status
+		 * exactly (verified — a dead origin returns 404 both directly and
+		 * through Photon), and this site has ~1,760 URLs that are already dead
+		 * at origin. The broken images were broken before Photon touched them.
+		 * Re-verified across all four image hosts and every path shape in use
+		 * (plain, %20-encoded, and literal parentheses): 200 with 33-90% less
+		 * bytes.
+		 *
+		 * Only hosts we actually store imagery on, reusing the SSRF allowlist
+		 * the measurement path already enforces — never an arbitrary remote URL.
+		 */
+		if ( function_exists( 'lvc_image_host_allowed' ) && ! lvc_image_host_allowed( $url ) ) {
+			return $url;
+		}
+		// A query string is either a signed/expiring URL or origin-side params;
+		// Photon's path form would drop it and serve a 403/404.
+		if ( '' !== (string) wp_parse_url( $url, PHP_URL_QUERY ) ) {
+			return $url;
+		}
+		// Confirmed-dead origins stay dead through Photon, so rewriting one
+		// only hides the real URL from anyone debugging it.
+		if ( function_exists( 'lvc_image_url_verdict' ) && -1 === lvc_image_url_verdict( $url ) ) {
 			return $url;
 		}
 		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
 		return 'https://i0.wp.com/' . $host . $path . '?w=' . (int) $width . '&ssl=1';
 	}
 }
+/**
+ * `data-lvc-img-fallback` attribute for an <img> whose src we proxied.
+ *
+ * Photon mirroring origin 404s means a failure at the proxy is Photon being
+ * unreachable, not the photo being gone — so swapping back to the origin is
+ * always the right recovery. theme.js does that once per image on error.
+ * Returns '' when the URL was not rewritten, so nothing is emitted for
+ * same-origin or skipped URLs. Already escaped; echo it raw.
+ */
+if ( ! function_exists( 'lvc_cdn_fallback_attr' ) ) {
+	function lvc_cdn_fallback_attr( $url, $width = 800 ) {
+		$url = trim( (string) $url );
+		if ( '' === $url || ! function_exists( 'lvc_cdn_img' ) ) {
+			return '';
+		}
+		if ( lvc_cdn_img( $url, $width ) === $url ) {
+			return '';
+		}
+		return ' data-lvc-img-fallback="' . esc_url( $url ) . '"';
+	}
+}
+
 if ( ! function_exists( 'lvc_cdn_srcset' ) ) {
 	function lvc_cdn_srcset( $url, array $widths ) {
 		$parts = array();
