@@ -154,6 +154,26 @@ if ( ! function_exists( 'lvc_image_list' ) ) {
 	}
 }
 
+/**
+ * Every gallery URL for a property, merged across the gallery fields and
+ * deduped.
+ *
+ * Single source of truth for "which URLs might this property's image resolve
+ * to", so the resolver and the liveness primer cannot drift apart. They did:
+ * the primer used to cap at 3 URLs per field / 5 total on the assumption that
+ * the resolver stopped at the first live one, which stopped being true when
+ * the resolver moved to a full two-pass scan.
+ */
+if ( ! function_exists( 'lvc_property_gallery_urls' ) ) {
+	function lvc_property_gallery_urls( $post_id ) {
+		$urls = array();
+		foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
+			$urls = array_merge( $urls, lvc_image_list( get_post_meta( $post_id, $field, true ) ) );
+		}
+		return array_values( array_unique( $urls ) );
+	}
+}
+
 if ( ! function_exists( 'lvc_property_image' ) ) {
 	function lvc_property_image( $post_id, $size = 'large', $context = 'card' ) {
 		$width_ok = static function ( $url, $min ) {
@@ -224,11 +244,7 @@ if ( ! function_exists( 'lvc_property_image' ) ) {
 			}
 		}
 		if ( ! $img ) {
-			$gallery = array();
-			foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
-				$gallery = array_merge( $gallery, lvc_image_list( get_post_meta( $post_id, $field, true ) ) );
-			}
-			$gallery = array_values( array_unique( $gallery ) );
+			$gallery = lvc_property_gallery_urls( $post_id );
 
 			/*
 			 * Two passes, because galleries routinely list more files than the
@@ -269,12 +285,12 @@ if ( ! function_exists( 'lvc_property_image_candidates' ) ) {
 				$urls[] = $u;
 			}
 		}
-		// Only the first few gallery URLs: the resolver stops at the first live
-		// one, and priming entire galleries would cost more than it saves.
-		foreach ( array( 'gallery_squares', 'gallery_slider', 'gallery' ) as $field ) {
-			$urls = array_merge( $urls, array_slice( lvc_image_list( get_post_meta( $post_id, $field, true ) ), 0, 3 ) );
-		}
-		return array_slice( array_values( array_unique( $urls ) ), 0, 5 );
+		// The whole gallery, because the resolver's two-pass scan reads every
+		// URL whenever none is confirmed-live. Priming is ONE query no matter
+		// how many keys it covers, so an unprimed URL the resolver then asks
+		// about is strictly worse than a larger IN list.
+		$urls = array_merge( $urls, lvc_property_gallery_urls( $post_id ) );
+		return array_values( array_unique( $urls ) );
 	}
 }
 
