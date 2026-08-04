@@ -32,7 +32,7 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 		</div>
 	</section>
 
-	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section"><div class="lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section"><div class="rrc-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<section class="lvc-section lvc-section--alt lvc-help">
 		<div class="lvc-sec-header"><p class="lvc-eyebrow">How it works</p><h2 class="lvc-sec-title">From first inquiry to <em>confirmed fit</em></h2></div>

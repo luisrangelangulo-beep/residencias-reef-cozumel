@@ -39,10 +39,10 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 		</div>
 	</section>
 
-	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section lvc-section--alt"><div class="lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-section lvc-section--alt"><div class="rrc-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<section class="lvc-section">
-		<div class="lcv-page-content" style="text-align:center;max-width:760px;margin-bottom:2.5rem">
+		<div class="rrc-page-content" style="text-align:center;max-width:760px;margin-bottom:2.5rem">
 			<p>We&rsquo;re based in the Riviera Maya &mdash; same timezone, and we know the properties we&rsquo;re talking about. Whether you want a shortlist for specific dates, have a question about an area, or own a villa you&rsquo;re thinking of listing, get in touch.</p>
 		</div>
 		<div class="lvc-contact__grid">

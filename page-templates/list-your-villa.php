@@ -41,7 +41,7 @@ if ( function_exists( 'lvc_jsonld' ) ) {
 	</section>
 
 	<section class="lvc-section">
-		<div class="lcv-page-content">
+		<div class="rrc-page-content">
 			<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
 		</div>
 	</section>

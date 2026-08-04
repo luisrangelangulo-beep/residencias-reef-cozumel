@@ -95,7 +95,7 @@ $lvc_area_links = array(
 		</div>
 	</section>
 
-	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-maghub-section"><div class="lvc-maghub-narrow lcv-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
+	<?php $lvc_page_body = lvc_page_body(); if ( $lvc_page_body ) : ?><section class="lvc-maghub-section"><div class="lvc-maghub-narrow rrc-page-content"><?php echo wp_kses_post( $lvc_page_body ); ?></div></section><?php endif; ?>
 
 	<?php // Page 1 only — the feature card repeated on every paginated page. ?>
 	<?php if ( 1 === $lvc_paged && $lvc_featured->have_posts() ) : $lvc_featured->the_post(); $lvc_feat_img = get_the_post_thumbnail_url( get_the_ID(), 'large' ); ?>

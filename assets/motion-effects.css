@@ -21,7 +21,7 @@
     to { opacity: 1; transform: scale(1); }
   }
 
-  .lcv-home-hero > *,
+  .rrc-home-hero > *,
   .lvc-rm-hero > *,
   .lvc-tax-hero > *,
   .lvc-area-hero > *,
@@ -31,7 +31,7 @@
     animation: lvcFadeLift var(--lvc-motion-slow) var(--lvc-motion-ease) both;
   }
 
-  .lcv-home-section > .lcv-home-wrap,
+  .rrc-home-section > .rrc-home-wrap,
   .lvc-rm-section > .lvc-rm-wrap,
   .lvc-tax-section > .lvc-tax-wrap,
   .lvc-area-section > .lvc-area-wrap,
@@ -43,7 +43,7 @@
 }
 
 /* Hero background polish — subtle depth instead of flat static images. */
-.lcv-home-hero,
+.rrc-home-hero,
 .lvc-rm-hero,
 .lvc-tax-hero,
 .lvc-area-hero,
@@ -54,7 +54,7 @@
   background-attachment: fixed;
 }
 
-.lcv-home-hero:after,
+.rrc-home-hero:after,
 .lvc-rm-hero:after,
 .lvc-tax-hero:after,
 .lvc-area-hero:after,
@@ -103,8 +103,8 @@
 .lvc-single-fit-card,
 .lvc-single-service-card,
 .lvc-tax-upgrade-card,
-.lcv-upgrade-card,
-.lcv-path-card,
+.rrc-upgrade-card,
+.rrc-path-card,
 .lvc-rm-path,
 .lvc-rm-compare-card,
 .lvc-tax-compare-card,
@@ -127,8 +127,8 @@
 .lvc-single-fit-card:hover,
 .lvc-single-service-card:hover,
 .lvc-tax-upgrade-card:hover,
-.lcv-upgrade-card:hover,
-.lcv-path-card:hover,
+.rrc-upgrade-card:hover,
+.rrc-path-card:hover,
 .lvc-rm-path:hover,
 .lvc-rm-compare-card:hover,
 .lvc-tax-compare-card:hover,
@@ -158,7 +158,7 @@
 }
 
 /* Buttons: more tactile, less flat. */
-.lcv-home-btn,
+.rrc-home-btn,
 .lvc-rm-btn,
 .lvc-tax-btn,
 .lvc-area-btn,
@@ -173,7 +173,7 @@
   transition: transform 260ms var(--lvc-motion-ease), border-color 260ms ease, background-color 260ms ease, color 260ms ease, box-shadow 260ms ease;
 }
 
-.lcv-home-btn:hover,
+.rrc-home-btn:hover,
 .lvc-rm-btn:hover,
 .lvc-tax-btn:hover,
 .lvc-area-btn:hover,
@@ -187,7 +187,7 @@
   box-shadow: 0 14px 34px rgba(76,127,184,.22);
 }
 
-.lcv-home-btn:before,
+.rrc-home-btn:before,
 .lvc-rm-btn:before,
 .lvc-tax-btn:before,
 .lvc-area-btn:before,
@@ -205,7 +205,7 @@
   transition: transform 620ms var(--lvc-motion-ease);
 }
 
-.lcv-home-btn:hover:before,
+.rrc-home-btn:hover:before,
 .lvc-rm-btn:hover:before,
 .lvc-tax-btn:hover:before,
 .lvc-area-btn:hover:before,
@@ -219,7 +219,7 @@
 }
 
 /* Small link pills and filters. */
-.lcv-filter-pill,
+.rrc-filter-pill,
 .lvc-rm-filter,
 .lvc-maghub-area-links a,
 .lvc-mag-area-links a,
@@ -230,7 +230,7 @@
   transition: transform 260ms var(--lvc-motion-ease), border-color 260ms ease, background-color 260ms ease, color 260ms ease;
 }
 
-.lcv-filter-pill:hover,
+.rrc-filter-pill:hover,
 .lvc-rm-filter:hover,
 .lvc-maghub-area-links a:hover,
 .lvc-mag-area-links a:hover,
@@ -260,7 +260,7 @@
 }
 
 /* Section depth: subtle image-like background atmosphere on alternate bands. */
-.lcv-home-section--alt,
+.rrc-home-section--alt,
 .lvc-tax-section--alt,
 .lvc-area-section--alt,
 .lvc-rm-section--alt,
@@ -271,7 +271,7 @@
   overflow: hidden;
 }
 
-.lcv-home-section--alt:before,
+.rrc-home-section--alt:before,
 .lvc-tax-section--alt:before,
 .lvc-area-section--alt:before,
 .lvc-rm-section--alt:before,
@@ -288,7 +288,7 @@
   opacity: .85;
 }
 
-.lcv-home-section--alt > *,
+.rrc-home-section--alt > *,
 .lvc-tax-section--alt > *,
 .lvc-area-section--alt > *,
 .lvc-rm-section--alt > *,
@@ -300,7 +300,7 @@
 }
 
 @media (max-width: 900px) {
-  .lcv-home-hero,
+  .rrc-home-hero,
   .lvc-rm-hero,
   .lvc-tax-hero,
   .lvc-area-hero,
