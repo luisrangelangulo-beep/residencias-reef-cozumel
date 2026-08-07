@@ -36,23 +36,37 @@ $lvc_specs = array_filter( array(
 		<span class="lvc-card__img">
 			<?php
 			/*
-			 * DELIBERATELY NOT loading="lazy" — do not add it back without re-testing.
-			 * Card images in this grid were observed stalling permanently in Chromium:
-			 * the <img> stayed complete=false / naturalWidth=0 with no network request
-			 * ever issued, even after the card had been scrolled into view and left
-			 * there. Flipping only this attribute to "eager" on a stuck element loaded
-			 * it instantly, so the deferral — not the URL, srcset, CDN or cache — was
-			 * the blocker (every card URL on /villas/ was verified 200 through Photon).
-			 * Cost of eager: the whole grid's images are fetched up front. Accepted —
-			 * they are Photon-optimised webp and a browse grid whose photos never
-			 * appear is worse than a heavier one. Chromium already fetches images at
-			 * Low priority and only boosts the ones that land in the viewport, so no
-			 * explicit fetchpriority is needed here.
-			 * To re-test: set loading="lazy", load /villas/, scroll to the last row and
-			 * check document.querySelectorAll('.lvc-card__img img') for complete=false.
+			 * NO deferral on card images — not native loading="lazy", and not WP
+			 * Rocket's LazyLoad (hence skip-lazy + data-no-lazy, the same opt-out
+			 * single-villas.php uses on the hero). Do not restore either without
+			 * re-testing.
+			 *
+			 * Card images were stalling permanently in Chromium: complete=false /
+			 * naturalWidth=0 with no network request ever issued, even after the card
+			 * had been scrolled into view and left there. Flipping only the loading
+			 * attribute to "eager" on a stuck element loaded it instantly, so the
+			 * deferral was the blocker — not the URL, srcset, CDN or cache (every card
+			 * URL on /villas/ was verified 200 through Photon).
+			 *
+			 * The two mechanisms are not independent: Rocket LazyLoad skips images
+			 * that already carry loading="lazy" and takes over the ones that do not,
+			 * swapping src for an SVG placeholder and srcset for data-lazy-srcset. So
+			 * dropping the native attribute alone just moves these images onto
+			 * Rocket's script — which would also defeat the Photon origin fallback in
+			 * theme.js, since that reads img.srcset and sets img.src. Opting out of
+			 * both is what actually leaves a plain, immediately-fetched <img>.
+			 *
+			 * Cost: the grid's images are fetched up front. Accepted — they are
+			 * Photon-optimised webp, and a browse grid whose photos never appear is
+			 * worse than a heavier one. Chromium already fetches images at Low
+			 * priority and boosts only those that land in the viewport, so no explicit
+			 * fetchpriority is wanted here.
+			 *
+			 * To re-test: load /villas/ and confirm every .lvc-card__img img has a
+			 * real src (not a data: placeholder), complete=true and naturalWidth>0.
 			 */
 			?>
-			<img src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>"
+			<img class="skip-lazy" data-no-lazy="1" src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>"
 				<?php if ( function_exists( 'lvc_cdn_srcset' ) ) : ?>srcset="<?php echo esc_attr( lvc_cdn_srcset( $lvc_img, array( 400, 800, 1200 ) ) ); ?>" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"<?php endif; ?>
 				<?php echo function_exists( 'lvc_cdn_fallback_attr' ) ? lvc_cdn_fallback_attr( $lvc_img, 800 ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped attribute ?>
 				alt="<?php echo esc_attr( $lvc_name ); ?>" width="800" height="600" decoding="async">
