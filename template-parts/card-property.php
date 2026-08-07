@@ -33,11 +33,29 @@ $lvc_specs = array_filter( array(
 ?>
 <a class="lvc-card" href="<?php echo esc_url( $lvc_url ); ?>" aria-label="<?php echo esc_attr( $lvc_name ); ?>">
 	<?php if ( $lvc_img ) : ?>
-		<span class="lvc-card__img" style="--lvc-card-img:url('<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>')">
+		<span class="lvc-card__img">
+			<?php
+			/*
+			 * DELIBERATELY NOT loading="lazy" — do not add it back without re-testing.
+			 * Card images in this grid were observed stalling permanently in Chromium:
+			 * the <img> stayed complete=false / naturalWidth=0 with no network request
+			 * ever issued, even after the card had been scrolled into view and left
+			 * there. Flipping only this attribute to "eager" on a stuck element loaded
+			 * it instantly, so the deferral — not the URL, srcset, CDN or cache — was
+			 * the blocker (every card URL on /villas/ was verified 200 through Photon).
+			 * Cost of eager: the whole grid's images are fetched up front. Accepted —
+			 * they are Photon-optimised webp and a browse grid whose photos never
+			 * appear is worse than a heavier one. Chromium already fetches images at
+			 * Low priority and only boosts the ones that land in the viewport, so no
+			 * explicit fetchpriority is needed here.
+			 * To re-test: set loading="lazy", load /villas/, scroll to the last row and
+			 * check document.querySelectorAll('.lvc-card__img img') for complete=false.
+			 */
+			?>
 			<img src="<?php echo esc_url( function_exists( 'lvc_cdn_img' ) ? lvc_cdn_img( $lvc_img, 800 ) : $lvc_img ); ?>"
 				<?php if ( function_exists( 'lvc_cdn_srcset' ) ) : ?>srcset="<?php echo esc_attr( lvc_cdn_srcset( $lvc_img, array( 400, 800, 1200 ) ) ); ?>" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"<?php endif; ?>
 				<?php echo function_exists( 'lvc_cdn_fallback_attr' ) ? lvc_cdn_fallback_attr( $lvc_img, 800 ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped attribute ?>
-				alt="<?php echo esc_attr( $lvc_name ); ?>" width="800" height="600" loading="lazy" decoding="async">
+				alt="<?php echo esc_attr( $lvc_name ); ?>" width="800" height="600" decoding="async">
 		</span>
 	<?php endif; ?>
 	<span class="lvc-card__body">
